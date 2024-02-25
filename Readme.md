@@ -1,0 +1,2 @@
+# student control 2.0 version with flet_route
+using lib `flet_route` for routing between pages and get assets and controls from first version of [Student Control](https://github.com/azamtoiri/Flet_student_control)
