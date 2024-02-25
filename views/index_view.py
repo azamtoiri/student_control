@@ -32,11 +32,13 @@ def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     login_button.text = 'Войти'
     login_button.icon = ft.icons.LOGIN
     login_button.expand = True
+    login_button.on_click = lambda _: page.go('/login')  # handler
 
     register_button = ft.ElevatedButton()
     register_button.text = 'Регистрация'
     register_button.icon = ft.icons.APP_REGISTRATION
     register_button.expand = True
+    register_button.on_click = lambda _: page.go('/register')  # handler
 
     content = ft.Column()
     content.width = 400
