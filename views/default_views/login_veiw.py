@@ -21,7 +21,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     title = ft.Text()
     title.value = "Вход"
-    title.style = ft.TextThemeStyle.TITLE_MEDIUM
+    title.theme_style = ft.TextThemeStyle.TITLE_MEDIUM
     title.text_align = ft.TextAlign.CENTER
     title.color = ft.colors.BLACK
     title.size = 20
@@ -39,6 +39,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     login_button.width = 400
     login_button.height = 45
     login_button.expand = True
+    login_button.on_click = lambda _: page.go('/student/main')  # handler
 
     create_account_button = ft.Container()
     create_account_button.content = ft.Text(
@@ -46,6 +47,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     create_account_button.alignment = ft.alignment.center
     create_account_button.width = 150
     create_account_button.height = 45
+    create_account_button.on_click = lambda _: page.go('/register')
     # endregion
 
     # region: Texts

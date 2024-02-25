@@ -23,7 +23,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     title = ft.Text()
     title.value = "Регистрация"
-    title.style = ft.TextThemeStyle.TITLE_MEDIUM
+    title.theme_style = ft.TextThemeStyle.TITLE_MEDIUM
     title.text_align = ft.TextAlign.CENTER
     title.color = ft.colors.BLACK
     title.size = 20
@@ -67,6 +67,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     login_button.content = ft.Text(
         value='Войти', size=15, color=ft.colors.with_opacity(0.5, ft.colors.BLUE)
     )
+    login_button.on_click = lambda _: page.go('/login')
     # endregion
 
     # region: Some text
