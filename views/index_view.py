@@ -25,7 +25,7 @@ def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     welcome_text.size = 34
     welcome_text.width = ft.FontWeight.W_500
     welcome_text.text_align = ft.TextAlign.CENTER
-    welcome_text.color = ft.colors.with_opacity(1, "White")
+    # welcome_text.color = ft.colors.with_opacity(1, "White")
     welcome_text.expand = True
 
     login_button = ft.ElevatedButton()

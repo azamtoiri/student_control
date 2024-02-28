@@ -6,6 +6,16 @@ from user_controls.custom_input_field import CustomInputField
 
 
 def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+    # region: Functions
+    def login_click(e: ft.ControlEvent) -> None:
+        page.route = '/student/main'
+        page.update()
+
+    def register_click(e: ft.ControlEvent) -> None:
+        pass
+
+    # endregion
+
     logo_icon = ft.Image(src=LOGO_PATH)
     logo_icon.width = 100
     logo_icon.height = 100
@@ -39,7 +49,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     login_button.width = 400
     login_button.height = 45
     login_button.expand = True
-    login_button.on_click = lambda _: page.go('/student/main')  # handler
+    login_button.on_click = lambda e: login_click(e)
 
     create_account_button = ft.Container()
     create_account_button.content = ft.Text(
@@ -47,7 +57,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     create_account_button.alignment = ft.alignment.center
     create_account_button.width = 150
     create_account_button.height = 45
-    create_account_button.on_click = lambda _: page.go('/register')
+    create_account_button.on_click = lambda e: register_click(e)
     # endregion
 
     # region: Texts

@@ -7,10 +7,8 @@ from user_controls.student_container import STContainer
 
 class Containers:
     def __init__(self):
-        # TODO: Refactor code
         # home container
-        self.home_container = STContainer(ft.Text('Домашняя страница', color=ft.colors.BLACK),
-                                          alignment=ft.alignment.center)
+        self.home_container = STContainer(ft.Text('Учительская', color=ft.colors.BLACK), alignment=ft.alignment.center)
 
         # courses container
         self.courses_container = STContainer(content=ft.Text('Курсы', size=14, color=ft.colors.BLACK),
@@ -22,39 +20,10 @@ class Containers:
         self.profile_container = STContainer(ft.Text('Профиль', color=ft.colors.BLACK), alignment=ft.alignment.center)
 
 
-def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     #
-    # Button
     #
-    containers = Containers()
-
-    # region: Functions
-    def home_click(e: ft.ControlEvent) -> None:
-        page.go('/student/home')
-
-    def courses_click(e: ft.ControlEvent) -> None:
-        page.go('/student/courses')
-
-    def grades_click(e: ft.ControlEvent) -> None:
-        page.go('/student/grades')
-
-    def profile_click(e: ft.ControlEvent) -> None:
-        page.go('/student/profile')
-
-    def tasks_click(e: ft.ControlEvent) -> None:
-        page.go('/student/tasks')
-
-    # endregion
-
-    # region: handlers
-    containers.home_container.main_container.on_click = lambda e: home_click(e)
-    containers.grades_container.main_container.on_click = lambda e: grades_click(e)
-    containers.tasks_container.main_container.on_click = lambda e: tasks_click(e)
-    containers.profile_container.main_container.on_click = lambda e: profile_click(e)
-    containers.courses_container.main_container.on_click = lambda e: courses_click(e)
-
-    # endregion
-
+    #
     def on_hover(e: ft.HoverEvent):
         """Container on hove"""
         if e.control.scale != 1.120:
@@ -62,13 +31,8 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         else:
             e.control.scale = 1
         e.control.update()
-        return ft.View(
-            # vertical_alignment=ft.MainAxisAlignment.CENTER,
-            # horizontal_alignment=ft.MainAxisAlignment.CENTER,
-            route='/student/main',
-            controls=[]
-        )
 
+    containers = Containers()
     logout_button = ft.Container()
     logout_button.width = 200
     logout_button.height = 80
@@ -77,7 +41,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     logout_button.border_radius = 8
     logout_button.alignment = ft.alignment.center
     logout_button.ink = True
-    logout_button.on_hover = lambda e: on_hover(e)
+    logout_button.on_hover = on_hover
     logout_button.scale = 1
     logout_button.animate_scale = ft.animation.Animation(800, ft.AnimationCurve.EASE_OUT)
 
@@ -86,7 +50,6 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         end=ft.alignment.top_right,
         colors=["#D64511", "#B63621"]
     )
-    logout_button.on_click = lambda _: page.go('/')  # handler
     #
     # Logo
     #
@@ -96,7 +59,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     logo_image.expand = True
 
     return ft.View(
-        route='/student/main',
+        route='/teacher/main',
         controls=[
             ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[logo_image]),
             ft.Row(alignment=ft.MainAxisAlignment.SPACE_EVENLY,
@@ -105,10 +68,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             ft.Row(alignment=ft.MainAxisAlignment.SPACE_EVENLY,
                    controls=[containers.grades_container, containers.tasks_container]),
             ft.Container(height=40, expand=True),
-            ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[containers.profile_container]),
-            # bottom container
+            ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[containers.profile_container]),  # bottom container
             # left log out button
-            ft.Row(alignment=ft.MainAxisAlignment.END, controls=[logout_button, ft.Container(width=20)],
-                   expand=True)
-        ]
-    )
+            ft.Row(alignment=ft.MainAxisAlignment.END, controls=[logout_button, ft.Container(width=20)], expand=True)
+        ])
