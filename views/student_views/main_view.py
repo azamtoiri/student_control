@@ -19,7 +19,7 @@ class Containers:
                                             alignment=ft.alignment.center)
         self.tasks_container = STContainer(content=ft.Text('Задания', size=14, color=ft.colors.BLACK),
                                            alignment=ft.alignment.center)
-        self.profile_container = STContainer(ft.Text('Профиль', color=ft.colors.BLACK), alignment=ft.alignment.center)
+        self.profile_container = STContainer(ft.Text('To-Do', color=ft.colors.BLACK), alignment=ft.alignment.center)
 
 
 def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -39,7 +39,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         page.go('/student/grades')
 
     def profile_click(e: ft.ControlEvent) -> None:
-        page.go('/student/profile')
+        page.go('/todo')
 
     def tasks_click(e: ft.ControlEvent) -> None:
         page.go('/student/tasks')

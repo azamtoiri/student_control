@@ -63,6 +63,7 @@ class STAppBar(AppBar):
     """
     Custom app bar, for all Students views
     """
+
     def __init__(self) -> None:
         super().__init__()
         self.center_title = False
@@ -72,11 +73,11 @@ class STAppBar(AppBar):
         self.adaptive = True
 
         self.log_out_button = PopupMenuItem(text='Выход')
-        # self.log_out_button.on_click = lambda e: self.exit(e)
+        self.log_out_button.on_click = lambda e: self.log_out(e)
         self.appbar_items = [
             self.log_out_button,
             PopupMenuItem(),
-            PopupMenuItem(text='Settings'),
+            PopupMenuItem(text='Настройки'),
         ]
 
         self.appbar_actions = Container(
@@ -96,5 +97,27 @@ class STAppBar(AppBar):
             Text('FOX', size=20, weight=FontWeight.BOLD),
             Text('Hub', size=20)
         ]
+
+        self.dlg = ft.AlertDialog(modal=True, actions=[
+            ft.ElevatedButton('Да', on_click=lambda e: self.yes_click(e)),
+            ft.ElevatedButton('Нет', on_click=lambda e: self.close_dlg(e)),
+        ],
+                                  actions_alignment=ft.MainAxisAlignment.END)
         self.title = self.appbar_title
         self.actions = [self.appbar_actions]
+
+    def close_dlg(self, e: ft.ControlEvent):
+        self.dlg.open = False
+        e.control.page.update()
+
+    def yes_click(self, e: ft.ControlEvent):
+        e.page.route = '/'
+        e.page.update()
+        self.close_dlg(e)
+
+    def log_out(self, e: ft.ControlEvent) -> None:
+        self.dlg.title = ft.Text('Подтвердите действие')
+        self.dlg.content = ft.Text('Вы точно хотите выйти?')
+        e.page.dialog = self.dlg
+        self.dlg.open = True
+        e.page.update()
