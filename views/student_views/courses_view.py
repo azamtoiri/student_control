@@ -1,7 +1,9 @@
 import flet as ft
 from flet_route import Params, Basket
 
-from user_controls.tasks_card import TasksCard
+from database.database import StudentDatabase
+
+st_db = StudentDatabase()
 
 
 def CoursesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -13,9 +15,10 @@ def CoursesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     def tabs_changed(e):
         pass
 
-    def add_text(e):
-        tasks.controls.append()
-        tasks.update()
+    def search(e):
+        ...
+        # tasks.controls.append()
+        # tasks.update()
 
     def add_course(_course_name: str, _course_description: str, course_url: str) -> None:
         course_title = ft.Text()
@@ -37,8 +40,9 @@ def CoursesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     search = ft.TextField(
-        hint_text="What needs to be done?", expand=True, filled=True
+        hint_text="Введите имя курса", expand=True, filled=True
     )
+    search.on_submit = lambda e: search(e)
 
     tasks = ft.ResponsiveRow()
 
@@ -46,13 +50,13 @@ def CoursesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         scrollable=False,
         selected_index=0,
         on_change=tabs_changed,
-        tabs=[ft.Tab(text='Все'), ft.Tab(text='Записанные'), ft.Tab(text='Завершенные')],
+        tabs=[ft.Tab(text='Все'), ft.Tab(text='Записанные')],
         # label_color=
     )
 
     content = ft.Column(
         [
-            ft.Row([search, ft.FloatingActionButton(icon=ft.icons.SEARCH, on_click=lambda e: add_text(e))]),
+            ft.Row([search, ft.FloatingActionButton(icon=ft.icons.SEARCH, on_click=lambda e: search(e))]),
             ft.Column([
                 filter,
                 tasks
@@ -65,11 +69,14 @@ def CoursesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     main_container.content = content
     main_container.expand = True
 
-    for i in range(1, 11):
-        add_course(f'test {i}', f'test {i}', f'/course/{i}')
-        # tasks.controls.append(
-        #     TasksCard(f'Test {i}', f'More info {i}', f'/test/{i}')
-        # )
+    all_courses = st_db.get_all_courses()
+
+    for course in all_courses:
+        add_course(
+            f'Имя курса: {course.subject_name}',
+            f'Описание: {course.description}',
+            f'/course/{course.subject_id}'
+        )
 
     return ft.View(
         route='/student/courses',

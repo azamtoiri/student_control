@@ -33,7 +33,8 @@ def main(page: ft.Page):
     route.appbar = STAppBar()
     page.on_route_change = route.change_route
     page.appbar = route.appbar
-    page.go('/akjlsdfh')
+    page.session.set('username', 'admin')
+    page.go('/todo')
 
 
 ft.app(target=main)

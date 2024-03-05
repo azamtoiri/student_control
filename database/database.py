@@ -4,10 +4,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from constants import Connection
-from database.models import Base, Users
+from constants import UserDefaults
+from database.models import Base, Users, Subjects, Task
 from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered
 from utils.jwt_hash import verify, hash_
-from constants import UserDefaults
 
 
 class BaseDataBase:
@@ -125,3 +125,40 @@ class UserDatabase(BaseDataBase):
 
     def is_staff(self, user_id: int) -> bool:
         return self.session.get(Users, user_id).is_staff
+
+
+class StudentDatabase(BaseDataBase):
+    def get_all_courses(self) -> list[Type[Subjects]]:
+        return self.session.query(Subjects).all()
+
+    def get_course_by_id(self, _id) -> Type[Subjects]:
+        return self.session.query(Subjects).filter(Subjects.subject_id == _id).first()
+
+
+class TaskDatabase(BaseDataBase):
+    def get_all_user_tasks(self, user_id) -> list[Type[Task]]:
+        return self.session.query(Task).filter(Task.user_id == user_id).all()
+
+    def add_task(self, task: Task) -> Task | bool:
+        try:
+            self.session.add(task)
+            self.session.commit()
+
+            return task
+        except Exception as ex:
+            return False
+
+    def get_task_by_id(self, _id) -> Type[Task]:
+        return self.session.query(Task).filter(Task.task_id == _id).first()
+
+    def delete_task(self, task_id) -> bool:
+        task = self.get_task_by_id(task_id)
+        self.session.delete(task)
+        self.session.commit()
+        return True
+
+    def clear_all_tasks(self) -> bool:
+        tasks = self.get_all_tasks()
+        for task in tasks:
+            self.delete_task(task)
+        return True

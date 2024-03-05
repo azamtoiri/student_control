@@ -29,6 +29,7 @@ class Subjects(Base):
     subject_id = Column(Integer, primary_key=True)
     subject_name = Column(String)
     description = Column(String)
+    # is_done = Column(Boolean, default='false')
 
 
 class Grades(Base):
@@ -48,3 +49,12 @@ class Enrollments(Base):
     user_id = Column(Integer, ForeignKey('users.user_id'))
     subject_id = Column(Integer, ForeignKey('subjects.subject_id'))
     enrollment_date = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Task(Base):
+    __tablename__ = 'task'
+
+    task_id = Column(Integer, primary_key=True)
+    task_name = Column(String, nullable=False)
+    completed = Column(Boolean, default=False)
+    user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)

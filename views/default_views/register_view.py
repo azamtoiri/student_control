@@ -145,6 +145,8 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     title.width = ft.FontWeight.BOLD
     title.expand = True
 
+    # endregion
+
     class MixedCustomInputField(CustomInputField):  # for rule DRY
         def __init__(self, password: bool, title: str):
             super().__init__(password, title)
