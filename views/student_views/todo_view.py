@@ -8,10 +8,10 @@ from database.models import Task as TaskDB
 # TODO: bind to DB
 
 class Task(ft.UserControl):
-    def __init__(self, task_name, task_status_change, task_delete, task_id):
+    def __init__(self, task_name, task_status_change, task_delete, task_id, completed: bool = False):
         super().__init__()
         self.db = TaskDatabase()
-        self.completed = False
+        self.completed = completed
         self.task_name = task_name
         self.task_status_change = task_status_change
         self.task_delete = task_delete
@@ -19,8 +19,9 @@ class Task(ft.UserControl):
 
     def build(self):
         self.display_task = ft.Checkbox(
-            value=False, label=self.task_name, on_change=self.status_changed
+            label=self.task_name, on_change=self.status_changed
         )
+        self.display_task.value = self.completed
         self.edit_name = ft.TextField(expand=1)
 
         self.display_view = ft.Row(
@@ -71,12 +72,14 @@ class Task(ft.UserControl):
 
     def save_clicked(self, e):
         self.display_task.label = self.edit_name.value
+        self.db.updated_task(self.task_id, self.edit_name.value)
         self.display_view.visible = True
         self.edit_view.visible = False
         self.update()
 
     def status_changed(self, e):
         self.completed = self.display_task.value
+        self.db.set_status(task_id=self.task_id, status=self.display_task.value)
         self.task_status_change(self)
 
     def delete_clicked(self, e):
@@ -103,7 +106,8 @@ class TodoApp(ft.UserControl):
             tabs=[ft.Tab(text="все"), ft.Tab(text="активные"), ft.Tab(text="завершенные")],
         )
 
-        self.items_left = ft.Text("0 items left")
+        self.items_left = ft.Text("0 задание не выполнено")
+        self.items_left.visible = False
 
         # application's root control (i.e. "view") containing all other controls
         return ft.Column(
@@ -132,7 +136,7 @@ class TodoApp(ft.UserControl):
                             controls=[
                                 self.items_left,
                                 ft.OutlinedButton(
-                                    text="Очистить все задания", on_click=self.clear_clicked
+                                    text="Очистить все выполенные", on_click=self.clear_clicked
                                 ),
                             ],
                         ),
@@ -171,7 +175,8 @@ class TodoApp(ft.UserControl):
     def load_tasks(self):
         tasks = self.db.get_all_user_tasks(user_id=self.user_id)
         for task in tasks:
-            _task = Task(task.task_name, self.task_status_change, self.task_delete, task.task_id)
+            _task = Task(task.task_name, self.task_status_change, self.task_delete, task.task_id,
+                         completed=task.completed)
             self.tasks.controls.append(_task)
 
     def update(self):
@@ -185,7 +190,8 @@ class TodoApp(ft.UserControl):
             )
             if not task.completed:
                 count += 1
-        self.items_left.value = f"{count} активные задания"
+        self.items_left.value = f"{count} задание не выполнено"
+        self.items_left.visible = True
         super().update()
 
 

@@ -157,8 +157,30 @@ class TaskDatabase(BaseDataBase):
         self.session.commit()
         return True
 
-    def clear_all_tasks(self) -> bool:
-        tasks = self.get_all_tasks()
+    def clear_all_tasks(self, user_id) -> bool:
+        tasks = self.get_all_user_tasks(user_id)
         for task in tasks:
             self.delete_task(task)
         return True
+
+    def set_status(self, task_id, status) -> bool:
+        try:
+            task = self.get_task_by_id(task_id)
+            task.completed = status
+            self.session.add(task)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
+    def updated_task(self, task_id, new_task_value) -> bool:
+        try:
+            task = self.get_task_by_id(task_id)
+            task.task_name = new_task_value
+            self.session.add(task)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
