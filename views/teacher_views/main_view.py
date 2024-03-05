@@ -21,9 +21,35 @@ class Containers:
 
 
 def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
-    #
-    #
-    #
+    # region: Functions
+    def home_click(e: ft.ControlEvent) -> None:
+        page.go('/teacher/home')
+
+    def courses_click(e: ft.ControlEvent) -> None:
+        page.go('/teacher/courses')
+
+    def grades_click(e: ft.ControlEvent) -> None:
+        page.go('/teacher/grades')
+
+    def profile_click(e: ft.ControlEvent) -> None:
+        page.go('/todo')
+
+    def tasks_click(e: ft.ControlEvent) -> None:
+        page.go('/teacher/tasks')
+
+    # endregion
+
+    containers = Containers()
+
+    # region: handlers
+    containers.home_container.main_container.on_click = lambda e: home_click(e)
+    containers.grades_container.main_container.on_click = lambda e: grades_click(e)
+    containers.tasks_container.main_container.on_click = lambda e: tasks_click(e)
+    containers.profile_container.main_container.on_click = lambda e: profile_click(e)
+    containers.courses_container.main_container.on_click = lambda e: courses_click(e)
+
+    # endregion
+
     def on_hover(e: ft.HoverEvent):
         """Container on hove"""
         if e.control.scale != 1.120:
@@ -32,7 +58,6 @@ def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             e.control.scale = 1
         e.control.update()
 
-    containers = Containers()
     logout_button = ft.Container()
     logout_button.width = 200
     logout_button.height = 80

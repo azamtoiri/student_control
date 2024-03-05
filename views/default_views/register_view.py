@@ -7,6 +7,13 @@ from user_controls.input_filter import TextOnlyInputFilterRu
 
 
 def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+    # region: Functions
+    def login_click(e: ft.ControlEvent) -> None:
+        e.page.route = '/login'
+        e.page.update()
+
+    # endregion
+
     # region: Header
     logo_icon = ft.Image(src=LOGO_PATH)
     logo_icon.width = 100
@@ -67,7 +74,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     login_button.content = ft.Text(
         value='Войти', size=15, color=ft.colors.with_opacity(0.5, ft.colors.BLUE)
     )
-    login_button.on_click = lambda _: page.go('/login')
+    login_button.on_click = lambda e: login_click(e)
     # endregion
 
     # region: Some text

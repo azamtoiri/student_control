@@ -8,7 +8,6 @@ def CoursesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # delete the last view duplicated view
     if len(page.views) > 1:
         page.views.pop()
-    print(page.views)
 
     # region: Functions
     def tabs_changed(e):

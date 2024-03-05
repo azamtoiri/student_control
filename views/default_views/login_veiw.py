@@ -1,18 +1,55 @@
+import asyncio
+
 import flet as ft
 from flet_route import Params, Basket
 
 from constants import LOGO_PATH
+from database.database import UserDatabase
 from user_controls.custom_input_field import CustomInputField
+from utils.exceptions import RequiredField, NotRegistered
+
+user_db = UserDatabase()
 
 
 def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+    def display_login_form_error(field: str, message: str) -> None:
+        fields = {'username': username_field, 'password': password_field}
+        if field in fields.keys():
+            # fields[field].input_box_content.error_text = message
+            asyncio.run(fields[field].set_fail(message))
+            page.update()
+
     # region: Functions
     def login_click(e: ft.ControlEvent) -> None:
-        page.route = '/student/main'
-        page.update()
+        username = str(username_field.input_box_content.value).strip() if len(
+            username_field.input_box_content.value) else None
+        password = str(password_field.input_box_content.value).strip() if len(
+            password_field.input_box_content.value) else None
+
+        try:
+            user = user_db.login_user(username, password)
+            e.page.session.set("is_auth", True)
+            e.page.session.set("username", username)
+
+            if user_db.is_staff(user.user_id):
+                e.page.session.set("is_staff", True)
+                page.route = '/teacher/main'
+                page.update()
+            else:
+                e.page.route = '/student/main'
+                page.update()
+
+        except RequiredField as error:
+            display_login_form_error(error.field, str(error))
+        except NotRegistered as error:
+            display_login_form_error('username', str(error))
+
+        # page.route = '/student/main'
+        # page.update()
 
     def register_click(e: ft.ControlEvent) -> None:
-        pass
+        e.page.go('/register')
+        e.page.update()
 
     # endregion
 
