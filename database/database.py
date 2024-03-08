@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from constants import Connection
 from constants import UserDefaults
 from database.models import Base, Users, Subjects, Task, Enrollments, Grades
-from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades
+from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed
 from utils.jwt_hash import verify, hash_
 
 
@@ -35,6 +35,10 @@ class UserDatabase(BaseDataBase):
     def filter_users(self, **value) -> list[Type[Users]]:
         """Filter users with added values"""
         return self.session.query(Users).filter_by(**value).all()
+
+    def get_user_id(self, username) -> Type[Users]:
+        """Get user id"""
+        return self.session.query(Users).filter(Users.username == username).first()
 
     def insert_user(self, user: Users) -> None:
         """Registering user"""
@@ -128,20 +132,22 @@ class UserDatabase(BaseDataBase):
 
 
 class StudentDatabase(BaseDataBase):
-    def get_all_courses(self) -> list[Type[Subjects]]:
-        return self.session.query(Subjects).all()
-
     def get_course_by_id(self, _id) -> Type[Subjects]:
         return self.session.query(Subjects).filter(Subjects.subject_id == _id).first()
 
     def get_all_subjects(self) -> list[Type[Subjects]]:
         return self.session.query(Subjects).all()
 
-    def get_student_subjects(self, username) -> list:
+    def get_student_subjects(self, username, user_id=None) -> list:
+        """if not giv user_id getting from db"""
+        if not user_id:
+            user_id = UserDatabase().get_user_id(username).user_id
         user_subject = (
-            self.session.query(Users.first_name, Enrollments, Subjects.subject_name)
+            self.session.query(Users.first_name, Enrollments, Subjects.subject_name, Subjects.description,
+                               Subjects.subject_id)
             .join(Enrollments, Users.user_id == Enrollments.user_id)
-            .join(Subjects, Subjects.subject_id == Enrollments.subject_id).where(Users.username == username).all()
+            .join(Subjects, Subjects.subject_id == Enrollments.subject_id)
+            .where(Users.user_id == user_id).all()
         )
         if len(user_subject) == 0:
             raise DontHaveGrades
@@ -196,6 +202,48 @@ class StudentDatabase(BaseDataBase):
 
         for value in values:
             yield value
+
+    def check_student_subscribe(self, user_id, subject_id) -> bool:
+        b = self.session.query(
+            Enrollments
+        ).where(
+            Enrollments.user_id == user_id
+        ).where(
+            Enrollments.subject_id == subject_id
+        ).first()
+        if b:
+            return True
+        else:
+            return False
+
+    def subscribe_student_to_subject(self, user_id, subject_id) -> bool:
+        try:
+            enrollment = Enrollments(user_id=user_id, subject_id=subject_id)
+            if self.check_student_subscribe(user_id, subject_id):
+                raise UserAlreadySubscribed
+            self.session.add(enrollment)
+            self.session.commit()
+        except UserAlreadySubscribed:
+            return False
+        except Exception as ex:
+            return False
+
+    def unsubscribe_student_from_subject(self, user_id, subject_id) -> bool:
+        """Удаляет записанный курс вместе с его оценка в таблице grades"""
+        enrollment = self.session.query(Enrollments).where(
+            Enrollments.user_id == user_id
+        ).where(
+            Enrollments.subject_id == subject_id
+        ).first()
+        try:
+            self.session.delete(enrollment)
+            self.session.commit()
+        except Exception:
+            return True
+
+    def filter_subjects_by_name(self, subject_name) -> list[Subjects]:
+        """Для поиска предмета по имени"""
+        return self.session.query(Subjects).filter(Subjects.subject_name.ilike(f'%{subject_name}%')).all()
 
 
 class TaskDatabase(BaseDataBase):

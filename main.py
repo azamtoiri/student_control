@@ -34,7 +34,9 @@ def main(page: ft.Page):
     page.on_route_change = route.change_route
     page.appbar = route.appbar
     page.session.set('username', 'admin')
-    page.go('/todo')
+    page.session.set('user_id', 1)
+    page.session.set('is_auth', True)
+    page.go('/student/courses')
 
 
 ft.app(target=main)

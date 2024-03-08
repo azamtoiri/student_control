@@ -37,6 +37,10 @@ def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     def tasks_click(e: ft.ControlEvent) -> None:
         page.go('/teacher/tasks')
 
+    def log_out(e: ft.ControlEvent) -> None:
+        e.page.session.clear()
+        e.page.go('/')
+
     # endregion
 
     containers = Containers()
@@ -69,6 +73,7 @@ def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     logout_button.on_hover = on_hover
     logout_button.scale = 1
     logout_button.animate_scale = ft.animation.Animation(800, ft.AnimationCurve.EASE_OUT)
+    logout_button.on_click = lambda e: log_out(e)
 
     logout_button.gradient = ft.LinearGradient(
         begin=ft.alignment.top_left,

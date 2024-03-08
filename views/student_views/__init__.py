@@ -1,4 +1,4 @@
-from .courses_view import CoursesView
+from .subjects_view import SubjectsView
 from .grades_view import GradesView
 from .home_view import HomeView
 from .main_view import MainView

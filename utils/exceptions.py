@@ -29,3 +29,7 @@ class PasswordDontMatching(Exception):
 
 class DontHaveGrades(Exception):
     ...
+
+
+class UserAlreadySubscribed(Exception):
+    ...

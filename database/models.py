@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table, Boolean, TIMESTAMP, text, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
 
@@ -22,23 +22,36 @@ class Users(Base):
     is_superuser = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    enrollments = relationship('Enrollments', backref='users', cascade='all, delete-orphan, delete')
+
+
+# class Topics(Base):
+#     __tablename__ = 'topics'
+#
+#     topic_id = Column(Integer, primary_key=True, unique=True, nullable=False)
+#     topic_name = Column(String, unique=True, nullable=False)
+
 
 class Subjects(Base):
     __tablename__ = 'subjects'
 
     subject_id = Column(Integer, primary_key=True)
     subject_name = Column(String)
+    # short_description = Column(String)
     description = Column(String)
-    # is_done = Column(Boolean, default='false')
+    # topic_id = Column(Integer, ForeignKey('topics.topic_id'), nullable=True)
+
+    enrollments = relationship('Enrollments', backref='subject', cascade='all')
 
 
 class Grades(Base):
     __tablename__ = 'grades'
 
     grade_id = Column(Integer, primary_key=True)
-    enrollment_id = Column(Integer, ForeignKey('enrollments.enrollment_id'))
+    enrollment_id = Column(Integer, ForeignKey('enrollments.enrollment_id', ondelete='CASCADE'))
     grade_value = Column(Integer)
     grade_date = Column(DateTime(timezone=True), server_default=func.now())
+    # topic_id = Column(Integer, ForeignKey('topics.topic_id'), nullable=True)
 
 
 # todo: Date time now for creating
@@ -47,7 +60,8 @@ class Enrollments(Base):
 
     enrollment_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'))
-    subject_id = Column(Integer, ForeignKey('subjects.subject_id'))
+    subject_id = Column(Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'))
+    # is_done = Column(Boolean, default=False) # for done or not subject
     enrollment_date = Column(DateTime(timezone=True), server_default=func.now())
 
 

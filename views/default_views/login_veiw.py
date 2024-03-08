@@ -30,6 +30,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             user = user_db.login_user(username, password)
             e.page.session.set("is_auth", True)
             e.page.session.set("username", username)
+            e.page.session.set("user_id", user.user_id)
 
             if user_db.is_staff(user.user_id):
                 e.page.session.set("is_staff", True)
