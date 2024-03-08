@@ -182,7 +182,7 @@ class StudentDatabase(BaseDataBase):
         Возвращает кортеж со всеми оценками определённого пользователя
         (username, subject_name, grade_value, grade_date, enrollment_date)
         """
-        value = self.session.query(
+        values = self.session.query(
             Users.username, Subjects.subject_name, Grades.grade_value, Grades.grade_date, Enrollments.enrollment_date
         ).join(
             Users, Users.user_id == Enrollments.user_id,
@@ -194,9 +194,8 @@ class StudentDatabase(BaseDataBase):
             Users.username == username
         ).all()
 
-        for i in range(len(value)):
-            # print(value[i])
-            yield value[i]
+        for value in values:
+            yield value
 
 
 class TaskDatabase(BaseDataBase):
