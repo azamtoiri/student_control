@@ -25,3 +25,7 @@ class PasswordDontMatching(Exception):
     def __init__(self, field: str):
         self.field = field
         super().__init__(f'Пароли не совпадают')
+
+
+class DontHaveGrades(Exception):
+    ...

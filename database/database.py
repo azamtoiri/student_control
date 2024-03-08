@@ -5,8 +5,8 @@ from sqlalchemy.orm import sessionmaker
 
 from constants import Connection
 from constants import UserDefaults
-from database.models import Base, Users, Subjects, Task
-from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered
+from database.models import Base, Users, Subjects, Task, Enrollments, Grades
+from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades
 from utils.jwt_hash import verify, hash_
 
 
@@ -134,6 +134,70 @@ class StudentDatabase(BaseDataBase):
     def get_course_by_id(self, _id) -> Type[Subjects]:
         return self.session.query(Subjects).filter(Subjects.subject_id == _id).first()
 
+    def get_all_subjects(self) -> list[Type[Subjects]]:
+        return self.session.query(Subjects).all()
+
+    def get_student_subjects(self, username) -> list:
+        user_subject = (
+            self.session.query(Users.first_name, Enrollments, Subjects.subject_name)
+            .join(Enrollments, Users.user_id == Enrollments.user_id)
+            .join(Subjects, Subjects.subject_id == Enrollments.subject_id).where(Users.username == username).all()
+        )
+        if len(user_subject) == 0:
+            raise DontHaveGrades
+        return user_subject
+
+    def get_student_subjects_by_name(self, username, sub_name) -> list:
+        """Возвращает конкретный записанный курс у пользователя"""
+        return self.session.query(Users.username, Subjects.subject_name, Enrollments.subject_id).join(
+            Users, Users.user_id == Enrollments.user_id,
+        ).join(
+            Subjects, Subjects.subject_id == Enrollments.subject_id
+        ).where(
+            Users.username == username
+        ).where(
+            Subjects.subject_name == sub_name
+        ).all()
+
+    def get_student_grade_for_exact_subject(self, username, sub_name) -> list:
+        """Возвращает все оценки пользователя по определенному предмету"""
+        values = self.session.query(
+            Users.username, Subjects.subject_name, Grades.grade_value, Grades.grade_date, Enrollments.enrollment_date
+        ).join(
+            Users, Users.user_id == Enrollments.user_id,
+        ).join(
+            Subjects, Subjects.subject_id == Enrollments.subject_id
+        ).join(
+            Grades, Grades.enrollment_id == Enrollments.enrollment_id
+        ).where(
+            Users.username == username
+        ).where(
+            Subjects.subject_name == sub_name
+        ).all()
+        for value in values:
+            yield value
+
+    def get_student_grades(self, username) -> list:
+        """
+        Возвращает кортеж со всеми оценками определённого пользователя
+        (username, subject_name, grade_value, grade_date, enrollment_date)
+        """
+        value = self.session.query(
+            Users.username, Subjects.subject_name, Grades.grade_value, Grades.grade_date, Enrollments.enrollment_date
+        ).join(
+            Users, Users.user_id == Enrollments.user_id,
+        ).join(
+            Subjects, Subjects.subject_id == Enrollments.subject_id
+        ).join(
+            Grades, Grades.enrollment_id == Enrollments.enrollment_id
+        ).where(
+            Users.username == username
+        ).all()
+
+        for i in range(len(value)):
+            # print(value[i])
+            yield value[i]
+
 
 class TaskDatabase(BaseDataBase):
     def get_all_user_tasks(self, user_id) -> list[Type[Task]]:
@@ -184,3 +248,7 @@ class TaskDatabase(BaseDataBase):
         except Exception as ex:
             print(ex)
             return False
+
+
+if __name__ == '__main__':
+    a = StudentDatabase()

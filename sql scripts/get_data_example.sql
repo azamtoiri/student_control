@@ -1,6 +1,4 @@
 SELECT
-  Users.first_name AS student_first_name,
-  Users.last_name AS student_last_name,
   Subjects.subject_name AS subject_name,
   Grades.grade_value AS grade_value,
   Grades.grade_date AS grade_date

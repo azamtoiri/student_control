@@ -12,8 +12,9 @@ def CoursesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         page.views.pop()
 
     # region: Functions
-    def tabs_changed(e):
-        pass
+    def tabs_changed(e: ft.ControlEvent) -> None:
+        # get user that he is subscribed to subject
+        status = filter.tabs[filter.selected_index].text
 
     def search(e):
         ...
