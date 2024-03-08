@@ -112,6 +112,7 @@ class STAppBar(AppBar):
 
     def yes_click(self, e: ft.ControlEvent):
         e.page.route = '/'
+        e.page.session.clear()
         e.page.update()
         self.close_dlg(e)
         self.page.session.clear()

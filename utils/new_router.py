@@ -83,10 +83,19 @@ class Routing:
     def change_route(self, route: flet.RouteChangeEvent):
         notfound = True
         without_app_bar_routes = [
-            '/', '/login', '/register', '/teacher/main', '/student/main'
+            '/', '/login', '/register', '/teacher/main', '/student/main', '/not-registered'
+        ]
+        not_need_auth_routes = [
+           '/', '/login', '/register'
         ]
         for url in self.app_routes:
             path_match = match(url[0], self.page.route)
+            if path_match and route.route == '/' or route.route == '/login' or route.route == '/register':
+                self.page.session.clear()
+            if path_match and (route.route not in not_need_auth_routes):
+                if not self.page.session.get('is_auth'):
+                    self.page.route = '/not-registered'
+                    self.page.update()
             if path_match and (route.route not in without_app_bar_routes):
                 self.__params = Params(path_match.groupdict())
                 if self.__middleware != None:

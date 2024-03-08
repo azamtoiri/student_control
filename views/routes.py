@@ -7,6 +7,7 @@ from views.default_views.register_view import RegisterView
 from views.student_views import MainView, CoursesView, GradesView, HomeView, TasksView, TodoView
 from views.student_views.course_view import CourseView
 from views.teacher_views.main_view import TeacherMainView
+from views.not_registered_view import NotRegistered
 
 all_routes = [
     # region: base views
@@ -34,4 +35,7 @@ all_routes = [
     # region: administrator views
 
     # endregion
+
+    # not registred
+    path('/not-registered', clear=False, view=NotRegistered),
 ]
