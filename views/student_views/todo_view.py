@@ -201,6 +201,7 @@ def TodoView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     app = TodoApp(user_id)
     return ft.View(
         # vertical_alignment=ft.MainAxisAlignment.CENTER,
+        scroll=ft.ScrollMode.AUTO,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         route='/todo',
         controls=[app]
