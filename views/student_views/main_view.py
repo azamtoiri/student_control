@@ -9,17 +9,25 @@ class Containers:
     def __init__(self):
         # TODO: Refactor code
         # home container
-        self.home_container = STContainer(ft.Text('Домашняя страница', color=ft.colors.BLACK),
-                                          alignment=ft.alignment.center)
-
+        self.home_container = STContainer(
+            ft.Text('Домашняя страница', color=ft.colors.WHITE, weight=ft.FontWeight.BOLD, size=15),
+            alignment=ft.alignment.center)
         # courses container
-        self.courses_container = STContainer(content=ft.Text('Курсы', size=14, color=ft.colors.BLACK),
-                                             alignment=ft.alignment.center)
-        self.grades_container = STContainer(content=ft.Text('Оценки', size=14, color=ft.colors.BLACK),
-                                            alignment=ft.alignment.center)
-        self.tasks_container = STContainer(content=ft.Text('Задания', size=14, color=ft.colors.BLACK),
-                                           alignment=ft.alignment.center)
-        self.profile_container = STContainer(ft.Text('To-Do', color=ft.colors.BLACK), alignment=ft.alignment.center)
+        self.courses_container = STContainer(
+            content=ft.Text('Курсы', color=ft.colors.WHITE, weight=ft.FontWeight.BOLD, size=15),
+            alignment=ft.alignment.center)
+        self.grades_container = STContainer(
+            content=ft.Text('Оценки', color=ft.colors.WHITE, weight=ft.FontWeight.BOLD, size=15),
+            alignment=ft.alignment.center
+        )
+        self.tasks_container = STContainer(
+            content=ft.Text('Задания', color=ft.colors.WHITE, weight=ft.FontWeight.BOLD, size=15),
+            alignment=ft.alignment.center
+        )
+        self.profile_container = STContainer(
+            content=ft.Text('To-do', color=ft.colors.WHITE, weight=ft.FontWeight.BOLD, size=15),
+            alignment=ft.alignment.center
+        )
 
 
 def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -71,9 +79,9 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     logout_button = ft.Container()
     logout_button.width = 200
-    logout_button.height = 80
-    logout_button.bgcolor = ft.colors.with_opacity(0.5, "white")
-    logout_button.content = ft.Text("выйти", size=14, color='black')
+    logout_button.height = 500
+    # logout_button.bgcolor = ft.colors.with_opacity(0.5, "white")
+    logout_button.content = ft.Text("выйти", size=15, color=ft.colors.WHITE, weight=ft.FontWeight.BOLD)
     logout_button.border_radius = 8
     logout_button.alignment = ft.alignment.center
     logout_button.ink = True
@@ -93,7 +101,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     logo_image = ft.Image(src=LOGO_PATH, width=200, height=200)
     # logo_image.top = 0
     # logo_image.left = 500
-    logo_image.expand = True
+    # logo_image.expand = True
 
     return ft.View(
         route='/student/main',
@@ -101,10 +109,10 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[logo_image]),
             ft.Row(alignment=ft.MainAxisAlignment.SPACE_EVENLY,
                    controls=[containers.home_container, containers.courses_container]),
-            ft.Container(height=40, expand=True),
+            ft.Container(height=20, expand=True),
             ft.Row(alignment=ft.MainAxisAlignment.SPACE_EVENLY,
                    controls=[containers.grades_container, containers.tasks_container]),
-            ft.Container(height=40, expand=True),
+            ft.Container(height=20, expand=True),
             ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[containers.profile_container]),
             # bottom container
             # left log out button
