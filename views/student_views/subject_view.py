@@ -1,5 +1,3 @@
-from typing import Any
-
 import flet as ft
 from flet_route import Params, Basket
 
@@ -38,12 +36,13 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     def subscribe_dialog(e: ft.ControlEvent):
         dlg.actions = [
-            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_)),
-            ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_))
+            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_), bgcolor=ft.colors.GREEN, color=ft.colors.WHITE,
+                              height=40),
+            ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_), bgcolor=ft.colors.GREY, color=ft.colors.WHITE)
         ]
         dlg.actions_alignment = ft.MainAxisAlignment.CENTER
         dlg.modal = True
-        dlg.icon = ft.Icon(ft.icons.WARNING)
+        dlg.icon = ft.Icon(ft.icons.WARNING, color=ft.colors.DEEP_ORANGE)
         dlg.title = ft.Text('Подтвердите действие')
         dlg.content = ft.Text('Вы точно хотите записаться на курс?')
         e.page.dialog = dlg
@@ -52,12 +51,14 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     def unsubscribe_dialog(e: ft.ControlEvent):
         dlg.actions = [
-            ft.ElevatedButton('Да', on_click=lambda e_: yes_un_click(e_)),
-            ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_))
+            ft.ElevatedButton('Да', on_click=lambda e_: yes_un_click(e_), bgcolor=ft.colors.GREY,
+                              color=ft.colors.WHITE),
+            ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_), bgcolor=ft.colors.GREEN, color=ft.colors.WHITE,
+                              height=40)
         ]
         dlg.actions_alignment = ft.MainAxisAlignment.CENTER
         dlg.modal = True
-        dlg.icon = ft.Icon(ft.icons.WARNING)
+        dlg.icon = ft.Icon(ft.icons.WARNING, color=ft.colors.DEEP_ORANGE)
         dlg.title = ft.Text('Подтвердите действие')
         dlg.content = ft.Text('Вы точно хотите записаться на курс?')
         e.page.dialog = dlg
@@ -77,13 +78,13 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     subscribe_button = ft.ElevatedButton('Записаться на курс')
     subscribe_button.on_click = lambda e: subscribe_click(e)
     subscribe_button.color = ft.colors.WHITE
-    subscribe_button.bgcolor = ft.colors.ORANGE_ACCENT
+    subscribe_button.bgcolor = ft.colors.GREEN
     subscribe_button.visible = not is_subscribed
 
     unsubscribe_button = ft.ElevatedButton('Отписаться от курса')
     unsubscribe_button.on_click = lambda e: unsubscribe_click(e)
     unsubscribe_button.color = ft.colors.WHITE
-    unsubscribe_button.bgcolor = ft.colors.ORANGE_ACCENT
+    unsubscribe_button.bgcolor = ft.colors.RED
     unsubscribe_button.visible = is_subscribed
 
     # endregion

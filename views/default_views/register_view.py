@@ -223,7 +223,9 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         controls=[already_hav_account, login_button]
     ))
 
-    container = ft.Container()
+    container = ft.Container(shadow=ft.BoxShadow(
+        color='grey', offset=ft.Offset(1, 2), blur_radius=10,
+    ))
     container.bgcolor = ft.colors.WHITE
     container.border_radius = 8
     container.content = content

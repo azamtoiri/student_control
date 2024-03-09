@@ -77,7 +77,9 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     title.expand = True
 
     username_field = CustomInputField(False, 'Имя пользователя')
+    username_field.input_box_content.on_submit = lambda e: login_click(e)
     password_field = CustomInputField(True, 'Пароль')
+    password_field.input_box_content.on_submit = lambda e: login_click(e)
     # endregion
 
     # region: Buttons
@@ -121,7 +123,9 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         alignment=ft.MainAxisAlignment.CENTER,
         controls=[text_dont_not_registered, create_account_button]))
 
-    container = ft.Container()
+    container = ft.Container(shadow=ft.BoxShadow(
+        color='grey', offset=ft.Offset(1, 2), blur_radius=10,
+    ))
     container.bgcolor = ft.colors.WHITE
     container.border_radius = 8
     container.content = content
