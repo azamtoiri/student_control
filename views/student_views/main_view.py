@@ -70,16 +70,16 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         else:
             e.control.scale = 1
         e.control.update()
-        return ft.View(
-            # vertical_alignment=ft.MainAxisAlignment.CENTER,
-            # horizontal_alignment=ft.MainAxisAlignment.CENTER,
-            route='/student/main',
-            controls=[]
-        )
+        # return ft.View(
+        #     vertical_alignment=ft.MainAxisAlignment.CENTER,
+        #     horizontal_alignment=ft.MainAxisAlignment.CENTER,
+            # route='/student/main',
+            # controls=[]
+        # )
 
     logout_button = ft.Container()
     logout_button.width = 200
-    logout_button.height = 500
+    logout_button.height = 50
     # logout_button.bgcolor = ft.colors.with_opacity(0.5, "white")
     logout_button.content = ft.Text("выйти", size=15, color=ft.colors.WHITE, weight=ft.FontWeight.BOLD)
     logout_button.border_radius = 8
@@ -104,19 +104,19 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # logo_image.expand = True
 
     return ft.View(
+        scroll=ft.ScrollMode.ADAPTIVE,
         route='/student/main',
         controls=[
             ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[logo_image]),
             ft.Row(alignment=ft.MainAxisAlignment.SPACE_EVENLY,
                    controls=[containers.home_container, containers.courses_container]),
-            ft.Container(height=20, expand=True),
+            # ft.Container(height=20, expand=True),
             ft.Row(alignment=ft.MainAxisAlignment.SPACE_EVENLY,
                    controls=[containers.grades_container, containers.tasks_container]),
-            ft.Container(height=20, expand=True),
+            # ft.Container(height=20, expand=True),
             ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[containers.profile_container]),
             # bottom container
             # left log out button
-            ft.Row(alignment=ft.MainAxisAlignment.END, controls=[logout_button, ft.Container(width=20)],
-                   expand=True)
+            ft.Row(alignment=ft.MainAxisAlignment.END, controls=[logout_button])
         ]
     )

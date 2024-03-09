@@ -36,7 +36,7 @@ def main(page: ft.Page):
     page.session.set('username', 'admin')
     page.session.set('user_id', 1)
     page.session.set('is_auth', True)
-    page.go('/student/courses')
+    page.go('/')
 
 
 ft.app(target=main)
