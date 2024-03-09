@@ -4,6 +4,7 @@ import flet as ft
 from flet_route import Params, Basket
 
 from database.database import StudentDatabase
+from user_controls.subject_description import SubjectDescription
 
 sub_db = StudentDatabase()
 
@@ -40,6 +41,7 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_)),
             ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_))
         ]
+        dlg.actions_alignment = ft.MainAxisAlignment.CENTER
         dlg.modal = True
         dlg.icon = ft.Icon(ft.icons.WARNING)
         dlg.title = ft.Text('Подтвердите действие')
@@ -53,6 +55,7 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             ft.ElevatedButton('Да', on_click=lambda e_: yes_un_click(e_)),
             ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_))
         ]
+        dlg.actions_alignment = ft.MainAxisAlignment.CENTER
         dlg.modal = True
         dlg.icon = ft.Icon(ft.icons.WARNING)
         dlg.title = ft.Text('Подтвердите действие')
@@ -73,10 +76,14 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # region: Buttons
     subscribe_button = ft.ElevatedButton('Записаться на курс')
     subscribe_button.on_click = lambda e: subscribe_click(e)
+    subscribe_button.color = ft.colors.WHITE
+    subscribe_button.bgcolor = ft.colors.ORANGE_ACCENT
     subscribe_button.visible = not is_subscribed
 
     unsubscribe_button = ft.ElevatedButton('Отписаться от курса')
     unsubscribe_button.on_click = lambda e: unsubscribe_click(e)
+    unsubscribe_button.color = ft.colors.WHITE
+    unsubscribe_button.bgcolor = ft.colors.ORANGE_ACCENT
     unsubscribe_button.visible = is_subscribed
 
     # endregion
@@ -88,15 +95,16 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     content = ft.Column()
-    content.controls.append(ft.Row([course_name]))
-    content.controls.append(ft.Row([course_description]))
-    content.controls.append(ft.Row([subscribe_button]))
-    content.controls.append(ft.Row([unsubscribe_button]))
+    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[subscribe_button]))
+    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[unsubscribe_button]))
+    content.controls.append(SubjectDescription(SUBJECT_ID))
+    # content.controls.append(ft.Row([course_name]))
+    # content.controls.append(ft.Row([course_description]))
 
     return ft.View(
+        scroll=ft.ScrollMode.AUTO,
         route='/course/:id',
         controls=[
-            ft.Text(f'course id: {params.get("id")}'),
             content,
         ]
     )

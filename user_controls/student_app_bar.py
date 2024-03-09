@@ -102,7 +102,7 @@ class STAppBar(AppBar):
             ft.ElevatedButton('Да', on_click=lambda e: self.yes_click(e)),
             ft.ElevatedButton('Нет', on_click=lambda e: self.close_dlg(e)),
         ],
-                                  actions_alignment=ft.MainAxisAlignment.END)
+                                  actions_alignment=ft.MainAxisAlignment.CENTER)
         self.title = self.appbar_title
         self.actions = [self.appbar_actions]
 

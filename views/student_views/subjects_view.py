@@ -16,10 +16,13 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         all_subjects = st_db.get_all_subjects()
 
         for subject in all_subjects:
+            is_subscribed = st_db.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
+            print(is_subscribed)
             subject_add(
                 f'Имя курса: {subject.subject_name}',
                 f'Описание: {subject.description}',
-                f'/course/{subject.subject_id}'
+                f'/course/{subject.subject_id}',
+                is_subscribed
             )
 
     # region: Functions
@@ -34,10 +37,13 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             if status == 'Записанные':
                 values = st_db.get_student_subjects(e.page.session.get('username'), e.page.session.get('user_id'))
                 for first_name, enrollment, subject_name, subject_description, subject_id in values:
+                    is_subscribed = st_db.check_student_subscribe(page.session.get('user_id'), subject_id)
+                    print(is_subscribed)
                     subject_add(
                         f"Имя курса: {subject_name}",
                         f"Описание: {subject_description}",
-                        f'/course/{subject_id}'
+                        f'/course/{subject_id}',
+                        is_subscribed
                     )
                     e.page.update()
             else:
@@ -54,7 +60,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         # tasks.controls.append()
         # tasks.update()
 
-    def subject_add(subject_name: str, subject_description: str, subject_url: str) -> None:
+    def subject_add(subject_name: str, subject_description: str, subject_url: str, is_subscribed=False) -> None:
         course_title = ft.Text()
         course_title.value = subject_name
 
@@ -62,11 +68,17 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         course_description.value = subject_description
 
         show_course = ft.ElevatedButton('Посмотреть курс')
+        show_course.bgcolor = ft.colors.ORANGE_ACCENT
+        show_course.color = ft.colors.WHITE
         show_course.on_click = lambda e: page.go(subject_url)
 
+        subject_icon = ft.Icon(ft.icons.TASK)
+        subject_icon.color = ft.colors.GREEN if is_subscribed else ft.colors.GREY
+
         _card = ft.Card(col={"md": 12, "lg": 4})
+        _card.color = ft.colors.ORANGE_50
         _card.content = ft.Container(content=ft.Column([
-            ft.ListTile(leading=ft.Icon(ft.icons.TASK), title=course_title, subtitle=course_description),
+            ft.ListTile(leading=subject_icon, title=course_title, subtitle=course_description),
             ft.Row(alignment=ft.MainAxisAlignment.END, controls=[show_course])
         ]), width=400, padding=10)
         subjects.controls.append(_card)
@@ -74,7 +86,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     search = ft.TextField(
-        hint_text="Введите имя курса", expand=True, filled=True
+        hint_text="Введите имя курса", expand=True, filled=True, bgcolor='white', border_radius=8
     )
     search.on_submit = lambda e: search(e)
 
@@ -92,7 +104,8 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     content = ft.Column(
         [
-            ft.Row([search, ft.FloatingActionButton(icon=ft.icons.SEARCH, on_click=lambda e: search(e))]),
+            ft.Row([search, ft.FloatingActionButton(icon=ft.icons.SEARCH, on_click=lambda e: search(e),
+                                                    bgcolor=ft.colors.ORANGE_ACCENT_200)]),
             ft.Column([
                 filter,
                 subjects,
@@ -102,7 +115,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     )
 
     # Background container for color and other
-    main_container = ft.Container(bgcolor=ft.colors.AMBER_300, border_radius=8, padding=ft.padding.all(10))
+    main_container = ft.Container(bgcolor=ft.colors.ORANGE_ACCENT_100, border_radius=8, padding=ft.padding.all(10))
     main_container.content = content
     main_container.expand = True
 

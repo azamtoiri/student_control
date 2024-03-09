@@ -11,17 +11,23 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     def add_grades():
         """adding user grades"""
         for grade in sub_db.get_student_grades(page.session.get('username')):
-            add_course(f'Предмет: {grade[1]}', f"Оценка: {grade[2]}", f"Дата оценки: {grade[3].strftime('%d-%m-%Y')}")
+            add_course(f'Предмет: {grade[1]}', f"{grade[2]}", f"Дата оценки: {grade[3].strftime('%d-%m-%Y')}")
 
     def add_course(subject_title: str, grade_value: str, grade_date: str) -> None:
         """Add grade card"""
-        _grade_value = ft.Text(grade_value)
+        _grade_value = ft.Text(f'Оценка {grade_value}')
 
         _subject_title = ft.Text(subject_title)
 
         _grade_date = ft.Text(grade_date)
 
         _card = ft.Card(col={"md": 12, "lg": 4})
+        if int(grade_value) == 100:
+            _card.color = ft.colors.GREEN
+        elif int(grade_value) >= 80:
+            _card.color = ft.colors.GREEN_ACCENT_100
+        else:
+            _card.color = ft.colors.RED
         _card.content = ft.Container(content=ft.Column([
             ft.ListTile(leading=ft.Icon(ft.icons.GRADE_OUTLINED), title=_grade_value,
                         subtitle=ft.Column([_subject_title, _grade_date])),
@@ -37,7 +43,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             add_grades()
         else:
             for _grade in sub_db.get_student_grade_for_exact_subject(e.page.session.get('username'), status):
-                add_course(f'Предмет: {_grade[1]}', f"Оценка: {_grade[2]}",
+                add_course(f'Предмет: {_grade[1]}', f"{_grade[2]}",
                            f"Дата оценки: {_grade[3].strftime('%d-%m-%Y')}")
         e.page.update()
 
