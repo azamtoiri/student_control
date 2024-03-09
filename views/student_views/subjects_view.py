@@ -17,7 +17,6 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
         for subject in all_subjects:
             is_subscribed = st_db.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
-            print(is_subscribed)
             subject_add(
                 f'Имя курса: {subject.subject_name}',
                 f'Описание: {subject.description}',
@@ -38,7 +37,6 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 values = st_db.get_student_subjects(e.page.session.get('username'), e.page.session.get('user_id'))
                 for first_name, enrollment, subject_name, subject_description, subject_id in values:
                     is_subscribed = st_db.check_student_subscribe(page.session.get('user_id'), subject_id)
-                    print(is_subscribed)
                     subject_add(
                         f"Имя курса: {subject_name}",
                         f"Описание: {subject_description}",
@@ -55,10 +53,23 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             dont_have_subjects.visible = True
             e.page.update()
 
-    def search(e):
-        ...
-        # tasks.controls.append()
-        # tasks.update()
+    def search(e: ft.ControlEvent):
+        subjects.controls.clear()
+        search_value = str(search_field.value).strip() if len(search_field.value) else None
+        if search_value is None:
+            add_all_subjects()
+            e.page.update()
+            return
+        filtered_subjects = st_db.filter_subjects_by_name(str(search_field.value).strip())
+        for subject in filtered_subjects:
+            is_subscribed = st_db.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
+            subject_add(
+                f"Имя курса: {subject.subject_name}",
+                f'Описание: {subject.description}',
+                f'/course/{subject.subject_id}',
+                is_subscribed=is_subscribed,
+            )
+        e.page.update()
 
     def subject_add(subject_name: str, subject_description: str, subject_url: str, is_subscribed=False) -> None:
         course_title = ft.Text()
@@ -85,10 +96,10 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # endregion
 
-    search = ft.TextField(
+    search_field = ft.TextField(
         hint_text="Введите имя курса", expand=True, filled=True, bgcolor='white', border_radius=8
     )
-    search.on_submit = lambda e: search(e)
+    search_field.on_submit = lambda e: search(e)
 
     subjects = ft.ResponsiveRow()
     dont_have_subjects = ft.Text('У вас нет записанных курсов', size=20, color=ft.colors.WHITE)
@@ -104,8 +115,8 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     content = ft.Column(
         [
-            ft.Row([search, ft.FloatingActionButton(icon=ft.icons.SEARCH, on_click=lambda e: search(e),
-                                                    bgcolor=ft.colors.ORANGE_ACCENT_200)]),
+            ft.Row([search_field, ft.FloatingActionButton(icon=ft.icons.SEARCH, on_click=lambda e: search(e),
+                                                          bgcolor=ft.colors.ORANGE_ACCENT_200)]),
             ft.Column([
                 filter,
                 subjects,

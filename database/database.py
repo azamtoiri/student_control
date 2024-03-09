@@ -138,6 +138,9 @@ class StudentDatabase(BaseDataBase):
     def get_all_subjects(self) -> list[Type[Subjects]]:
         return self.session.query(Subjects).all()
 
+    def get_subject(self, subject_id) -> Type[Subjects]:
+        return self.session.query(Subjects).filter(Subjects.subject_id == subject_id).first()
+
     def get_student_subjects(self, username, user_id=None) -> list:
         """if not giv user_id getting from db"""
         if not user_id:
@@ -241,7 +244,7 @@ class StudentDatabase(BaseDataBase):
         except Exception:
             return True
 
-    def filter_subjects_by_name(self, subject_name) -> list[Subjects]:
+    def filter_subjects_by_name(self, subject_name) -> list[Type[Subjects]]:
         """Для поиска предмета по имени"""
         return self.session.query(Subjects).filter(Subjects.subject_name.ilike(f'%{subject_name}%')).all()
 
