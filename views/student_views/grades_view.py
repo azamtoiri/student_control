@@ -2,7 +2,7 @@ import flet as ft
 from flet_route import Params, Basket
 
 from database.database import StudentDatabase
-from utils.exceptions import DontHaveGrades
+from utils.exceptions import DontHaveGrades, UserDontHaveGrade
 
 sub_db = StudentDatabase()
 
@@ -37,14 +37,20 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     def tabs_changed(e: ft.ControlEvent) -> None:
         """Function for filtering in filter tab"""
+        no_grades.visible = False
         status = filter_tab.tabs[filter_tab.selected_index].text
         grades.controls.clear()
         if status == 'Все':
             add_grades()
         else:
-            for _grade in sub_db.get_student_grade_for_exact_subject(e.page.session.get('username'), status):
-                add_course(f'Предмет: {_grade[1]}', f"{_grade[2]}",
-                           f"Дата оценки: {_grade[3].strftime('%d-%m-%Y')}")
+            try:
+                for _grade in sub_db.get_student_grade_for_exact_subject(e.page.session.get('username'), status):
+                    add_course(f'Предмет: {_grade[1]}', f"{_grade[2]}",
+                               f"Дата оценки: {_grade[3].strftime('%d-%m-%Y')}")
+            except UserDontHaveGrade:
+                no_grades.value = 'Нет оценок по этому предмету'
+                no_grades.visible = True
+                e.page.update()
         e.page.update()
 
     # the row that contains all grade controls on this page
@@ -63,6 +69,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         for subject in subjects:
             tabs.append(ft.Tab(str(subject.subject_name)))
     except DontHaveGrades as ex:
+        no_grades.value = 'У вас нет оценок'
         no_grades.visible = True
         page.update()
 

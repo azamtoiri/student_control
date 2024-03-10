@@ -6,7 +6,8 @@ from sqlalchemy.orm import sessionmaker
 from constants import Connection
 from constants import UserDefaults
 from database.models import Base, Users, Subjects, Task, Enrollments, Grades
-from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed
+from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed, \
+    UserDontHaveGrade
 from utils.jwt_hash import verify, hash_
 
 
@@ -183,6 +184,8 @@ class StudentDatabase(BaseDataBase):
         ).where(
             Subjects.subject_name == sub_name
         ).all()
+        if not values:
+            raise UserDontHaveGrade
         for value in values:
             yield value
 

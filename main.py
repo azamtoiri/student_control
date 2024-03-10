@@ -25,8 +25,8 @@ def ViewNotFound(page: ft.Page, params, basket):
 
 def main(page: ft.Page):
     page.title = 'Student Control'
-    page.window_min_width = 700
-    page.window_min_height = 900
+    # page.window_min_width = 700
+    # page.window_min_height = 900
     page.theme_mode = 'light'
 
     route = Routing(page=page, app_routes=all_routes, not_found_view=ViewNotFound)
@@ -36,7 +36,7 @@ def main(page: ft.Page):
     page.session.set('username', 'admin')
     page.session.set('user_id', 1)
     page.session.set('is_auth', True)
-    page.go('/')
+    page.go('/student/main')
 
 
 ft.app(target=main)

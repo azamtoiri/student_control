@@ -33,3 +33,7 @@ class DontHaveGrades(Exception):
 
 class UserAlreadySubscribed(Exception):
     ...
+
+
+class UserDontHaveGrade(Exception):
+    ...
