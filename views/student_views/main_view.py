@@ -76,6 +76,13 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # logo_image.top = 0
     # logo_image.left = 500
     # logo_image.expand = True
+    student_title = ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                              controls=[
+                                  ft.Text('Fox', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
+                                  ft.Text('Hub', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.ORANGE_ACCENT),
+                                  ft.Text('Студент', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.GREY)
+                              ]
+                              )
 
     return ft.View(
         scroll=ft.ScrollMode.AUTO,
@@ -83,7 +90,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
-            ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[logo_image]),
+            ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[logo_image, student_title]),
             ft.ResponsiveRow(
                 alignment=ft.MainAxisAlignment.CENTER,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
