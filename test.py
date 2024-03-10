@@ -1,7 +1,7 @@
 import flet as ft
 from flet_core import Control
 
-from fletrt import Router, Route, NavigationRoute
+from fletrt import Route, NavigationRoute
 
 
 class Index(NavigationRoute):
@@ -70,18 +70,13 @@ class Settings(Route):
 
 
 def main(page: ft.Page):
-    router = Router(
-        page=page,
-        routes={
-            '/': Index(),
-            '/home': Home(),
-            '/home/:content': Content(),
-            '/settings': Settings(),
-        },
-        redirect_not_found=False,
-    )
+    page.add(ft.ResponsiveRow([
+        ft.Column(col={"sm": 6}, controls=[ft.Container(col={"sm": 6, "md": 4, "xl": 2},
+                                                        content=ft.Text('Column 1'), bgcolor='white')]),
+        ft.Column(col={"sm": 6}, controls=[ft.Text("Column 2")])
+    ])
 
-    router.install()
+    )
 
 
 ft.app(target=main)
