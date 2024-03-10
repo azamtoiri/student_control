@@ -120,7 +120,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     dont_have_subjects.visible = False
 
     filter = ft.Tabs(
-        scrollable=False,
+        scrollable=True,
         selected_index=0,
         on_change=tabs_changed,
         tabs=[ft.Tab(text='Все'), ft.Tab(text='Записанные')],

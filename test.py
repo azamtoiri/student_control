@@ -73,7 +73,7 @@ def main(page: ft.Page):
     page.add(ft.ResponsiveRow([
         ft.Column(col={"sm": 6}, controls=[ft.Container(col={"sm": 6, "md": 4, "xl": 2},
                                                         content=ft.Text('Column 1'), bgcolor='white')]),
-        ft.Column(col={"sm": 6}, controls=[ft.Text("Column 2")])
+        ft.Column(col={"sm": 6}, controls=[ft.TextField()])
     ])
 
     )

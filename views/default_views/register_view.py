@@ -175,7 +175,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # region: Buttons
     register_button = ft.ElevatedButton()
     register_button.text = 'Создать аккаунт'
-    register_button.width = 400
+    register_button.width = 300
     register_button.height = 45
     register_button.icon = ft.icons.KEY
     register_button.on_click = lambda e: register_click(e)
@@ -194,28 +194,20 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     already_hav_account.color = ft.colors.with_opacity(0.5, ft.colors.BLACK)
     # endregion
 
-    fields_col = ft.Column([
-        first_name_field,
-        last_name_field,
-        middle_name_field,
-        group_field,
-        course_field,
-        age_field,
-        email_field,
-        username_field,
-        password_field,
-        password2_field
-    ])
-    fields_col.wrap = True
-    fields_col.height = 450
-
-    content = ft.Column()
-    content.scroll = ft.ScrollMode.AUTO
+    # content = ft.Column()
+    content = ft.ResponsiveRow(
+        spacing=5
+    )
     content.alignment = ft.MainAxisAlignment.CENTER
     content.controls.append(ft.Row([logo_icon]))
     content.controls.append(ft.Row([logo_text]))
     content.controls.append(ft.Row([title]))
-    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[fields_col]))
+    content.controls.append(ft.Column(col={"sm": 6}, controls=[
+        first_name_field, last_name_field, middle_name_field, group_field, age_field
+    ], horizontal_alignment=ft.CrossAxisAlignment.CENTER))
+    content.controls.append(ft.Column(col={"sm": 6}, controls=[
+        course_field, email_field, username_field, password_field, password2_field
+    ], horizontal_alignment=ft.CrossAxisAlignment.CENTER))
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[register_button]))
     content.controls.append(ft.Row(
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -235,6 +227,8 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     container.border = ft.border.all(1, ft.colors.TRANSPARENT)
 
     return ft.View(
+        scroll=ft.ScrollMode.AUTO,
+
         route='/register',
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,

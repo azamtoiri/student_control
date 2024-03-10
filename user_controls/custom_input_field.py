@@ -35,7 +35,7 @@ class CustomInputField(UserControl):
         self.error.visible = False
 
         # region: content for input box
-        self.input_box_content = TextField()
+        self.input_box_content = TextField(col={"md": 6, "lg": 4})
         self.input_box_content.hint_text = title
         self.input_box_content.hint_style = TextStyle(color=BORDER_COLOR)
         self.input_box_content.border_color = BORDER_COLOR

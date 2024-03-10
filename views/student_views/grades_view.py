@@ -68,7 +68,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # tab for filtering grades
     filter_tab = ft.Tabs(
-        scrollable=False,
+        scrollable=True,
         selected_index=0,
         on_change=tabs_changed,
         tabs=tabs
