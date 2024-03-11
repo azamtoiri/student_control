@@ -46,7 +46,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # region: Functions
     def home_click(e: ft.ControlEvent) -> None:
-        page.go(StudentRoutes.MAIN_URL)
+        page.go(StudentRoutes.HOME_URL)
 
     def courses_click(e: ft.ControlEvent) -> None:
         page.go(StudentRoutes.SUBJECTS_URL)

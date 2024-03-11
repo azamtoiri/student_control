@@ -4,3 +4,4 @@ from .home_view import HomeView
 from .main_view import MainView
 from .todo_view import TodoView
 from .tasks_view import TasksView
+from .subject_view import SubjectView

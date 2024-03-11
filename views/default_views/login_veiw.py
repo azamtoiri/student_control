@@ -1,5 +1,3 @@
-import asyncio
-
 import flet as ft
 from flet_route import Params, Basket
 
@@ -21,6 +19,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # region: Functions
     def login_click(e: ft.ControlEvent) -> None:
+        """Login user to the system."""
         username = str(username_field.input_box_content.value).strip() if len(
             username_field.input_box_content.value) else None
         password = str(password_field.input_box_content.value).strip() if len(
@@ -34,10 +33,9 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
             if user_db.is_staff(user.user_id):
                 e.page.session.set("is_staff", True)
-                e.page.route.go(BaseRoutes.TEACHER_MAIN_URL)
+                e.page.go(BaseRoutes.TEACHER_MAIN_URL)
             else:
                 e.page.go(BaseRoutes.STUDENT_MAIN_URL)
-
 
         except RequiredField as error:
             display_login_form_error(error.field, str(error))

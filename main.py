@@ -12,7 +12,7 @@ def ViewNotFound(page: ft.Page, params, basket):
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
             ft.Text(
-                "View / Page not found error 404",
+                f"View {page.route} Page not found error 404",
                 size=30,
             ),
             ft.TextButton(
@@ -36,7 +36,7 @@ def main(page: ft.Page):
     page.session.set('username', 'admin')
     page.session.set('user_id', 1)
     page.session.set('is_auth', True)
-    page.go('/login')
+    page.go('/student/subjects')
 
 
 ft.app(target=main)

@@ -15,12 +15,13 @@ class BaseRoutes:
 @dataclass
 class StudentRoutes:
     MAIN_URL = '/student/main'
-    SUBJECTS_URL = '/student/courses'
+    SUBJECTS_URL = '/student/subjects'
     GRADES_URL = '/student/grades'
     HOME_URL = '/student/home'
     TASKS_URL = '/student/tasks'
     TODO_URL = '/todo'
     SUBJECT_URL = '/subject/:id'
+    SIMPLE_SUBJECT_URL = '/subject'  # without id for adding new subject
 
 
 @dataclass

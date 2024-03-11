@@ -46,7 +46,7 @@ def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         page.go(TeacherRoutes.HOME_URL)
 
     def courses_click(e: ft.ControlEvent) -> None:
-        page.go(TeacherRoutes.COURSES_URL)
+        page.go(TeacherRoutes.SUBJECTS_URL)
 
     def grades_click(e: ft.ControlEvent) -> None:
         page.go(TeacherRoutes.GRADES_URL)

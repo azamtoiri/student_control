@@ -21,7 +21,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             subject_add(
                 f'Имя курса: {subject.subject_name}',
                 f'Описание: {subject.description}',
-                f'/course/{subject.subject_id}',
+                f'{StudentRoutes.SIMPLE_SUBJECT_URL}/{subject.subject_id}',
                 is_subscribed
             )
 
@@ -41,7 +41,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                     subject_add(
                         f"Имя курса: {subject_name}",
                         f"Описание: {subject_description}",
-                        f'/course/{subject_id}',
+                        f'/subject/{subject_id}',
                         is_subscribed
                     )
                     e.page.update()
