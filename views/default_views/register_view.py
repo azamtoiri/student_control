@@ -173,7 +173,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     # region: Buttons
-    register_button = ft.ElevatedButton()
+    register_button = ft.ElevatedButton(adaptive=True)
     register_button.text = 'Создать аккаунт'
     register_button.width = 300
     register_button.height = 45

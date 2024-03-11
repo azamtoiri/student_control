@@ -4,8 +4,6 @@ from flet_route import Params, Basket
 
 def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # region: Functions
-    def set_username(username: str) -> None:
-        username_text.value = username
 
     # endregion
 
@@ -17,7 +15,7 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     user_avatar = ft.Container(padding=ft.padding.all(10), bgcolor='grey', border_radius=150)
     user_avatar.content = _user_avatar
 
-    username_text = ft.Text(size=40, color='black')
+    username_text = ft.Text(size=40, color='black', value=f'{page.session.get("username")}')
 
     content = ft.Column([
         ft.Row(alignment=ft.MainAxisAlignment.CENTER,
@@ -40,6 +38,10 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     main_container = ft.Container(bgcolor='white', border_radius=8, padding=ft.padding.all(10))
     main_container.content = content
     main_container.expand = True
+    main_container.border_radius = 8
+    main_container.shadow = ft.BoxShadow(
+        color='grey', offset=ft.Offset(1, 2), blur_radius=10,
+    )
 
     return ft.View(
         route='/student/home',

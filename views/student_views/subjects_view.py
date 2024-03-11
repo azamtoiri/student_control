@@ -109,7 +109,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     search_field = ft.TextField(
-        hint_text="Введите имя курса", expand=True, filled=True, bgcolor='white', border_radius=8
+        hint_text="Введите имя курса", expand=True, filled=True, bgcolor='white', border_radius=8, adaptive=True
     )
     search_field.on_submit = lambda e: search(e)
     search_field.on_focus = lambda e: on_focus_search_field(e)

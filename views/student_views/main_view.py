@@ -34,6 +34,9 @@ class Containers:
         )
 
 
+dlg = ft.AlertDialog(modal=True, adaptive=True, actions_alignment=ft.MainAxisAlignment.CENTER)
+
+
 def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     #
     # Button
@@ -56,9 +59,27 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     def tasks_click(e: ft.ControlEvent) -> None:
         page.go('/student/tasks')
 
-    def exit_click(e: ft.ControlEvent) -> None:
+    def close_dlg(e: ft.ControlEvent) -> None:
+        dlg.open = False
+        e.page.update()
+
+    def yes_click(e: ft.ControlEvent) -> None:
+        page.session.set('is_auth', False)
         page.session.clear()
         page.go('/')
+        close_dlg(e)
+
+    def exit_click(e: ft.ControlEvent) -> None:
+        dlg.title = ft.Text('Подтвердите действие')
+        dlg.content = ft.Text('Вы точно хотите выйти?')
+        dlg.actions = [
+            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_), bgcolor=ft.colors.GREEN, color=ft.colors.WHITE,
+                              ),
+            ft.ElevatedButton('Нет', on_click=lambda e_: close_dlg(e_), bgcolor=ft.colors.GREY, color=ft.colors.WHITE)
+        ]
+        e.page.dialog = dlg
+        dlg.open = True
+        e.page.update()
 
     # endregion
 

@@ -79,6 +79,7 @@ class STAppBar(AppBar):
             PopupMenuItem(),
             PopupMenuItem(text='Настройки'),
         ]
+        self.adaptive = True
 
         self.appbar_actions = Container(
             content=PopupMenuButton(
@@ -98,12 +99,11 @@ class STAppBar(AppBar):
             Text('Hub', size=20)
         ]
 
-        self.dlg = ft.AlertDialog(modal=True, actions=[
-            ft.ElevatedButton('Да', on_click=lambda e: self.yes_click(e), bgcolor=ft.colors.GREY,
-                              color=ft.colors.WHITE, ),
-            ft.ElevatedButton('Нет', on_click=lambda e: self.close_dlg(e), bgcolor=ft.colors.GREEN,
-                              color=ft.colors.WHITE,
-                              height=40),
+        self.dlg = ft.AlertDialog(modal=True, adaptive=True, actions=[
+            ft.ElevatedButton('Да', on_click=lambda e: self.yes_click(e), bgcolor=ft.colors.GREEN,
+                              color=ft.colors.WHITE),
+            ft.ElevatedButton('Нет', on_click=lambda e: self.close_dlg(e), bgcolor=ft.colors.GREY,
+                              color=ft.colors.WHITE),
         ],
                                   actions_alignment=ft.MainAxisAlignment.CENTER)
         self.title = self.appbar_title

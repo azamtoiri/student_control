@@ -6,7 +6,7 @@ from user_controls.subject_description import SubjectDescription
 
 sub_db = StudentDatabase()
 
-dlg = ft.AlertDialog()
+dlg = ft.AlertDialog(adaptive=True)
 
 
 def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
