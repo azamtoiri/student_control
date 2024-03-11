@@ -1,5 +1,6 @@
 import flet as ft
 from flet_core import Control
+import flet_fastapi as ff
 
 from fletrt import Route, NavigationRoute
 
@@ -69,14 +70,13 @@ class Settings(Route):
         return view
 
 
-def main(page: ft.Page):
-    page.add(ft.ResponsiveRow([
+async def main(page: ft.Page):
+    await page.add_async(ft.ResponsiveRow([
         ft.Column(col={"sm": 6}, controls=[ft.Container(col={"sm": 6, "md": 4, "xl": 2},
                                                         content=ft.Text('Column 1'), bgcolor='white')]),
         ft.Column(col={"sm": 6}, controls=[ft.TextField()])
     ])
-
     )
 
 
-ft.app(target=main)
+app = ff.app(main)

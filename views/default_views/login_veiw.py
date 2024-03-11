@@ -12,15 +12,15 @@ user_db = UserDatabase()
 
 
 def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
-    def display_login_form_error(field: str, message: str) -> None:
+    async def display_login_form_error(field: str, message: str) -> None:
         fields = {'username': username_field, 'password': password_field}
         if field in fields.keys():
             # fields[field].input_box_content.error_text = message
             asyncio.run(fields[field].set_fail(message))
-            page.update()
+            await page.update_async()
 
     # region: Functions
-    def login_click(e: ft.ControlEvent) -> None:
+    async def login_click(e: ft.ControlEvent) -> None:
         username = str(username_field.input_box_content.value).strip() if len(
             username_field.input_box_content.value) else None
         password = str(password_field.input_box_content.value).strip() if len(
@@ -34,23 +34,21 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
             if user_db.is_staff(user.user_id):
                 e.page.session.set("is_staff", True)
-                page.route = '/teacher/main'
-                page.update()
+                await e.page.go_async('/teacher/main')
             else:
                 e.page.route = '/student/main'
-                page.update()
+                await page.update_async()
 
         except RequiredField as error:
-            display_login_form_error(error.field, str(error))
+            await display_login_form_error(error.field, str(error))
         except NotRegistered as error:
-            display_login_form_error('username', str(error))
+            await display_login_form_error('username', str(error))
 
         # page.route = '/student/main'
-        # page.update()
+        # page.update_async()
 
-    def register_click(e: ft.ControlEvent) -> None:
-        e.page.go('/register')
-        e.page.update()
+    async def register_click(e: ft.ControlEvent) -> None:
+        await e.page.go_async('/register')
 
     # endregion
 
@@ -77,9 +75,9 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     title.expand = True
 
     username_field = CustomInputField(False, 'Имя пользователя')
-    username_field.input_box_content.on_submit = lambda e: login_click(e)
+    username_field.input_box_content.on_submit = login_click
     password_field = CustomInputField(True, 'Пароль')
-    password_field.input_box_content.on_submit = lambda e: login_click(e)
+    password_field.input_box_content.on_submit = login_click
     # endregion
 
     # region: Buttons
@@ -89,7 +87,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     login_button.width = 400
     login_button.height = 45
     login_button.expand = True
-    login_button.on_click = lambda e: login_click(e)
+    login_button.on_click = login_click
 
     create_account_button = ft.Container()
     create_account_button.content = ft.Text(
@@ -97,7 +95,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     create_account_button.alignment = ft.alignment.center
     create_account_button.width = 150
     create_account_button.height = 45
-    create_account_button.on_click = lambda e: register_click(e)
+    create_account_button.on_click = register_click
     # endregion
 
     # region: Texts

@@ -28,17 +28,20 @@ def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # welcome_text.color = ft.colors.with_opacity(1, "White")
     welcome_text.expand = True
 
-    login_button = ft.ElevatedButton()
-    login_button.text = 'Войти'
-    login_button.icon = ft.icons.LOGIN
-    login_button.expand = True
-    login_button.on_click = lambda _: page.go('/login')  # handler
+    async def go_to_login(e: ft.ControlEvent):
+        await page.go_async('/login')
+
+    async def go_to_register(e: ft.ControlEvent):
+        await page.go_async('/register')
+
+    login_button = ft.ElevatedButton(text='Войти', icon=ft.icons.LOGIN, expand=True)
+    login_button.on_click = go_to_login
 
     register_button = ft.ElevatedButton()
     register_button.text = 'Регистрация'
     register_button.icon = ft.icons.APP_REGISTRATION
     register_button.expand = True
-    register_button.on_click = lambda _: page.go('/register')  # handler
+    register_button.on_click = go_to_register
 
     content = ft.Column()
     content.width = 400

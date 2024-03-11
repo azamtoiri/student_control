@@ -97,11 +97,11 @@ class CustomInputField(UserControl):
     async def set_ok(self) -> None:
         """does not work yet"""
         self.loader.value = 0
-        self.loader.update()
+        await self.loader.update_async()
 
         self.status.offset = Offset(-0.5, 0)
         self.status.opacity = 1
-        self.update()
+        await self.update_async()
         await asyncio.sleep(1)
 
         self.status.content.value = True
@@ -110,23 +110,23 @@ class CustomInputField(UserControl):
 
     async def set_fail(self, message: Optional[str] = "Error") -> None:
         self.loader.value = 0
-        self.loader.update()
+        await self.loader.update_async()
 
         self.input_box_content.error_text = message
-        self.input_box_content.update()
+        await self.input_box_content.update_async()
         await asyncio.sleep(1)
-        self.update()
+        await self.update_async()
 
-    def set_loader_animation(self, e) -> None:
+    async def set_loader_animation(self, e) -> None:
         # function starts the loader if the text field lengths ore not 0
         if len(self.input_box.content.value) != 0:
             self.loader.value = None
         else:
             self.loader.value = 0
 
-        self.loader.update()
+        await self.loader.update_async()
 
-    def focus_shadow(self, e) -> None:
+    async def focus_shadow(self, e) -> None:
         """Focus shadow when focusing"""
         self.error.visible = False
         # self.input_box.content.border_color = BORDER_COLOR
@@ -138,14 +138,14 @@ class CustomInputField(UserControl):
             color=colors.with_opacity(0.25, BORDER_COLOR),
             offset=Offset(4, 4)
         )
-        self.update()
-        self.set_loader_animation(e=None)
+        await self.update_async()
+        await self.set_loader_animation(e=None)
 
-    def blur_shadow(self, e):
+    async def blur_shadow(self, e):
         """ Blur when the textfield loses focus"""
         self.input_box.shadow = None
-        self.update()
-        self.set_loader_animation(e=None)
+        await self.update_async()
+        await self.set_loader_animation(e=None)
 
     def build(self):
         return self.object

@@ -109,20 +109,20 @@ class STAppBar(AppBar):
         self.title = self.appbar_title
         self.actions = [self.appbar_actions]
 
-    def close_dlg(self, e: ft.ControlEvent):
+    async def close_dlg(self, e: ft.ControlEvent):
         self.dlg.open = False
-        e.control.page.update()
+        await e.control.page.update_async()
 
-    def yes_click(self, e: ft.ControlEvent):
+    async def yes_click(self, e: ft.ControlEvent):
         e.page.route = '/'
         e.page.session.clear()
-        e.page.update()
-        self.close_dlg(e)
+        await e.page.update_async()
+        await self.close_dlg(e)
         self.page.session.clear()
 
-    def log_out(self, e: ft.ControlEvent) -> None:
+    async def log_out(self, e: ft.ControlEvent) -> None:
         self.dlg.title = ft.Text('Подтвердите действие')
         self.dlg.content = ft.Text('Вы точно хотите выйти?')
         e.page.dialog = self.dlg
         self.dlg.open = True
-        e.page.update()
+        await e.page.update_async()

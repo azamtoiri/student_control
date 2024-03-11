@@ -17,18 +17,18 @@ all_routes = [
     # endregion
 
     # region: student views
-    path('/student/main', clear=True, view=MainView),
-    path('/student/courses', clear=False, view=SubjectsView),
-    path('/student/grades', clear=False, view=GradesView),
-    path('/student/home', clear=False, view=HomeView),
-    path('/todo', clear=False, view=TodoView),
-    path('/student/tasks', clear=False, view=TasksView),
+    # path('/student/main', clear=True, view=MainView),
+    # path('/student/courses', clear=False, view=SubjectsView),
+    # path('/student/grades', clear=False, view=GradesView),
+    # path('/student/home', clear=False, view=HomeView),
+    # path('/todo', clear=False, view=TodoView),
+    # path('/student/tasks', clear=False, view=TasksView),
 
-    path(url='/course/:id', clear=False, view=SubjectView),
+    # path(url='/course/:id', clear=False, view=SubjectView),
     # endregion
 
     # region: teacher views
-    path('/teacher/main', clear=False, view=TeacherMainView),
+    # path('/teacher/main', clear=False, view=TeacherMainView),
 
     # endregion
 
@@ -37,5 +37,5 @@ all_routes = [
     # endregion
 
     # not registred
-    path('/not-registered', clear=False, view=NotRegistered),
+    # path('/not-registered', clear=False, view=NotRegistered),
 ]

@@ -8,7 +8,7 @@ sub_db = StudentDatabase()
 
 
 def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
-    def add_grades():
+    async def add_grades():
         """adding user grades"""
         for grade in sub_db.get_student_grades(page.session.get('username')):
             add_grade(f'Предмет: {grade[1]}', f"{grade[2]}", f"Дата оценки: {grade[3].strftime('%d-%m-%Y')}")
@@ -35,7 +35,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         ]), width=400, padding=10)
         grades.controls.append(_card)
 
-    def tabs_changed(e: ft.ControlEvent) -> None:
+    async def tabs_changed(e: ft.ControlEvent) -> None:
         """Function for filtering in filter tab"""
         no_grades.visible = False
         status = filter_tab.tabs[filter_tab.selected_index].text
@@ -50,8 +50,8 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             except UserDontHaveGrade:
                 no_grades.value = 'Нет оценок по этому предмету'
                 no_grades.visible = True
-                e.page.update()
-        e.page.update()
+                await e.page.update_async()
+        await e.page.update_async()
 
     # the row that contains all grade controls on this page
     grades = ft.ResponsiveRow()
@@ -71,7 +71,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     except DontHaveGrades as ex:
         no_grades.value = 'У вас нет оценок'
         no_grades.visible = True
-        page.update()
+        page.update_async()
 
     # tab for filtering grades
     filter_tab = ft.Tabs(
