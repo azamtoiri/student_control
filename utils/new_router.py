@@ -187,6 +187,8 @@ class Routing:
         self.page.update()
 
     def view_pop(self, view):
+        if len(self.page.views) == 1:
+            return
         self.page.views.pop()
         top_view = self.page.views[-1]
         self.page.go(top_view.route)
