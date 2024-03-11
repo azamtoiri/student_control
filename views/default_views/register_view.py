@@ -34,7 +34,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         }
         if field in fields.keys():
             # fields[field].input_box_content.error_text = message
-            asyncio.run(fields[field].set_fail(message))
+            await fields[field].set_fail(message)
             await page.update_async()
 
     async def display_success_banner(message: str) -> None:
@@ -45,7 +45,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     async def hide_banner() -> None:
         if page.banner is not None:
             page.banner.open = False
-            await  page.update_async()
+            await page.update_async()
 
     async def login_click(e: ft.ControlEvent) -> None:
         e.page.route = '/login'
@@ -178,7 +178,11 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     register_button.width = 300
     register_button.height = 45
     register_button.icon = ft.icons.KEY
-    register_button.on_click = lambda e: register_click(e)
+
+    async def register_clickk(e: ft.ControlEvent) -> None:
+        await register_click(e)
+
+    register_button.on_click = register_clickk
 
     login_button = ft.Container()
     login_button.alignment = ft.alignment.center

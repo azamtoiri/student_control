@@ -16,7 +16,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         fields = {'username': username_field, 'password': password_field}
         if field in fields.keys():
             # fields[field].input_box_content.error_text = message
-            asyncio.run(fields[field].set_fail(message))
+            await fields[field].set_fail(message)
             await page.update_async()
 
     # region: Functions
