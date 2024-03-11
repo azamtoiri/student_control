@@ -1,6 +1,8 @@
 import flet as ft
 from flet_route import Params, Basket
 
+from utils.routes_url import StudentRoutes
+
 
 def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # region: Functions
@@ -44,6 +46,6 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     )
 
     return ft.View(
-        route='/student/home',
+        route=StudentRoutes.HOME_URL,
         controls=[main_container]
     )

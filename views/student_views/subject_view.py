@@ -3,6 +3,7 @@ from flet_route import Params, Basket
 
 from database.database import StudentDatabase
 from user_controls.subject_description import SubjectDescription
+from utils.routes_url import StudentRoutes
 
 sub_db = StudentDatabase()
 
@@ -104,7 +105,7 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     return ft.View(
         scroll=ft.ScrollMode.AUTO,
-        route='/course/:id',
+        route=StudentRoutes.SUBJECT_URL,
         controls=[
             content,
         ]

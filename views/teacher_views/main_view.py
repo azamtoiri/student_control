@@ -3,6 +3,7 @@ from flet_route import Params, Basket
 
 from constants import LOGO_PATH
 from user_controls.student_container import STContainer
+from utils.routes_url import TeacherRoutes, BaseRoutes
 
 
 class TeacherContainers:
@@ -42,23 +43,23 @@ def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # region: Functions
     def home_click(e: ft.ControlEvent) -> None:
-        page.go('/teacher/home')
+        page.go(TeacherRoutes.HOME_URL)
 
     def courses_click(e: ft.ControlEvent) -> None:
-        page.go('/teacher/my-courses')
+        page.go(TeacherRoutes.COURSES_URL)
 
     def grades_click(e: ft.ControlEvent) -> None:
-        page.go('/teacher/set-grades')
+        page.go(TeacherRoutes.GRADES_URL)
 
     def profile_click(e: ft.ControlEvent) -> None:
-        page.go('/todo')
+        page.go(BaseRoutes.TODO_URL)
 
     def tasks_click(e: ft.ControlEvent) -> None:
-        page.go('/teacher/subjects-tasks')
+        page.go(TeacherRoutes.TASKS_URL)
 
     def exit_click(e: ft.ControlEvent) -> None:
         page.session.clear()
-        page.go('/')
+        page.go(BaseRoutes.INDEX_URL)
 
     # endregion
 
@@ -77,16 +78,17 @@ def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # logo_image.left = 500
     # logo_image.expand = True
 
-    teacher_title = ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-    controls = [
-        ft.Text('Fox', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-        ft.Text('Hub', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.ORANGE_ACCENT),
-        ft.Text('Преподаватель', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.GREY)
-    ]
+    teacher_title = ft.Column(
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            ft.Text('Fox', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
+            ft.Text('Hub', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.ORANGE_ACCENT),
+            ft.Text('Преподаватель', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.GREY)
+        ]
     )
 
     return ft.View(
-        route='/teacher/main',
+        route=TeacherRoutes.MAIN_URL,
         controls=[
             ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[logo_image, teacher_title]),
             ft.ResponsiveRow(

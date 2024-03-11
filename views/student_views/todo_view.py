@@ -3,6 +3,7 @@ from flet_route import Params, Basket
 
 from database.database import TaskDatabase, UserDatabase
 from database.models import Task as TaskDB
+from utils.routes_url import StudentRoutes
 
 
 # TODO: bind to DB
@@ -203,6 +204,6 @@ def TodoView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         # vertical_alignment=ft.MainAxisAlignment.CENTER,
         scroll=ft.ScrollMode.AUTO,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        route='/todo',
+        route=StudentRoutes.TODO_URL,
         controls=[app]
     )

@@ -3,6 +3,7 @@ from flet_route import Params, Basket
 
 from database.database import StudentDatabase
 from utils.exceptions import DontHaveGrades
+from utils.routes_url import StudentRoutes
 
 st_db = StudentDatabase()
 
@@ -149,7 +150,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     return ft.View(
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        route='/student/courses',
+        route=StudentRoutes.SUBJECTS_URL,
         controls=[
             main_container
         ]

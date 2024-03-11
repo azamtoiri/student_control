@@ -2,61 +2,7 @@ import flet as ft
 from flet import *
 
 from constants import LOGO_PATH
-
-
-class StudentAppBar(ft.UserControl):
-    def __init__(self):
-        super().__init__()
-        self.app_bar = ft.AppBar()
-        self.app_bar.center_title = False
-        self.app_bar.leading_width = 100
-        self.app_bar.toolbar_height = 80
-        self.app_bar.bgcolor = ft.colors.ORANGE_ACCENT
-
-        self.back_button = ft.IconButton(ft.icons.ARROW_BACK_IOS_NEW)
-        self.back_button.on_click = lambda e: self.show_student_nav_view(e)
-
-        self.log_out_button = ft.PopupMenuItem(text='Выход')
-        self.log_out_button.on_click = lambda e: self.exit(e)
-        self.app_bar_items = [
-            self.log_out_button,
-            ft.PopupMenuItem(),
-            ft.PopupMenuItem(text='Настройки')
-        ]
-
-        self.app_bar_actions = ft.Container(
-            content=ft.PopupMenuButton(items=self.app_bar_items),
-            margin=ft.margin.only(left=50, right=25),
-        )
-
-        self.app_bar_title = ft.Row()
-
-        self.appbar_title = ft.Row()
-        self.appbar_title.alignment = ft.MainAxisAlignment.START
-        self.appbar_title.spacing = 0
-        self.appbar_title.controls = [
-            self.back_button,
-            ft.Container(width=10),
-            ft.Image(LOGO_PATH, width=70, height=70),
-            ft.Container(width=10),
-            ft.Text('SDF', size=20, weight=ft.FontWeight.BOLD),
-            ft.Text('Hub', size=20)
-        ]
-        self.title = self.appbar_title
-        self.app_bar.actions = [self.app_bar_actions]
-
-    def build(self):
-        return ft.AppBar(
-            title=self.appbar_title,
-        )
-
-    def show_student_nav_view(self, e) -> None:
-        self.page.go('/student/main')
-
-    def exit(self, e) -> None:
-        self.page.session.set('is_auth', False)
-        self.page.session.clear()
-        self.page.go('/welcome')
+from utils.routes_url import BaseRoutes
 
 
 class STAppBar(AppBar):
@@ -114,7 +60,7 @@ class STAppBar(AppBar):
         e.control.page.update()
 
     def yes_click(self, e: ft.ControlEvent):
-        e.page.route = '/'
+        e.page.route = BaseRoutes.INDEX_URL
         e.page.session.clear()
         e.page.update()
         self.close_dlg(e)

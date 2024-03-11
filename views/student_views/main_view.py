@@ -3,6 +3,7 @@ from flet_route import Params, Basket
 
 from constants import LOGO_PATH
 from user_controls.student_container import STContainer
+from utils.routes_url import StudentRoutes, BaseRoutes
 
 
 class Containers:
@@ -45,19 +46,19 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # region: Functions
     def home_click(e: ft.ControlEvent) -> None:
-        page.go('/student/home')
+        page.go(StudentRoutes.MAIN_URL)
 
     def courses_click(e: ft.ControlEvent) -> None:
-        page.go('/student/courses')
+        page.go(StudentRoutes.SUBJECTS_URL)
 
     def grades_click(e: ft.ControlEvent) -> None:
-        page.go('/student/grades')
+        page.go(StudentRoutes.GRADES_URL)
 
-    def profile_click(e: ft.ControlEvent) -> None:
-        page.go('/todo')
+    def to_do_click(e: ft.ControlEvent) -> None:
+        page.go(StudentRoutes.TODO_URL)
 
     def tasks_click(e: ft.ControlEvent) -> None:
-        page.go('/student/tasks')
+        page.go(StudentRoutes.TASKS_URL)
 
     def close_dlg(e: ft.ControlEvent) -> None:
         dlg.open = False
@@ -66,7 +67,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     def yes_click(e: ft.ControlEvent) -> None:
         page.session.set('is_auth', False)
         page.session.clear()
-        page.go('/')
+        page.go(BaseRoutes.INDEX_URL)
         close_dlg(e)
 
     def exit_click(e: ft.ControlEvent) -> None:
@@ -87,7 +88,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     containers.home_container.main_container.on_click = lambda e: home_click(e)
     containers.grades_container.main_container.on_click = lambda e: grades_click(e)
     containers.tasks_container.main_container.on_click = lambda e: tasks_click(e)
-    containers.to_do.main_container.on_click = lambda e: profile_click(e)
+    containers.to_do.main_container.on_click = lambda e: to_do_click(e)
     containers.courses_container.main_container.on_click = lambda e: courses_click(e)
     containers.exit_container.main_container.on_click = lambda e: exit_click(e)
 
@@ -107,7 +108,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     return ft.View(
         scroll=ft.ScrollMode.AUTO,
-        route='/student/main',
+        route=StudentRoutes.MAIN_URL,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[

@@ -2,11 +2,10 @@ import flet as ft
 from flet_route import Params, Basket
 
 from constants import LOGO_PATH
+from utils.routes_url import BaseRoutes
 
 
 def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
-    route = "/welcome"
-
     logo_image = ft.Image(src=LOGO_PATH)
     logo_image.width = 100
     logo_image.height = 100
@@ -32,13 +31,13 @@ def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     login_button.text = 'Войти'
     login_button.icon = ft.icons.LOGIN
     login_button.expand = True
-    login_button.on_click = lambda _: page.go('/login')  # handler
+    login_button.on_click = lambda _: page.go(BaseRoutes.LOGIN_URL)  # handler
 
     register_button = ft.ElevatedButton()
     register_button.text = 'Регистрация'
     register_button.icon = ft.icons.APP_REGISTRATION
     register_button.expand = True
-    register_button.on_click = lambda _: page.go('/register')  # handler
+    register_button.on_click = lambda _: page.go(BaseRoutes.REGISTER_URL)  # handler
 
     content = ft.Column()
     content.width = 400
@@ -61,6 +60,6 @@ def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     return ft.View(
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        route='/',
+        route=BaseRoutes.INDEX_URL,
         controls=[container]
     )

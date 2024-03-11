@@ -1,4 +1,4 @@
-import asyncio
+import time
 from typing import Optional
 
 import flet_material as fm
@@ -94,7 +94,7 @@ class CustomInputField(UserControl):
         self.obj.spacing = 5
         self.object = self.obj
 
-    async def set_ok(self) -> None:
+    def set_ok(self) -> None:
         """does not work yet"""
         self.loader.value = 0
         self.loader.update()
@@ -102,19 +102,19 @@ class CustomInputField(UserControl):
         self.status.offset = Offset(-0.5, 0)
         self.status.opacity = 1
         self.update()
-        await asyncio.sleep(1)
+        time.sleep(1)
 
         self.status.content.value = True
         self.status.animate_checkbox(e=None)
         self.status.update()
 
-    async def set_fail(self, message: Optional[str] = "Error") -> None:
+    def set_fail(self, message: Optional[str] = "Error") -> None:
         self.loader.value = 0
         self.loader.update()
 
         self.input_box_content.error_text = message
         self.input_box_content.update()
-        await asyncio.sleep(1)
+        time.sleep(1)
         self.update()
 
     def set_loader_animation(self, e) -> None:

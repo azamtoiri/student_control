@@ -5,6 +5,7 @@ import flet as ft
 from flet_route import Params, Basket
 
 from constants import LOGO_PATH
+from utils.routes_url import BaseRoutes
 from database.database import UserDatabase
 from user_controls.banners import SuccessBanner
 from user_controls.custom_input_field import CustomInputField
@@ -34,8 +35,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         }
         if field in fields.keys():
             # fields[field].input_box_content.error_text = message
-            asyncio.run(fields[field].set_fail(message))
-            page.update()
+            fields[field].set_fail(message)
 
     def display_success_banner(message: str) -> None:
         banner = SuccessBanner(page, message)
@@ -48,7 +48,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             page.update()
 
     def login_click(e: ft.ControlEvent) -> None:
-        e.page.route = '/login'
+        e.page.route = BaseRoutes.LOGIN_URL
         e.page.update()
 
     def register_click(e: ft.Container) -> None:
@@ -100,7 +100,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 username=username, password=password, group=group, course=course, age=age, email=email
             )
 
-            page.route = '/login'
+            page.route = BaseRoutes.LOGIN_URL
             page.update()
             display_success_banner('Вы были успешно зарегистрированы')
             time.sleep(2)
@@ -228,8 +228,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     return ft.View(
         scroll=ft.ScrollMode.AUTO,
-
-        route='/register',
+        route=BaseRoutes.REGISTER_URL,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[container]
