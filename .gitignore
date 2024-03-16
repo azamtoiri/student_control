@@ -6,6 +6,10 @@ tailwindcss/
 *.log
 *.pot
 *.pyc
+*.png
+*.jpg
+*.jpeg
+*.gif
 __pycache__/
 local_settings.py
 db.sqlite3
