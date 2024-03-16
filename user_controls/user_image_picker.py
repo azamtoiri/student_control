@@ -2,7 +2,7 @@ import flet as ft
 
 
 class UserImage(ft.UserControl):
-    def __init__(self, image_dir, on_click, disabled: bool = True):
+    def __init__(self, image_dir, on_click=None, disabled: bool = True):
         super().__init__()
         self.image_dir = image_dir
         self.on_click = on_click
@@ -13,7 +13,8 @@ class UserImage(ft.UserControl):
         self.display_view = ft.Stack(
             controls=[
                 ft.Image(
-                    src=self.image_dir, width=180, height=180, border_radius=50, ref=self.ft_image,
+                    src=self.image_dir, width=180, height=180, border_radius=50,
+                    ref=self.ft_image,
                     fit=ft.ImageFit.COVER
                 ),
                 ft.IconButton(
@@ -31,5 +32,6 @@ class UserImage(ft.UserControl):
         )
         return self.display_view
 
-    def change_user_image(self):
+    def change_user_image(self, image_dir):
+        self.ft_image.current.src = image_dir
         self.update()

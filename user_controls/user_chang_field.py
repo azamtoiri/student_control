@@ -2,16 +2,19 @@ import flet as ft
 
 
 class UserChangField(ft.UserControl):
-    def __init__(self, disabled: bool, value, label):
+    def __init__(self, disabled: bool, value, label: str = None, password: bool = False):
         super().__init__()
         self.disabled = disabled
         self.value = value
         self.label = label
+        self.password = password
 
     def build(self):
         self.display_value = ft.TextField(
             value=self.value, disabled=True, label=self.label, col={"md": 6},
-            expand=1
+            expand=1,
+            password=self.password,
+            can_reveal_password=True,
         )
 
         self.edit_value = ft.TextField(label=self.label, expand=1)
@@ -58,4 +61,8 @@ class UserChangField(ft.UserControl):
         self.edit_value.value = self.display_value.value
         self.display_view.visible = False
         self.edit_view.visible = True
+        self.update()
+
+    def change_value(self, new_value):
+        self.display_value.value = new_value
         self.update()
