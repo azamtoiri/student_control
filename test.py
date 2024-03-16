@@ -1,82 +1,45 @@
+import os
+import shutil
+
 import flet as ft
-from flet_core import Control
-
-from fletrt import Route, NavigationRoute
 
 
-class Index(NavigationRoute):
-    def __init__(self):
-        super().__init__()
+def main(page: ft.Page) -> None:
+    page.scroll = ft.ScrollMode.AUTO
 
-        self.destinations = [
-            '/home',
-            '/settings'
-        ]
+    def on_dialog_result(e: ft.FilePickerResultEvent) -> None:
+        print("Selected files: ", e.files)
+        upload_files(e)
 
-    def navigation_bar(self) -> ft.NavigationBar:
-        return ft.NavigationBar(
-            destinations=[
-                ft.NavigationDestination(label='Home Page', icon=ft.icons.HOME),
-                ft.NavigationDestination(label='Program Settings', icon=ft.icons.SETTINGS)
-            ]
-        )
+    ft_image = ft.Image(src='uploads')
 
+    def upload_files(e: ft.FilePickerUploadFile):
 
-class Home(Route):
-    def body(self):
-        content = ft.TextField(hint_text='Type anything...')
-        confirm = ft.ElevatedButton('Go to next page with url parameters',
-                                    on_click=lambda _: self.go('/home/' + content.value))
+        for x in MyPickFiles.result.files:
+            if os.path.exists(x.name):
+                os.remove(x.name)
+            dest = os.path.join(os.getcwd(), "uploads")
+            shutil.copy(x.path, f'{dest}')
+            ft_image.src = f'uploads/{x.name}'
 
-        return ft.Column(
-            alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            page.update()
+
+    MyPickFiles = ft.FilePicker(on_result=on_dialog_result)
+    page.overlay.append(MyPickFiles)
+    page.update()
+
+    page.add(
+        ft.Column(
+            scroll=ft.ScrollMode.AUTO,
             controls=[
-                content,
-                confirm
+                ft_image,
+                ft.ElevatedButton(
+                    'Choose files0', on_click=lambda _: MyPickFiles.pick_files()
+                ),
+                # ft.ElevatedButton("Upload", on_click=upload_files)
             ]
         )
-
-    def view(self) -> ft.View:
-        view = super().view()
-
-        view.vertical_alignment = ft.MainAxisAlignment.CENTER
-        view.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-
-        return view
-
-
-class Content(Route):
-    def body(self) -> Control:
-        return ft.Text('Content received via url: ' + self.route_params['content'])
-
-
-class Settings(Route):
-
-    def body(self):
-        return ft.Column(
-            controls=[
-                ft.Text('Settings', size=100)
-            ]
-        )
-
-    def view(self) -> ft.View:
-        view = super().view()
-
-        view.vertical_alignment = ft.MainAxisAlignment.CENTER
-        view.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-
-        return view
-
-
-def main(page: ft.Page):
-    page.add(ft.ResponsiveRow([
-        ft.Column(col={"sm": 6}, controls=[ft.Container(col={"sm": 6, "md": 4, "xl": 2},
-                                                        content=ft.Text('Column 1'), bgcolor='white')]),
-        ft.Column(col={"sm": 6}, controls=[ft.TextField()])
-    ])
-
     )
 
 
-ft.app(target=main)
+ft.app(main)
