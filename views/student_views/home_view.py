@@ -1,5 +1,4 @@
 import os
-import shutil
 
 import flet as ft
 from flet_route import Params, Basket
@@ -13,6 +12,10 @@ user_db = UserDatabase()
 
 
 def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+    # Constants
+    USER_ID = page.session.get('user_id')
+    USERNAME = page.session.get('username')
+
     # ref controls
     upload_button = ft.Ref[ft.ElevatedButton]()
     ft_image = ft.Ref[ft.Image]()
@@ -21,15 +24,17 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # endregion
 
+    user = user_db.get_user_by_id(USER_ID)
+
     # region: InputFields
-    first_name_field = UserChangField(True, value='Тест Фамилия')  # Фамилия
-    last_name_field = UserChangField(True, value='Тест Имя')  # Имя
-    middle_name_field = UserChangField(True, value='Тест Отчество')  # Отчество
-    group_field = UserChangField(True, value='Тест Группа')  # Группа
-    course_field = UserChangField(True, value='Тест Курс')  # Звание
-    age_field = UserChangField(True, value='Возраст')  # Возраст
-    email_field = UserChangField(True, value='Тест Email')  # Email
-    username_text = UserChangField(True, value=f'{page.session.get("username")}')
+    first_name_field = UserChangField(True, value=user.last_name, label='Фамилия')  # Фамилия
+    last_name_field = UserChangField(True, value=user.first_name, label='Имя')  # Имя
+    middle_name_field = UserChangField(True, value=user.middle_name, label='Отчество')  # Отчество
+    group_field = UserChangField(True, value=user.group, label='Группа')  # Группа
+    course_field = UserChangField(True, value=user.course, label='Курс')  # Звание
+    age_field = UserChangField(True, value=user.age, label='Возраст')  # Возраст
+    email_field = UserChangField(True, value=user.email, label='Email')  # Email
+    username_text = UserChangField(True, value=user.username, label='Имя пользователя')
 
     # endregion
 

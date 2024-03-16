@@ -146,17 +146,17 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # region: InputFields
     first_name_field = UserChangField(False, label="Фамилия *",
-                                      value=user.first_name)  # Фамилия
+                                      value=user.first_name, save_changes=save_changes)  # Фамилия
     last_name_field = UserChangField(False, label="Имя *",
-                                     value=user.last_name)  # Имя
+                                     value=user.last_name, save_changes=save_changes)  # Имя
     middle_name_field = UserChangField(False, label="Отчество *",
-                                       value=user.middle_name)  # Отчество
+                                       value=user.middle_name, save_changes=save_changes)  # Отчество
     group_field = UserChangField(False, label="Группа",
-                                 value=user.group)  # Группа
+                                 value=user.group, save_changes=save_changes)  # Группа
     course_field = UserChangField(False, label="Курс",
-                                  value=user.course)  # Звание
-    age_field = UserChangField(False, label="Имя",
-                               value=user.age)  # Возраст
+                                  value=user.course, save_changes=save_changes)  # Звание
+    age_field = UserChangField(False, label="Возраст",
+                               value=user.age, save_changes=save_changes)  # Возраст
     email_field = UserChangField(True, label="Email",
                                  value=user.email)  # Email
     username_field = UserChangField(disabled=True, value=f'{USERNAME}', label='Имя пользователя')
@@ -187,10 +187,12 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                   controls=[first_name_field, last_name_field, middle_name_field, age_field]),
         ft.Column(col={"sm": 12, "md": 4},
                   controls=[group_field, age_field, email_field, username_field]),
-        ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-               controls=[ft.ElevatedButton('Сохранить', on_click=lambda e: save_changes(e)),
-                         ft.ElevatedButton('Назад', on_click=lambda e: page.go(main_page_url))]),
+        ft.Row(alignment=ft.MainAxisAlignment.END,
+               controls=[
+                   ft.ElevatedButton('На главную страницу', on_click=lambda e: page.go(main_page_url))
+               ]),
     ])
+    title = ft.Text('Домашняя страница', size=40, color=ft.colors.BLACK, text_align="center")
 
     # Background container for color and other
     user_data_container = ft.Container(
@@ -208,5 +210,8 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     return ft.View(
         route=BaseRoutes.HOME_EDIT_URL,
         scroll=ft.ScrollMode.AUTO,
-        controls=[content]
+        controls=[
+            ft.Container(content=title, alignment=ft.alignment.center),
+            user_data_container
+        ]
     )

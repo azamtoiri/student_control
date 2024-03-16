@@ -1,9 +1,16 @@
+from typing import Type, Callable
+
 import flet as ft
 
 
 class UserChangField(ft.UserControl):
-    def __init__(self, disabled: bool, value, label: str = None, password: bool = False):
+    def __init__(self, disabled: bool,
+                 value,
+                 label: str = None,
+                 password: bool = False,
+                 save_changes: Type[Callable] = None):
         super().__init__()
+        self.save_changes = save_changes
         self.disabled = disabled
         self.value = value
         self.label = label
@@ -56,6 +63,7 @@ class UserChangField(ft.UserControl):
         # self.db.updated_task(self.task_id, self.edit_name.value)
         self.display_view.visible = True
         self.edit_view.visible = False
+        self.save_changes(e)
         self.update()
 
     def edit_clicked(self, e):
