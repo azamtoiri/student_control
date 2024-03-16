@@ -6,11 +6,11 @@ VALUES
   ('Johnson', 'Bob', 'Robert', 24, 'GroupC', 1, 'bob.johnson@example.com', 'bob123', 'password789' );
 
 -- Вставка тестовых данных в таблицу Courses (оставляем прежние данные)
-INSERT INTO Subjects (subject_name, description)
+INSERT INTO Subjects (subject_name, short_description, description)
 VALUES
-  ('Introduction to Programming', 'Learn the basics of programming'),
-  ('Database Management', 'Explore the world of database systems'),
-  ('Web Development', 'Build dynamic and interactive websites');
+  ('Introduction to Programming', 'Learn the basics of programming', 'loong description'),
+  ('Database Management', 'Explore the world of database systems', 'loong description'),
+  ('Web Development', 'Build dynamic and interactive websites', 'loong description');
 
 -- Вставка тестовых данных в таблицу Enrollments
 INSERT INTO Enrollments (user_id, subject_id)

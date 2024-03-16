@@ -21,6 +21,7 @@ class Users(Base):
     is_staff = Column(Boolean, default=False)
     is_superuser = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    user_image = Column(String, default='default_user_image.png')
 
     enrollments = relationship('Enrollments', backref='users', cascade='all, delete-orphan, delete')
 
@@ -37,8 +38,8 @@ class Subjects(Base):
 
     subject_id = Column(Integer, primary_key=True)
     subject_name = Column(String)
-    # short_description = Column(String)
-    description = Column(String)
+    short_description = Column(String, nullable=False)
+    description = Column(String, nullable=False)
     # topic_id = Column(Integer, ForeignKey('topics.topic_id'), nullable=True)
 
     enrollments = relationship('Enrollments', backref='subject', cascade='all')

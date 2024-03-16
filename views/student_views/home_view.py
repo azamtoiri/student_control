@@ -7,6 +7,10 @@ from flet_route import Params, Basket
 from user_controls.user_image_picker import UserImage
 from utils.routes_url import StudentRoutes
 
+from database.database import UserDatabase
+
+user_db = UserDatabase()
+
 
 def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # ref controls
@@ -35,6 +39,7 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
                 # here will be updating data in db
                 _user_image_dir = f'/{x.name}'
+                user_db.set_new_user_image(page.session.get('user_id'), _user_image_dir)
                 user_avatar.ft_image.current.src = _user_image_dir
                 user_avatar.update()
         page.update()
@@ -45,15 +50,16 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     page.overlay.append(pick_files)
     page.update()
 
-    user_image_dir = "default_user_image.png"
-    if user_image_dir != "":
+    user_image_dir = user_db.get_user_image_url(page.session.get('user_id'))
+
+    if (user_image_dir is None) or (os.path.exists(f'assets{user_image_dir}') is False):
         user_avatar = UserImage(
-            f'/{user_image_dir}',
+            f'/default_user_image.png',
             on_click=lambda _: pick_files.pick_files(),
         )
     else:
         user_avatar = UserImage(
-            '/default_user_image.png',
+            user_image_dir,
             on_click=lambda _: pick_files.pick_files(),
         )
 

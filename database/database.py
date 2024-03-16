@@ -74,6 +74,21 @@ class UserDatabase(BaseDataBase):
             return False
         return True
 
+    def get_user_image_url(self, user_id) -> str:
+        query = self.session.query(Users).filter(Users.user_id == user_id).first()
+        return query.user_image
+
+    def set_new_user_image(self, user_id, image_url: str) -> bool:
+        user = self.filter_users(user_id=user_id)
+        try:
+            user[0].user_image = image_url
+            self.session.add(user[0])
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
     def register_user(
             self, first_name, last_name, middle_name, username,
             password, group: Optional[str] = None, course: Optional[str] = None,
@@ -304,4 +319,4 @@ class TaskDatabase(BaseDataBase):
 
 
 if __name__ == '__main__':
-    a = StudentDatabase()
+    a = UserDatabase()
