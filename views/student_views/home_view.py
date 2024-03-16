@@ -4,10 +4,10 @@ import shutil
 import flet as ft
 from flet_route import Params, Basket
 
+from database.database import UserDatabase
+from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
 from utils.routes_url import StudentRoutes
-
-from database.database import UserDatabase
 
 user_db = UserDatabase()
 
@@ -46,6 +46,18 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # endregion
 
+    # region: InputFields
+    first_name_field = UserChangField(True, label="Фамилия *", value='Тест Фамилия')  # Фамилия
+    last_name_field = UserChangField(True, label="Имя *", value='Тест Имя')  # Имя
+    middle_name_field = UserChangField(True, label="Отчество *", value='Тест Отчество')  # Отчество
+    group_field = UserChangField(True, label="Группа", value='Тест Группа')  # Группа
+    course_field = UserChangField(True, label="Курс", value='Тест Курс')  # Звание
+    age_field = UserChangField(True, label="Возраст", value='Возраст')  # Возраст
+    email_field = UserChangField(True, label="Email", value='Тест Email')  # Email
+    username_text = UserChangField(True, value=f'{page.session.get("username")}', label='Имя пользователя')
+
+    # endregion
+
     pick_files = ft.FilePicker(on_result=on_dialog_result)
     page.overlay.append(pick_files)
     page.update()
@@ -55,28 +67,36 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     if (user_image_dir is None) or (os.path.exists(f'assets{user_image_dir}') is False):
         user_avatar = UserImage(
             f'/default_user_image.png',
-            on_click=lambda _: pick_files.pick_files(),
+            on_click=lambda _: pick_files.pick_files()
         )
     else:
         user_avatar = UserImage(
             user_image_dir,
-            on_click=lambda _: pick_files.pick_files(),
+            on_click=lambda _: pick_files.pick_files()
         )
 
-    username_text = ft.Text(size=40, color='black', value=f'{page.session.get("username")}')
-
-    content = ft.Column([
-        ft.Row(
-            alignment=ft.MainAxisAlignment.CENTER,
-            controls=[ft.Text('Домашняя страница', size=40, color=ft.colors.BLACK)]
-        ),
-        ft.Row(controls=[user_avatar, username_text]),
-    ])
+    title = ft.Text('Домашняя страница', size=40, color=ft.colors.BLACK, text_align="center")
 
     # Background container for color and other
     main_container = ft.Container(
-        bgcolor='white', border_radius=8, padding=ft.padding.all(10)
+        bgcolor='white', border_radius=8, padding=ft.padding.all(10),
+        alignment=ft.alignment.center
     )
+    # main_container.content = content
+    main_container.border_radius = 8
+    main_container.shadow = ft.BoxShadow(
+        color='grey',
+        offset=ft.Offset(1, 2),
+        blur_radius=10,
+    )
+    content = ft.ResponsiveRow(spacing=5, alignment=ft.MainAxisAlignment.CENTER, controls=[
+        ft.Column(col={"sm": 6, "md": 4},
+                  controls=[user_avatar], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+        ft.Column(col={"sm": 12, "md": 4},
+                  controls=[first_name_field, last_name_field, middle_name_field, group_field]),
+        ft.Column(col={"sm": 12, "md": 4},
+                  controls=[group_field, age_field, email_field, username_text]),
+    ])
     main_container.content = content
     main_container.border_radius = 8
     main_container.shadow = ft.BoxShadow(
@@ -88,5 +108,8 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     return ft.View(
         scroll=ft.ScrollMode.AUTO,
         route=StudentRoutes.HOME_URL,
-        controls=[main_container]
+        controls=[
+            ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[title]),
+            main_container,
+        ]
     )

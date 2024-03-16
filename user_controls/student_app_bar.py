@@ -2,7 +2,7 @@ import flet as ft
 from flet import *
 
 from constants import LOGO_PATH
-from utils.routes_url import BaseRoutes
+from utils.routes_url import BaseRoutes, StudentRoutes, TeacherRoutes
 
 
 class STAppBar(AppBar):
@@ -20,10 +20,12 @@ class STAppBar(AppBar):
 
         self.log_out_button = PopupMenuItem(text='Выход')
         self.log_out_button.on_click = lambda e: self.log_out(e)
+        self.edit_view_button = PopupMenuItem(text='Изменить профиль')
+        self.edit_view_button.on_click = lambda e: self.edit_view_click(e)
         self.appbar_items = [
-            self.log_out_button,
+            self.edit_view_button,
             PopupMenuItem(),
-            PopupMenuItem(text='Настройки'),
+            self.log_out_button,
         ]
         self.adaptive = True
 
@@ -71,4 +73,9 @@ class STAppBar(AppBar):
         self.dlg.content = ft.Text('Вы точно хотите выйти?')
         e.page.dialog = self.dlg
         self.dlg.open = True
+        e.page.update()
+
+    def edit_view_click(self, e: ft.ControlEvent) -> None:
+        self.edit_view_button.disabled = False
+        e.page.route = BaseRoutes.HOME_EDIT_URL
         e.page.update()

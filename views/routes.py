@@ -1,7 +1,7 @@
 from flet_route import path
 
 from utils.routes_url import BaseRoutes, StudentRoutes, TeacherRoutes
-from views.default_views import LoginView, RegisterView
+from views.default_views import LoginView, RegisterView, HomeEditView
 from views.index_view import IndexView
 from views.not_registered_view import NotRegistered
 from views.student_views import (
@@ -55,5 +55,6 @@ all_routes = [
     # endregion
 
     # not registred
-    path('/not-registered', clear=False, view=NotRegistered),
+    path(BaseRoutes.NOT_REGISTERED_URL, clear=False, view=NotRegistered),
+    path(BaseRoutes.HOME_EDIT_URL, clear=True, view=HomeEditView)
 ]

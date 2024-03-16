@@ -10,6 +10,7 @@ class BaseRoutes:
     NOT_REGISTERED_URL = '/not-registered'
     STUDENT_MAIN_URL = '/student/main'
     TEACHER_MAIN_URL = '/teacher/main'
+    HOME_EDIT_URL = '/home-edit'
 
 
 @dataclass

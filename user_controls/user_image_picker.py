@@ -2,11 +2,12 @@ import flet as ft
 
 
 class UserImage(ft.UserControl):
-    def __init__(self, image_dir, on_click):
+    def __init__(self, image_dir, on_click, disabled: bool = True):
         super().__init__()
         self.image_dir = image_dir
         self.on_click = on_click
         self.ft_image = ft.Ref[ft.Image]()
+        self.disabled = disabled
 
     def build(self):
         self.display_view = ft.Stack(
@@ -23,7 +24,8 @@ class UserImage(ft.UserControl):
                     icon_color=ft.colors.DEEP_ORANGE, highlight_color=ft.colors.ORANGE_ACCENT,
                     bgcolor=ft.colors.ORANGE_50,
                     opacity=0.75, icon_size=20,
-                    tooltip='Изменить изображение'
+                    tooltip='Изменить изображение',
+                    visible=not self.disabled
                 ),
             ]
         )
