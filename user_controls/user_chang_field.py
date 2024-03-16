@@ -9,7 +9,6 @@ class UserChangField(ft.UserControl):
         self.label = label
         self.password = password
 
-    def build(self):
         self.display_value = ft.TextField(
             value=self.value, disabled=True, label=self.label, col={"md": 6},
             expand=1,
@@ -17,6 +16,7 @@ class UserChangField(ft.UserControl):
             can_reveal_password=True,
         )
 
+    def build(self):
         self.edit_value = ft.TextField(label=self.label, expand=1)
 
         self.display_view = ft.Row(
@@ -52,6 +52,7 @@ class UserChangField(ft.UserControl):
 
     def save_clicked(self, e):
         self.display_value.value = self.edit_value.value
+        self.display_value.error_text = None
         # self.db.updated_task(self.task_id, self.edit_name.value)
         self.display_view.visible = True
         self.edit_view.visible = False
@@ -65,4 +66,12 @@ class UserChangField(ft.UserControl):
 
     def change_value(self, new_value):
         self.display_value.value = new_value
+        self.update()
+
+    @property
+    def get_value(self):
+        return self.display_value.value
+
+    def set_error_text(self, error_text):
+        self.display_value.error_text = error_text
         self.update()

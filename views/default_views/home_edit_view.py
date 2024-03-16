@@ -8,6 +8,7 @@ from flet_route import Params, Basket
 from database.database import UserDatabase
 from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
+from utils.exceptions import RequiredField
 from utils.routes_url import StudentRoutes, TeacherRoutes, BaseRoutes
 
 user_db = UserDatabase()
@@ -26,6 +27,87 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     main_page_url = TeacherRoutes.MAIN_URL if user_db.is_staff(USER_ID) else StudentRoutes.MAIN_URL
 
     # region: Functions
+    def display_register_form_error(field: str, message: str) -> None:
+        fields = {
+            'Имя': first_name_field,
+            'Фамилия': last_name_field,
+            'Отчество': middle_name_field,
+        }
+        if field in fields.keys():
+            # fields[field].input_box_content.error_text = message
+            fields[field].set_error_text(message)
+        page.update()
+
+    def display_error_banner(field, message: str = None) -> None:
+        banner = ft.SnackBar(
+            content=ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    ft.Text(f"Поле {field} является обязательным", color=ft.colors.WHITE),
+                    ft.Icon(ft.icons.WARNING, color=ft.colors.WHITE)
+                ]
+            ),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar = banner
+        page.show_snack_bar(banner)
+        page.update()
+
+    def display_success_banner(message: str) -> None:
+        banner = ft.SnackBar(
+            content=ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    ft.Text(message, color=ft.colors.WHITE), ft.Icon(ft.icons.SUNNY, color=ft.colors.WHITE)
+                ]
+            ),
+            bgcolor=ft.colors.GREEN, duration=250,
+        )
+        page.snack_bar = banner
+        page.show_snack_bar(banner)
+        page.update()
+
+    def save_changes(e: ft.ControlEvent) -> None:
+        try:
+            first_name = str(first_name_field.get_value).strip() if len(
+                first_name_field.get_value) else None
+
+            last_name = str(last_name_field.get_value).strip() if len(
+                last_name_field.get_value) else None
+
+            middle_name = str(middle_name_field.get_value).strip() if len(
+                middle_name_field.get_value) else None
+
+            group = str(group_field.get_value).strip() if len(
+                group_field.get_value) else None
+
+            course = str(course_field.get_value).strip() if len(
+                course_field.get_value) else None
+
+            age = str(age_field.get_value).strip() if len(
+                age_field.get_value) else None
+
+            email = str(email_field.get_value).strip() if len(
+                email_field.get_value) else None
+
+            user_db.update_user(
+                user_id=USER_ID,
+                last_name=last_name,
+                first_name=first_name,
+                middle_name=middle_name,
+                group=group,
+                course=course,
+                age=age,
+                email=email,
+            )
+            display_success_banner('Изменения сохранены')
+        except RequiredField as error:
+            display_register_form_error(error.field, str(error))
+        except Exception as ex:
+            print(ex)
+
+        # page.go(main_page_url)
+
     def on_dialog_result(e: ft.FilePickerResultEvent) -> None:
         if e.files is None: return
         upload_files(e)
@@ -60,16 +142,24 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # endregion
 
+    user = user_db.get_user_by_id(USER_ID)
+
     # region: InputFields
-    first_name_field = UserChangField(False, label="Фамилия *", value='Тест Фамилия')  # Фамилия
-    last_name_field = UserChangField(False, label="Имя *", value='Тест Имя')  # Имя
-    middle_name_field = UserChangField(False, label="Имя *", value='Тест Имя')  # Отчество
-    group_field = UserChangField(False, label="Имя *", value='Тест Имя')  # Группа
-    course_field = UserChangField(False, label="Имя *", value='Тест Имя')  # Звание
-    age_field = UserChangField(False, label="Имя *", value='Тест Имя')  # Возраст
-    email_field = UserChangField(False, label="Имя *", value='Тест Имя')  # Email
+    first_name_field = UserChangField(False, label="Фамилия *",
+                                      value=user.first_name)  # Фамилия
+    last_name_field = UserChangField(False, label="Имя *",
+                                     value=user.last_name)  # Имя
+    middle_name_field = UserChangField(False, label="Отчество *",
+                                       value=user.middle_name)  # Отчество
+    group_field = UserChangField(False, label="Группа",
+                                 value=user.group)  # Группа
+    course_field = UserChangField(False, label="Курс",
+                                  value=user.course)  # Звание
+    age_field = UserChangField(False, label="Имя",
+                               value=user.age)  # Возраст
+    email_field = UserChangField(True, label="Email",
+                                 value=user.email)  # Email
     username_field = UserChangField(disabled=True, value=f'{USERNAME}', label='Имя пользователя')
-    password_field = UserChangField(True, label="Пароль *", value='alsdkfjlskjf', password=True)  # Пароль
 
     # endregion
 
@@ -94,11 +184,11 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         ft.Column(col={"sm": 6, "md": 4},
                   controls=[user_avatar], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
         ft.Column(col={"sm": 12, "md": 4},
-                  controls=[first_name_field, last_name_field, middle_name_field, group_field]),
+                  controls=[first_name_field, last_name_field, middle_name_field, age_field]),
         ft.Column(col={"sm": 12, "md": 4},
-                  controls=[age_field, email_field, username_field, password_field]),
+                  controls=[group_field, age_field, email_field, username_field]),
         ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-               controls=[ft.ElevatedButton('Сохранить', on_click=lambda e: page.go(main_page_url)),
+               controls=[ft.ElevatedButton('Сохранить', on_click=lambda e: save_changes(e)),
                          ft.ElevatedButton('Назад', on_click=lambda e: page.go(main_page_url))]),
     ])
 

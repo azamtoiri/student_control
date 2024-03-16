@@ -130,6 +130,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     container.border = ft.border.all(1, ft.colors.TRANSPARENT)
 
     return ft.View(
+        scroll=ft.ScrollMode.AUTO,
         route=BaseRoutes.LOGIN_URL,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,

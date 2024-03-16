@@ -41,6 +41,10 @@ class UserDatabase(BaseDataBase):
         """Get user id"""
         return self.session.query(Users).filter(Users.username == username).first()
 
+    def get_user_by_id(self, user_id) -> Type[Users]:
+        """Get user by id"""
+        return self.session.query(Users).filter(Users.user_id == user_id).first()
+
     def insert_user(self, user: Users) -> None:
         """Registering user"""
         if user.username is None:
@@ -125,6 +129,26 @@ class UserDatabase(BaseDataBase):
         self.insert_user(user)
 
         return user
+
+    def update_user(self, user_id, first_name, last_name, middle_name, group, course, age, email) -> bool:
+        if first_name is None:
+            raise RequiredField('Имя')
+        if last_name is None:
+            raise RequiredField('Фамилия')
+        if middle_name is None:
+            raise RequiredField('Отчество')
+
+        user = self.get_user_by_id(user_id)
+        user.first_name = first_name
+        user.last_name = last_name
+        user.middle_name = middle_name
+        user.group = group
+        user.course = course
+        user.age = age
+        user.email = email
+        self.session.add(user)
+        self.session.commit()
+        return True
 
     def login_user(
             self, username: Optional[str], password: Optional[str]
