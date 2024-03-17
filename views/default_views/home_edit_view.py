@@ -161,6 +161,9 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                                  value=user.email)  # Email
     username_field = UserChangField(disabled=True, value=f'{USERNAME}', label='Имя пользователя')
 
+    # filters
+    age_field.edit_value.input_filter = ft.NumbersOnlyInputFilter()
+
     # endregion
 
     pick_files = ft.FilePicker(on_result=on_dialog_result)
@@ -184,7 +187,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         ft.Column(col={"sm": 6, "md": 4},
                   controls=[user_avatar], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
         ft.Column(col={"sm": 12, "md": 4},
-                  controls=[first_name_field, last_name_field, middle_name_field, age_field]),
+                  controls=[first_name_field, last_name_field, middle_name_field, course_field]),
         ft.Column(col={"sm": 12, "md": 4},
                   controls=[group_field, age_field, email_field, username_field]),
         ft.Row(alignment=ft.MainAxisAlignment.END,

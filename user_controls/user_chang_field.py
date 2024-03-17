@@ -22,10 +22,9 @@ class UserChangField(ft.UserControl):
             value=self.value, label=self.label, col={"md": 6},
             expand=1, read_only=read_only, hint_text='Пусто'
         )
-
-    def build(self):
         self.edit_value = ft.TextField(label=self.label, expand=1)
 
+    def build(self):
         self.display_view = ft.Row(
             col={"sm": 6},
             alignment=ft.MainAxisAlignment.CENTER,

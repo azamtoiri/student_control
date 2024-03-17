@@ -77,7 +77,7 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         ft.Column(col={"sm": 6, "md": 4},
                   controls=[user_avatar], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
         ft.Column(col={"sm": 12, "md": 4},
-                  controls=[first_name_field, last_name_field, middle_name_field, group_field]),
+                  controls=[first_name_field, last_name_field, middle_name_field, course_field]),
         ft.Column(col={"sm": 12, "md": 4},
                   controls=[group_field, age_field, email_field, username_text]),
     ])
