@@ -1,54 +1,115 @@
-import os
-import shutil
-
 import flet as ft
 
 
 def main(page: ft.Page) -> None:
-    page.scroll = ft.ScrollMode.AUTO
+    page.theme = ft.Theme(color_scheme_seed='green')
+    page.theme_mode = 'light'
 
-    def on_dialog_result(e: ft.FilePickerResultEvent) -> None:
-        print("Selected files: ", e.files)
-        upload_files(e)
+    todo_card = ft.Card(
+        width=500,
+        content=ft.Container(
+            padding=ft.padding.symmetric(vertical=10),
+            content=ft.Column(
+                horizontal_alignment=ft.CrossAxisAlignment.END,
+                controls=[
+                    ft.ListTile(
+                        leading=ft.Icon(ft.icons.CHECKLIST),
+                        title=ft.Text('Кол-во не завершенных todo: 8'),
+                        subtitle=ft.Row(
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                            controls=[
+                                ft.Text('Перейти к не завершенным задачам'),
+                                ft.IconButton(ft.icons.NAVIGATE_NEXT,
+                                              icon_color=ft.colors.ORANGE,
+                                              selected_icon_color=ft.colors.ORANGE),
+                            ]
+                        )
+                    )
+                ]
+            )
+        )
+    )
 
-    ft_image = ft.Image(src='uploads')
+    drop_down_icons = ft.Ref[ft.Dropdown]()
 
-    def upload_files(e: ft.FilePickerUploadFile):
-        if page.web:
-            uf = []
-            f: ft.FilePickerUploadFile
-            for f in MyPickFiles.result.files:
-                uf.append(ft.FilePickerUploadFile(f.name, upload_url=page.get_upload_url(f.name, 600)))
-            MyPickFiles.upload(uf)
-            for f in MyPickFiles.result.files:
-                ft_image.src = f'/uploads/{f.name}'
-            page.update()
-        else:
-            for x in MyPickFiles.result.files:
-                if os.path.exists(x.name):
-                    os.remove(x.name)
-                dest = os.path.join(os.getcwd(), "assets/uploads")
-                shutil.copy(x.path, f'{dest}')
-                ft_image.src = f'/uploads/{x.name}'
+    def change_color_scheme_seed(e):
+        drop_down_icons.current.visible = True
 
-            page.update()
-
-    MyPickFiles = ft.FilePicker(on_result=on_dialog_result)
-    page.overlay.append(MyPickFiles)
-    page.update()
+    icon_drop = ft.PopupMenuButton(
+        icon=ft.icons.PALETTE_OUTLINED,
+        menu_position=ft.PopupMenuPosition.UNDER,
+        items=[
+            ft.PopupMenuItem(icon=ft.icons.PALETTE_OUTLINED, text="Check power"),
+            ft.PopupMenuItem(icon=ft.icons.PALETTE_OUTLINED, text="Check power"),
+            ft.PopupMenuItem(icon=ft.icons.PALETTE_OUTLINED, text="Check power"),
+            ft.PopupMenuItem(icon=ft.icons.PALETTE_OUTLINED, text="Check power"),
+            ft.PopupMenuItem(icon=ft.icons.PALETTE_OUTLINED, text="Check power"),
+            ft.PopupMenuItem(icon=ft.icons.PALETTE_OUTLINED, text="Check power"),
+            ft.PopupMenuItem(icon=ft.icons.PALETTE_OUTLINED, text="Check power"),
+        ]
+    )
 
     page.add(
-        ft.Column(
-            scroll=ft.ScrollMode.AUTO,
-            controls=[
-                ft_image,
-                ft.ElevatedButton(
-                    'Choose files0', on_click=lambda _: MyPickFiles.pick_files()
+        ft.Row([icon_drop, ft.Text('Основные цвета')]),
+        todo_card,
+        ft.Card(
+            content=ft.Container(
+                width=500,
+                content=ft.Column(
+                    [
+                        ft.ListTile(
+                            title=ft.Text("One-line list tile"),
+                        ),
+                        ft.ListTile(title=ft.Text("One-line dense list tile"), dense=True),
+                        ft.ListTile(
+                            leading=ft.Icon(ft.icons.SETTINGS),
+                            title=ft.Text("One-line selected list tile"),
+                            selected=True,
+                        ),
+                        ft.ListTile(
+                            leading=ft.Image(src="/icons/icon-192.png", fit="contain"),
+                            title=ft.Text("One-line with leading control"),
+                        ),
+                        ft.ListTile(
+                            title=ft.Text("One-line with trailing control"),
+                            trailing=ft.PopupMenuButton(
+                                icon=ft.icons.MORE_VERT,
+                                items=[
+                                    ft.PopupMenuItem(text="Item 1"),
+                                    ft.PopupMenuItem(text="Item 2"),
+                                ],
+                            ),
+                        ),
+                        ft.ListTile(
+                            leading=ft.Icon(ft.icons.ALBUM),
+                            title=ft.Text("One-line with leading and trailing controls"),
+                            trailing=ft.PopupMenuButton(
+                                icon=ft.icons.MORE_VERT,
+                                items=[
+                                    ft.PopupMenuItem(text="Item 1"),
+                                    ft.PopupMenuItem(text="Item 2"),
+                                ],
+                            ),
+                        ),
+                        ft.ListTile(
+                            leading=ft.Icon(ft.icons.SNOOZE),
+                            title=ft.Text("Two-line with leading and trailing controls"),
+                            subtitle=ft.Text("Here is a second title."),
+                            trailing=ft.PopupMenuButton(
+                                icon=ft.icons.MORE_VERT,
+                                items=[
+                                    ft.PopupMenuItem(text="Item 1"),
+                                    ft.PopupMenuItem(text="Item 2"),
+                                ],
+                            ),
+                        ),
+                    ],
+                    spacing=0,
                 ),
-                # ft.ElevatedButton("Upload", on_click=upload_files)
-            ]
+                padding=ft.padding.symmetric(vertical=10),
+            )
         )
     )
 
 
-ft.app(main, assets_dir='assets', upload_dir='assets/uploads', view=ft.AppView.WEB_BROWSER)
+ft.app(main, assets_dir='assets', upload_dir='assets/uploads')

@@ -73,6 +73,8 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # region: Column Row ResponsiveRow with info data
     user_info_content = ft.ResponsiveRow(spacing=5, alignment=ft.MainAxisAlignment.CENTER, controls=[
+        title,
+        # ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[title]),
         ft.Column(col={"sm": 6, "md": 4},
                   controls=[user_avatar], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
         ft.Column(col={"sm": 12, "md": 4},
@@ -100,7 +102,7 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         scroll=ft.ScrollMode.AUTO,
         route=StudentRoutes.HOME_URL,
         controls=[
-            ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[title]),
+            ft.Container(),
             user_data_container,
             ft.ResponsiveRow(
                 spacing=5,
