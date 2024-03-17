@@ -76,6 +76,6 @@ class STAppBar(AppBar):
         e.page.update()
 
     def edit_view_click(self, e: ft.ControlEvent) -> None:
-        self.edit_view_button.disabled = False
+        self.edit_view_button._disabled = False
         e.page.route = BaseRoutes.HOME_EDIT_URL
         e.page.update()

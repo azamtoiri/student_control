@@ -4,23 +4,23 @@ import flet as ft
 
 
 class UserChangField(ft.UserControl):
-    def __init__(self, disabled: bool,
-                 value,
-                 label: str = None,
-                 password: bool = False,
-                 save_changes: Type[Callable] = None):
+    def __init__(
+            self,
+            disabled: bool,
+            value,
+            label: str = None,
+            save_changes: Type[Callable] = None,
+            read_only: bool = True,
+    ):
         super().__init__()
         self.save_changes = save_changes
-        self.disabled = disabled
+        self._disabled = disabled
         self.value = value
         self.label = label
-        self.password = password
 
         self.display_value = ft.TextField(
-            value=self.value, disabled=True, label=self.label, col={"md": 6},
-            expand=1,
-            password=self.password,
-            can_reveal_password=True,
+            value=self.value, label=self.label, col={"md": 6},
+            expand=1, read_only=read_only, hint_text='Пусто'
         )
 
     def build(self):
@@ -36,7 +36,7 @@ class UserChangField(ft.UserControl):
                     icon=ft.icons.CREATE_OUTLINED,
                     tooltip="Редактировать",
                     on_click=self.edit_clicked,
-                    visible=not self.disabled
+                    visible=not self._disabled
                 ),
             ],
         )
