@@ -14,6 +14,25 @@ from utils.routes_url import StudentRoutes, TeacherRoutes, BaseRoutes
 user_db = UserDatabase()
 
 
+def create_container(content, col=None):
+    box_shadow = ft.BoxShadow(
+        color=ft.colors.GREY,
+        offset=ft.Offset(1, 2),
+        blur_radius=10,
+    )
+
+    container = ft.Container(
+        bgcolor=ft.colors.WHITE, border_radius=8, padding=ft.padding.all(10),
+        alignment=ft.alignment.center
+    )
+    container.shadow = box_shadow
+    container.content = content
+    if col:
+        container.col = col
+
+    return container
+
+
 def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # constants
     USER_ID = page.session.get('user_id')
@@ -36,21 +55,6 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         if field in fields.keys():
             # fields[field].input_box_content.error_text = message
             fields[field].set_error_text(message)
-        page.update()
-
-    def display_error_banner(field, message: str = None) -> None:
-        banner = ft.SnackBar(
-            content=ft.Row(
-                alignment=ft.MainAxisAlignment.CENTER,
-                controls=[
-                    ft.Text(f"Поле {field} является обязательным", color=ft.colors.WHITE),
-                    ft.Icon(ft.icons.WARNING, color=ft.colors.WHITE)
-                ]
-            ),
-            bgcolor=ft.colors.RED
-        )
-        page.snack_bar = banner
-        page.show_snack_bar(banner)
         page.update()
 
     def display_success_banner(message: str) -> None:
@@ -195,20 +199,10 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                    ft.ElevatedButton('На главную страницу', on_click=lambda e: page.go(main_page_url))
                ]),
     ])
-    title = ft.Text('Домашняя страница', size=40, color=ft.colors.BLACK, text_align="center")
+    title = ft.Text('Домашняя страница', size=40, color=ft.colors.BLACK, text_align=ft.TextAlign.CENTER)
 
     # Background container for color and other
-    user_data_container = ft.Container(
-        bgcolor='white', border_radius=8, padding=ft.padding.all(10),
-        alignment=ft.alignment.center
-    )
-    user_data_container.content = content
-    user_data_container.border_radius = 8
-    user_data_container.shadow = ft.BoxShadow(
-        color='grey',
-        offset=ft.Offset(1, 2),
-        blur_radius=10,
-    )
+    user_data_container = create_container(content)
 
     return ft.View(
         route=BaseRoutes.HOME_EDIT_URL,
