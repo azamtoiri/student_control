@@ -58,6 +58,7 @@ def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     container.border = ft.border.all(1, ft.colors.TRANSPARENT)
 
     return ft.View(
+        bgcolor=ft.colors.SURFACE_VARIANT,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         route=BaseRoutes.INDEX_URL,

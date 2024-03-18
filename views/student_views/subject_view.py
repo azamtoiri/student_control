@@ -3,6 +3,7 @@ from flet_route import Params, Basket
 
 from database.database import StudentDatabase
 from user_controls.subject_description import SubjectDescription
+from utils.banners import display_success_banner
 from utils.routes_url import StudentRoutes
 
 sub_db = StudentDatabase()
@@ -26,10 +27,20 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     def yes_click(e: ft.ControlEvent) -> None:
         sub_db.subscribe_student_to_subject(USER_ID, SUBJECT_ID)
+        subscribe_button.visible = False
+        unsubscribe_button.visible = True
+        display_success_banner(page=e.page, message='Вы успешно зарегистрировались на курс',
+                               icons=ft.icons.CHECK_CIRCLE)
+        e.page.update()
         close_dlg(e)
 
     def yes_un_click(e: ft.ControlEvent) -> None:
         sub_db.unsubscribe_student_from_subject(USER_ID, SUBJECT_ID)
+        subscribe_button.visible = True
+        unsubscribe_button.visible = False
+        display_success_banner(page=e.page, message='Вы успешно отписались от курса',
+                               icons=ft.icons.MARK_AS_UNREAD)
+        e.page.update()
         close_dlg(e)
 
     def no_click(e: ft.ControlEvent) -> None:
@@ -37,8 +48,9 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     def subscribe_dialog(e: ft.ControlEvent):
         dlg.actions = [
-            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_), bgcolor=ft.colors.GREEN, color=ft.colors.WHITE,
-                              height=40),
+            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_), bgcolor=ft.colors.SURFACE_TINT,
+                              color=ft.colors.WHITE, height=40
+                              ),
             ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_), bgcolor=ft.colors.GREY, color=ft.colors.WHITE)
         ]
         dlg.actions_alignment = ft.MainAxisAlignment.CENTER
@@ -52,9 +64,9 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     def unsubscribe_dialog(e: ft.ControlEvent):
         dlg.actions = [
-            ft.ElevatedButton('Да', on_click=lambda e_: yes_un_click(e_), bgcolor=ft.colors.GREY,
+            ft.ElevatedButton('Да', on_click=lambda e_: yes_un_click(e_), bgcolor=ft.colors.SURFACE_TINT,
                               color=ft.colors.WHITE),
-            ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_), bgcolor=ft.colors.GREEN, color=ft.colors.WHITE,
+            ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_), bgcolor=ft.colors.GREY, color=ft.colors.WHITE,
                               height=40)
         ]
         dlg.actions_alignment = ft.MainAxisAlignment.CENTER
@@ -68,9 +80,11 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     def subscribe_click(e: ft.ControlEvent) -> None:
         subscribe_dialog(e)
+        e.page.update()
 
     def unsubscribe_click(e: ft.ControlEvent) -> None:
         unsubscribe_dialog(e)
+        e.page.update()
 
     # endregion
     is_subscribed = sub_db.check_student_subscribe(USER_ID, SUBJECT_ID)
@@ -96,14 +110,16 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # endregion
 
-    content = ft.Column()
-    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[subscribe_button]))
-    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[unsubscribe_button]))
-    content.controls.append(SubjectDescription(SUBJECT_ID))
-    # content.controls.append(ft.Row([course_name]))
-    # content.controls.append(ft.Row([course_description]))
+    content = ft.Column(
+        controls=[
+            SubjectDescription(SUBJECT_ID),
+            ft.Row(alignment=ft.MainAxisAlignment.END, controls=[subscribe_button]),
+            ft.Row(alignment=ft.MainAxisAlignment.END, controls=[unsubscribe_button])
+        ]
+    )
 
     return ft.View(
+        bgcolor=ft.colors.SURFACE_VARIANT,
         scroll=ft.ScrollMode.AUTO,
         route=StudentRoutes.SUBJECT_URL,
         controls=[

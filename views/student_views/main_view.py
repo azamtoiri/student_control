@@ -74,7 +74,7 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         dlg.title = ft.Text('Подтвердите действие')
         dlg.content = ft.Text('Вы точно хотите выйти?')
         dlg.actions = [
-            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_), bgcolor=ft.colors.GREEN, color=ft.colors.WHITE,
+            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_), bgcolor=ft.colors.SURFACE_TINT, color=ft.colors.WHITE,
                               ),
             ft.ElevatedButton('Нет', on_click=lambda e_: close_dlg(e_), bgcolor=ft.colors.GREY, color=ft.colors.WHITE)
         ]
@@ -98,15 +98,17 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # logo_image.top = 0
     # logo_image.left = 500
     # logo_image.expand = True
-    student_title = ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                              controls=[
-                                  ft.Text('Fox', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                  ft.Text('Hub', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.ORANGE_ACCENT),
-                                  ft.Text('Студент', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.GREY)
-                              ]
-                              )
+    student_title = ft.Column(
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            ft.Text('Fox', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
+            ft.Text('Hub', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.ORANGE_ACCENT),
+            ft.Text('Студент', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.GREY)
+        ]
+    )
 
     return ft.View(
+        bgcolor=ft.colors.SURFACE_VARIANT,
         scroll=ft.ScrollMode.AUTO,
         route=StudentRoutes.MAIN_URL,
         vertical_alignment=ft.MainAxisAlignment.CENTER,

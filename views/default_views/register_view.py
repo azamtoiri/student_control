@@ -227,6 +227,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     container.border = ft.border.all(1, ft.colors.TRANSPARENT)
 
     return ft.View(
+        bgcolor=ft.colors.SURFACE_VARIANT,
         scroll=ft.ScrollMode.AUTO,
         route=BaseRoutes.REGISTER_URL,
         vertical_alignment=ft.MainAxisAlignment.CENTER,

@@ -8,29 +8,12 @@ from flet_route import Params, Basket
 from database.database import UserDatabase
 from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
+from utils.create_container_home_view import create_container
 from utils.exceptions import RequiredField
 from utils.routes_url import StudentRoutes, TeacherRoutes, BaseRoutes
+from utils.banners import display_success_banner
 
 user_db = UserDatabase()
-
-
-def create_container(content, col=None):
-    box_shadow = ft.BoxShadow(
-        color=ft.colors.GREY,
-        offset=ft.Offset(1, 2),
-        blur_radius=10,
-    )
-
-    container = ft.Container(
-        bgcolor=ft.colors.WHITE, border_radius=8, padding=ft.padding.all(10),
-        alignment=ft.alignment.center
-    )
-    container.shadow = box_shadow
-    container.content = content
-    if col:
-        container.col = col
-
-    return container
 
 
 def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -55,20 +38,6 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         if field in fields.keys():
             # fields[field].input_box_content.error_text = message
             fields[field].set_error_text(message)
-        page.update()
-
-    def display_success_banner(message: str) -> None:
-        banner = ft.SnackBar(
-            content=ft.Row(
-                alignment=ft.MainAxisAlignment.CENTER,
-                controls=[
-                    ft.Text(message, color=ft.colors.WHITE), ft.Icon(ft.icons.SUNNY, color=ft.colors.WHITE)
-                ]
-            ),
-            bgcolor=ft.colors.GREEN, duration=250,
-        )
-        page.snack_bar = banner
-        page.show_snack_bar(banner)
         page.update()
 
     def save_changes(e: ft.ControlEvent) -> None:
@@ -104,7 +73,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 age=age,
                 email=email,
             )
-            display_success_banner('Изменения сохранены')
+            display_success_banner(page, 'Изменения сохранены', ft.icons.SUNNY)
         except RequiredField as error:
             display_register_form_error(error.field, str(error))
         except Exception as ex:
@@ -186,8 +155,10 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             f'/uploads/{user_image_dir}',
             on_click=lambda _: pick_files.pick_files(), disabled=False
         )
+    title = ft.Text('Изменить данные', size=40, color=ft.colors.BLACK, text_align=ft.TextAlign.CENTER)
 
     content = ft.ResponsiveRow(spacing=5, alignment=ft.MainAxisAlignment.CENTER, controls=[
+        ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[title]),
         ft.Column(col={"sm": 6, "md": 4},
                   controls=[user_avatar], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
         ft.Column(col={"sm": 12, "md": 4},
@@ -199,16 +170,16 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                    ft.ElevatedButton('На главную страницу', on_click=lambda e: page.go(main_page_url))
                ]),
     ])
-    title = ft.Text('Домашняя страница', size=40, color=ft.colors.BLACK, text_align=ft.TextAlign.CENTER)
 
     # Background container for color and other
     user_data_container = create_container(content)
 
     return ft.View(
         route=BaseRoutes.HOME_EDIT_URL,
+        bgcolor=ft.colors.SURFACE_VARIANT,
         scroll=ft.ScrollMode.AUTO,
         controls=[
-            ft.Container(content=title, alignment=ft.alignment.center),
+            ft.Container(),
             user_data_container
         ]
     )

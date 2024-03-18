@@ -202,6 +202,7 @@ def TodoView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     app = TodoApp(user_id)
     return ft.View(
         # vertical_alignment=ft.MainAxisAlignment.CENTER,
+        bgcolor=ft.colors.SURFACE_VARIANT,
         scroll=ft.ScrollMode.AUTO,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         route=StudentRoutes.TODO_URL,

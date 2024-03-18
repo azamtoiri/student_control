@@ -24,9 +24,9 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
         _card = ft.Card(col={"md": 12, "lg": 4})
         if int(grade_value) == 100:
-            _card.color = ft.colors.GREEN
+            _card.color = ft.colors.INVERSE_SURFACE
         elif int(grade_value) >= 80:
-            _card.color = ft.colors.GREEN_ACCENT_100
+            _card.color = ft.colors.SURFACE
         else:
             _card.color = ft.colors.RED
         _card.content = ft.Container(content=ft.Column([
@@ -86,6 +86,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     add_grades()
 
     return ft.View(
+        bgcolor=ft.colors.SURFACE_VARIANT,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         scroll=ft.ScrollMode.AUTO,

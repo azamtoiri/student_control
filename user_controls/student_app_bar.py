@@ -15,7 +15,7 @@ class STAppBar(AppBar):
         self.center_title = False
         self.leading_width = 100
         self.toolbar_height = 80
-        self.bgcolor = colors.ORANGE_ACCENT
+        self.bgcolor = colors.SURFACE_TINT
         self.adaptive = True
 
         self.log_out_button = PopupMenuItem(text='Выход', icon=ft.icons.EXIT_TO_APP)
@@ -42,7 +42,7 @@ class STAppBar(AppBar):
         self.appbar_actions = ft.Row(
             [
                 PopupMenuButton(
-                    content=ft.Icon(ft.icons.PALETTE_OUTLINED, color=ft.colors.WHITE,
+                    content=ft.Icon(ft.icons.PALETTE_OUTLINED, color=ft.colors.INVERSE_SURFACE,
                                     ref=self.color_scheme_pop_menu_icon),
                     items=[
                         PopupMenuItem(ref=self.deep_purple_color_button, content=ft.Row([
@@ -91,9 +91,10 @@ class STAppBar(AppBar):
                         ]), on_click=lambda e: self.change_seed_color(e, ft.colors.PINK)),
                     ]
                 ),
-                ft.Text('Цвет интерфейса', color=ft.colors.WHITE),
+                ft.Text('Цвет интерфейса', color=ft.colors.INVERSE_SURFACE),
                 Container(
                     content=PopupMenuButton(
+                        content=ft.Icon(ft.icons.MENU, color=ft.colors.INVERSE_SURFACE),
                         items=self.appbar_items,
                     ),
                     margin=margin.only(right=25)
@@ -147,6 +148,5 @@ class STAppBar(AppBar):
 
     def change_seed_color(self, e: ft.ControlEvent, color: ft.colors) -> None:
         e.page.theme = ft.Theme(color_scheme_seed=color)
-        self.bgcolor = color
         e.page.update()
         self.update()

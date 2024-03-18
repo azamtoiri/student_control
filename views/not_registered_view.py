@@ -6,6 +6,7 @@ from utils.routes_url import BaseRoutes
 
 def NotRegistered(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     return ft.View(
+        bgcolor=ft.colors.SURFACE_VARIANT,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         route=BaseRoutes.NOT_REGISTERED_URL,

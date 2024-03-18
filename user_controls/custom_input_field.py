@@ -38,13 +38,13 @@ class CustomInputField(UserControl):
         self.input_box_content = TextField(col={"md": 6, "lg": 4})
         self.input_box_content.hint_text = title
         self.input_box_content.hint_style = TextStyle(color=BORDER_COLOR)
-        self.input_box_content.border_color = BORDER_COLOR
+        self.input_box_content.focused_border_color = colors.ON_SURFACE_VARIANT
         self.input_box_content.border_width = 1
         self.input_box_content.cursor_width = 0.5
         self.input_box_content.border_radius = 8
         self.input_box_content.cursor_color = colors.BLACK
-        self.input_box_content.color = BORDER_COLOR
         self.input_box_content.text_size = 14
+        self.input_box_content.border_color = colors.SURFACE_TINT
         self.input_box_content.bgcolor = BG_COLOR
         self.input_box_content.password = password
         self.input_box_content.can_reveal_password = password

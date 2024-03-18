@@ -88,6 +88,7 @@ def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     )
 
     return ft.View(
+        bgcolor=ft.colors.SURFACE_VARIANT,
         route=TeacherRoutes.MAIN_URL,
         controls=[
             ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[logo_image, teacher_title]),

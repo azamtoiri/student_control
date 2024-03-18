@@ -14,7 +14,7 @@ class SubjectDescription(ft.UserControl):
 
         styled_title_container = ft.Container(
             expand=True, border_radius=8, ink=True, bgcolor=ft.colors.ORANGE_50,
-            content=ft.Text(self.subject_information.subject_name, size=20, weight="bold"),
+            content=ft.Text(self.subject_information.subject_name, size=20, weight=ft.FontWeight.BOLD),
             alignment=ft.alignment.center, height=90
         )  # styled container for the title
 
@@ -55,7 +55,6 @@ class SubjectDescription(ft.UserControl):
             ), alignment=ft.alignment.top_left,
             padding=10
         )
-
 
         return ft.Column(
             controls=[

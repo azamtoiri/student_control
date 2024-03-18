@@ -1,6 +1,6 @@
 from typing import Optional
-
-from flet import UserControl, LinearGradient, alignment, Control, Container, Scale, animation, AnimationCurve
+import flet as ft
+from flet import UserControl, LinearGradient, alignment, Control, Container, Scale, animation, AnimationCurve, colors
 
 
 class STContainer(UserControl):
@@ -15,7 +15,9 @@ class STContainer(UserControl):
         self.container_linear_gradient = LinearGradient(
             begin=alignment.top_left,
             end=alignment.top_right,
-            colors=["#D64511", "#B63621"]
+            # colors=["#D64511", "#B63621"]
+            colors=[colors.SURFACE_TINT, colors.ON_INVERSE_SURFACE],
+            rotation=0.8
         )
 
         self.main_container = Container(*args, **kwargs)

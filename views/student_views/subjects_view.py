@@ -80,7 +80,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         course_description.value = subject_description
 
         show_course = ft.ElevatedButton('Посмотреть курс')
-        show_course.bgcolor = ft.colors.ORANGE_ACCENT
+        show_course.bgcolor = ft.colors.ON_SURFACE_VARIANT
         show_course.color = ft.colors.WHITE
         show_course.on_click = lambda e: page.go(subject_url)
 
@@ -88,16 +88,12 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         subject_icon.color = ft.colors.GREEN if is_subscribed else ft.colors.GREY
 
         _card = ft.Card(col={"md": 12, "lg": 4})
-        _card.color = ft.colors.ORANGE_50
+        _card.color = ft.colors.SURFACE_VARIANT
         _card.content = ft.Container(content=ft.Column([
             ft.ListTile(leading=subject_icon, title=course_title, subtitle=course_description),
             ft.Row(alignment=ft.MainAxisAlignment.END, controls=[show_course])
         ]), width=400, padding=10)
         subjects.controls.append(_card)
-
-    # def on_change_search_field(e: ft.ControlEvent) -> None:
-    #     search_field.hint_text = None
-    #     e.page.update()
 
     def on_focus_search_field(e: ft.ControlEvent) -> None:
         search_field.hint_text = None
@@ -131,7 +127,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     content = ft.Column(
         [
             ft.Row([search_field, ft.FloatingActionButton(icon=ft.icons.SEARCH, on_click=lambda e: search(e),
-                                                          bgcolor=ft.colors.ORANGE_ACCENT_200)]),
+                                                          bgcolor=ft.colors.SURFACE_VARIANT)]),
             ft.Column([
                 filter,
                 subjects,
@@ -141,13 +137,17 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     )
 
     # Background container for color and other
-    main_container = ft.Container(bgcolor=ft.colors.ORANGE_ACCENT_100, border_radius=8, padding=ft.padding.all(10))
+    main_container = ft.Container(
+        border_radius=8,
+        padding=ft.padding.all(10), bgcolor=ft.colors.SURFACE_VARIANT
+    )
     main_container.content = content
     main_container.expand = True
 
     # add all subjects
     add_all_subjects()
     return ft.View(
+        bgcolor=ft.colors.SURFACE_VARIANT,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         route=StudentRoutes.SUBJECTS_URL,

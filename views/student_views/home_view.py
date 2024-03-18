@@ -6,28 +6,10 @@ from flet_route import Params, Basket
 from database.database import UserDatabase
 from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
+from utils.create_container_home_view import create_container
 from utils.routes_url import StudentRoutes
 
 user_db = UserDatabase()
-
-
-def create_container(content, col=None):
-    box_shadow = ft.BoxShadow(
-        color=ft.colors.GREY,
-        offset=ft.Offset(1, 2),
-        blur_radius=10,
-    )
-
-    container = ft.Container(
-        bgcolor=ft.colors.WHITE, border_radius=8, padding=ft.padding.all(10),
-        alignment=ft.alignment.center
-    )
-    container.shadow = box_shadow
-    container.content = content
-    if col:
-        container.col = col
-
-    return container
 
 
 def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -99,6 +81,7 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     return ft.View(
+        bgcolor=ft.colors.SURFACE_VARIANT,
         scroll=ft.ScrollMode.AUTO,
         route=StudentRoutes.HOME_URL,
         controls=[
