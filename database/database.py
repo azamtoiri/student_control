@@ -181,32 +181,45 @@ class StudentDatabase(BaseDataBase):
     def get_subject(self, subject_id) -> Type[Subjects]:
         return self.session.query(Subjects).filter(Subjects.subject_id == subject_id).first()
 
-    def get_student_subjects(self, username, user_id=None) -> list:
+    def get_student_subjects(self, username=None, user_id=None) -> list:
         """if not giv user_id getting from db"""
         if not user_id:
             user_id = UserDatabase().get_user_id(username).user_id
         user_subject = (
-            self.session.query(Users.first_name, Enrollments, Subjects.subject_name, Subjects.description,
-                               Subjects.subject_id)
-            .join(Enrollments, Users.user_id == Enrollments.user_id)
-            .join(Subjects, Subjects.subject_id == Enrollments.subject_id)
+            self.session.query(
+                Users.first_name, Enrollments, Subjects.subject_name, Subjects.description,
+                Subjects.subject_id
+            ).join(
+                Enrollments, Users.user_id == Enrollments.user_id
+            ).join(
+                Subjects, Subjects.subject_id == Enrollments.subject_id)
             .where(Users.user_id == user_id).all()
         )
         if len(user_subject) == 0:
-            raise DontHaveGrades
+            raise DontHaveGrades()
         return user_subject
 
-    def get_student_subjects_by_name(self, username, sub_name) -> list:
-        """Возвращает конкретный записанный курс у пользователя"""
-        return self.session.query(Users.username, Subjects.subject_name, Enrollments.subject_id).join(
+    def count_average_subject_grades(self, subject_name=None, sub_name=None, user_id=None) -> int or str:
+        """Возвращает все оценки по предмету"""
+        values = self.session.query(
+            Users, Subjects.subject_name, Grades.grade_value, Enrollments
+        ).join(
             Users, Users.user_id == Enrollments.user_id,
         ).join(
             Subjects, Subjects.subject_id == Enrollments.subject_id
-        ).where(
-            Users.username == username
-        ).where(
-            Subjects.subject_name == sub_name
+        ).join(
+            Grades, Grades.enrollment_id == Enrollments.enrollment_id
+        ).filter(
+            Subjects.subject_name == subject_name, Users.user_id == 1
         ).all()
+        count = 0
+        for value in values:
+            if value[2]:
+                count += value[2]
+        if values:
+            return count // len(values)
+        else:
+            return 'Нет оценок'
 
     def get_student_grade_for_exact_subject(self, username, sub_name) -> list:
         """Возвращает все оценки пользователя по определенному предмету"""
@@ -228,11 +241,13 @@ class StudentDatabase(BaseDataBase):
         for value in values:
             yield value
 
-    def get_student_grades(self, username) -> list:
+    def get_student_grades(self, username=None, user_id=None) -> list:
         """
         Возвращает кортеж со всеми оценками определённого пользователя
         (username, subject_name, grade_value, grade_date, enrollment_date)
         """
+        if not user_id:
+            user_id = UserDatabase().get_user_id(username).user_id
         values = self.session.query(
             Users.username, Subjects.subject_name, Grades.grade_value, Grades.grade_date, Enrollments.enrollment_date
         ).join(
@@ -242,7 +257,7 @@ class StudentDatabase(BaseDataBase):
         ).join(
             Grades, Grades.enrollment_id == Enrollments.enrollment_id
         ).where(
-            Users.username == username
+            Users.user_id == user_id
         ).all()
 
         for value in values:
@@ -289,6 +304,21 @@ class StudentDatabase(BaseDataBase):
     def filter_subjects_by_name(self, subject_name) -> list[Type[Subjects]]:
         """Для поиска предмета по имени"""
         return self.session.query(Subjects).filter(Subjects.subject_name.ilike(f'%{subject_name}%')).all()
+
+    def get_all_grades(self, user_id) -> int:
+        values = self.session.query(
+            Subjects.subject_name, Grades.grade_value, Grades.grade_date, Enrollments.enrollment_date
+        ).join(
+            Users, Users.user_id == Enrollments.user_id,
+        ).join(
+            Subjects, Subjects.subject_id == Enrollments.subject_id
+        ).join(
+            Grades, Grades.enrollment_id == Enrollments.enrollment_id
+        ).where(
+            Users.user_id == user_id
+        ).all()
+
+        return len(values)
 
 
 class TaskDatabase(BaseDataBase):
@@ -341,6 +371,9 @@ class TaskDatabase(BaseDataBase):
             print(ex)
             return False
 
+    def get_count_of_tasks(self, user_id):
+        return len(self.session.query(Task).filter(Task.user_id == user_id).where(Task.completed == False).all())
+
 
 if __name__ == '__main__':
-    a = UserDatabase()
+    a = StudentDatabase()

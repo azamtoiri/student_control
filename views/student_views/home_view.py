@@ -3,7 +3,8 @@ import os
 import flet as ft
 from flet_route import Params, Basket
 
-from database.database import UserDatabase
+from database.database import UserDatabase, TaskDatabase
+from user_controls.average_grades_card import AverageGradesCard
 from user_controls.todo_card import TodoCard
 from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
@@ -11,6 +12,20 @@ from utils.create_container_home_view import create_container
 from utils.routes_url import StudentRoutes
 
 user_db = UserDatabase()
+
+
+class LazyDatabase:
+    def __init__(self):
+        self._database = None
+
+    @property
+    def database(self):
+        if self._database is None:
+            self._database = TaskDatabase()
+        return self._database
+
+
+lazy_db = LazyDatabase()
 
 
 def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -73,9 +88,14 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         # page.views.reverse()
 
     # user_stat count of TODO
-    todo_count = 1
-    user_stat_info_content = TodoCard(
-        todo_count, lambda e: go_to_do(e)
+    todo_count = lazy_db.database.get_count_of_tasks(USER_ID)
+    user_stat_info_content = ft.Column(
+        [
+            TodoCard(
+                todo_count, lambda e: go_to_do(e)
+            ),
+            AverageGradesCard(USER_ID, lambda e: page.go(StudentRoutes.GRADES_URL))
+        ]
     )
 
     # endregion
@@ -89,7 +109,7 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     user_stat_container = create_container(user_stat_info_content, col=6)
 
     # second stats info container
-    user_stat2_container = create_container(user_info_content, col=6)
+    user_stat2_container = create_container(user_stat_info_content, col=6)
 
     # endregion
 

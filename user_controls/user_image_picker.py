@@ -22,8 +22,8 @@ class UserImage(ft.UserControl):
                     left=140, top=140,
                     # left=120, right=0, bottom=120, top=0,
                     on_click=self.on_click,
-                    icon_color=ft.colors.DEEP_ORANGE, highlight_color=ft.colors.ORANGE_ACCENT,
-                    bgcolor=ft.colors.ORANGE_50,
+                    icon_color=ft.colors.SURFACE_VARIANT,
+                    bgcolor=ft.colors.SURFACE_TINT,
                     opacity=0.75, icon_size=20,
                     tooltip='Изменить изображение',
                     visible=not self.disabled

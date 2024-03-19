@@ -13,17 +13,25 @@ def main(page: ft.Page) -> None:
                 horizontal_alignment=ft.CrossAxisAlignment.END,
                 controls=[
                     ft.ListTile(
-                        leading=ft.Icon(ft.icons.CHECKLIST),
-                        title=ft.Text('Кол-во не завершенных todo: 8'),
-                        subtitle=ft.Row(
+                        leading=ft.Icon(ft.icons.STARS),
+                        title=ft.Text('Всего оценок'),
+                    ),
+                    ft.ExpansionTile(
+                        title=ft.Text('Средние оценки по предметам'),
+                        controls=[
+                            ft.ListTile(title=ft.Text("Предмет 1"), subtitle=ft.Text('90', text_align="end")),
+                            ft.ListTile(title=ft.Text("Предмет 1"), subtitle=ft.Text('90', text_align="end")),
+                            ft.ListTile(title=ft.Text("Предмет 1"), subtitle=ft.Text('90', text_align="end")),
+                        ]
+                    ),
+                    ft.ListTile(
+                        title=ft.Row(
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                             controls=[
-                                ft.Text('Перейти к не завершенным задачам'),
-                                ft.IconButton(ft.icons.NAVIGATE_NEXT,
-                                              icon_color=ft.colors.ORANGE,
-                                              selected_icon_color=ft.colors.ORANGE),
+                                ft.Text('Перейти к оценкам', text_align='start'),
+                                ft.IconButton(icon=ft.icons.NAVIGATE_NEXT)
                             ]
-                        )
+                        ),
                     )
                 ]
             )

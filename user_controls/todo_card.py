@@ -27,6 +27,7 @@ class TodoCard(ft.UserControl):
                                         icon=ft.icons.NAVIGATE_NEXT,
                                         icon_color=ft.colors.SURFACE_TINT,
                                         on_click=self.button_click,
+                                        bgcolor=ft.colors.SURFACE_VARIANT
                                     )
                                 ]
                             )

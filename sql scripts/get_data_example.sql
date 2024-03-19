@@ -1,7 +1,7 @@
 SELECT
+    Users.user_id,
   Subjects.subject_name AS subject_name,
-  Grades.grade_value AS grade_value,
-  Grades.grade_date AS grade_date
+  Grades.grade_value AS grade_value
 FROM
     Users
 JOIN
@@ -11,4 +11,6 @@ JOIN
 JOIN
   Grades ON Enrollments.enrollment_id = Grades.enrollment_id
 WHERE
-  Users.user_id = 1
+    Subjects.subject_name = 'Database Management'
+AND
+    Users.user_id = 1

@@ -11,7 +11,7 @@ sub_db = StudentDatabase()
 def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     def add_grades():
         """adding user grades"""
-        for grade in sub_db.get_student_grades(page.session.get('username')):
+        for grade in sub_db.get_student_grades(user_id=page.session.get('user_id')):
             add_grade(f'Предмет: {grade[1]}', f"{grade[2]}", f"Дата оценки: {grade[3].strftime('%d-%m-%Y')}")
 
     def add_grade(subject_title: str, grade_value: str, grade_date: str) -> None:
@@ -47,7 +47,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             try:
                 for _grade in sub_db.get_student_grade_for_exact_subject(e.page.session.get('username'), status):
                     add_grade(f'Предмет: {_grade[1]}', f"{_grade[2]}",
-                               f"Дата оценки: {_grade[3].strftime('%d-%m-%Y')}")
+                              f"Дата оценки: {_grade[3].strftime('%d-%m-%Y')}")
             except UserDontHaveGrade:
                 no_grades.value = 'Нет оценок по этому предмету'
                 no_grades.visible = True
