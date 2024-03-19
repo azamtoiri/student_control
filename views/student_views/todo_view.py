@@ -122,7 +122,7 @@ class TodoApp(ft.UserControl):
                     controls=[
                         self.new_task,
                         ft.FloatingActionButton(
-                            icon=ft.icons.ADD, on_click=self.add_clicked
+                            icon=ft.icons.ADD, on_click=self.add_clicked, bgcolor=ft.colors.SURFACE_TINT
                         ),
                     ],
                 ),

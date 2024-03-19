@@ -16,7 +16,7 @@ class TodoCard(ft.UserControl):
                     horizontal_alignment=ft.CrossAxisAlignment.END,
                     controls=[
                         ft.ListTile(
-                            leading=ft.Icon(ft.icons.CHECKLIST),
+                            leading=ft.Icon(ft.icons.CHECKLIST, color=ft.colors.SURFACE_TINT),
                             title=self.count,
                             subtitle=ft.Row(
                                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -25,8 +25,8 @@ class TodoCard(ft.UserControl):
                                     ft.IconButton(
                                         ref=self.button,
                                         icon=ft.icons.NAVIGATE_NEXT,
-                                        icon_color=ft.colors.ON_SURFACE_VARIANT,
-                                        on_click=self.button_click
+                                        icon_color=ft.colors.SURFACE_TINT,
+                                        on_click=self.button_click,
                                     )
                                 ]
                             )

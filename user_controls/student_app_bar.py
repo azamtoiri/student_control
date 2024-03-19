@@ -22,11 +22,18 @@ class STAppBar(AppBar):
         self.log_out_button.on_click = lambda e: self.log_out(e)
         self.edit_view_button = PopupMenuItem(text='Изменить профиль', icon=ft.icons.SETTINGS)
         self.edit_view_button.on_click = lambda e: self.edit_view_click(e)
+        self.change_theme_mode_button = ft.Ref[ft.PopupMenuItem]()
+
         self.appbar_items = [
             self.edit_view_button,
+            ft.PopupMenuItem(
+                ref=self.change_theme_mode_button,
+                on_click=lambda e: self.change_theme_mode(e),
+                icon=ft.icons.DARK_MODE,
+                text='Темная тема'
+            ),
             self.log_out_button,
         ]
-        self.adaptive = True
 
         self.color_scheme_pop_menu_icon = ft.Ref[ft.Icon]()
         self.deep_purple_color_button = ft.Ref[ft.PopupMenuItem]()
@@ -149,3 +156,17 @@ class STAppBar(AppBar):
         e.page.theme = ft.Theme(color_scheme_seed=color)
         e.page.update()
         self.update()
+
+    def change_theme_mode(self, e: ft.ControlEvent):
+        if e.page.theme_mode == ft.ThemeMode.DARK:
+            e.page.theme_mode = ft.ThemeMode.LIGHT
+            self.change_theme_mode_button.current.icon = ft.icons.DARK_MODE
+            self.change_theme_mode_button.current.text = 'Темная тема'
+            e.page.update()
+            self.update()
+        else:
+            e.page.theme_mode = ft.ThemeMode.DARK
+            self.change_theme_mode_button.current.icon = ft.icons.LIGHT_MODE
+            self.change_theme_mode_button.current.text = 'Светлая тема'
+            e.page.update()
+            self.update()
