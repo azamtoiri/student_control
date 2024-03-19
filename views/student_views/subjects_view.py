@@ -85,7 +85,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         show_course.on_click = lambda e: page.go(subject_url)
 
         subject_icon = ft.Icon(ft.icons.TASK)
-        subject_icon.color = ft.colors.GREEN if is_subscribed else ft.colors.GREY
+        subject_icon.color = ft.colors.SURFACE_TINT if is_subscribed else ft.colors.GREY
 
         _card = ft.Card(col={"md": 12, "lg": 4})
         _card.color = ft.colors.SURFACE_VARIANT

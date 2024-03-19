@@ -17,6 +17,8 @@ user_db = UserDatabase()
 
 
 def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+    page.session.clear()
+
     # region: Functions
     def display_register_form_error(field: str, message: str) -> None:
         password_field2 = password2_field

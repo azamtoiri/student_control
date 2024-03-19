@@ -6,6 +6,7 @@ from utils.routes_url import BaseRoutes
 
 
 def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+    page.session.clear()
     logo_image = ft.Image(src=LOGO_PATH)
     logo_image.width = 100
     logo_image.height = 100

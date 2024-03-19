@@ -132,7 +132,6 @@ class STAppBar(AppBar):
         e.page.session.clear()
         e.page.update()
         self.close_dlg(e)
-        self.page.session.clear()
 
     def log_out(self, e: ft.ControlEvent) -> None:
         self.dlg.title = ft.Text('Подтвердите действие')
