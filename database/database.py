@@ -73,7 +73,8 @@ class UserDatabase(BaseDataBase):
         if not hashed_password:
             raise NotRegistered('username')
         try:
-            verify(plain_password=password, hashed_password=hashed_password.password)
+            if not verify(plain_password=password, hashed_password=hashed_password.password):
+                raise NotRegistered('username')
         except ValueError as err:
             return False
         return True
