@@ -25,18 +25,17 @@ def ViewNotFound(page: ft.Page, params, basket):
 
 def main(page: ft.Page):
     page.title = 'Student Control'
-    # page.window_min_width = 700
-    # page.window_min_height = 900
-    page.theme_mode = 'light'
+    page.theme_mode = ft.ThemeMode.LIGHT
+    page.theme = ft.Theme(color_scheme_seed=ft.colors.GREEN)
 
-    route = Routing(page=page, app_routes=all_routes, not_found_view=ViewNotFound)
-    route.appbar = STAppBar()
+    route = Routing(page=page, app_routes=all_routes, not_found_view=ViewNotFound, appbar=STAppBar())
+    # route.appbar = STAppBar()
     page.on_route_change = route.change_route
-    page.appbar = route.appbar
+    # page.appbar = route.appbar
     page.session.set('username', 'admin')
     page.session.set('user_id', 1)
     page.session.set('is_auth', True)
-    page.go('/student/subjects')
+    page.go('/')
 
 
-ft.app(target=main)
+ft.app(target=main, upload_dir="assets/uploads", assets_dir="assets")
