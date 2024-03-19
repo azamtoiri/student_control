@@ -176,6 +176,7 @@ class StudentDatabase(BaseDataBase):
         return self.session.query(Subjects).filter(Subjects.subject_id == _id).first()
 
     def get_all_subjects(self) -> list[Type[Subjects]]:
+        """Return all subjects use for subjects_view"""
         return self.session.query(Subjects).all()
 
     def get_subject(self, subject_id) -> Type[Subjects]:
@@ -306,6 +307,7 @@ class StudentDatabase(BaseDataBase):
         return self.session.query(Subjects).filter(Subjects.subject_name.ilike(f'%{subject_name}%')).all()
 
     def get_all_grades(self, user_id) -> int:
+        """Return quantity of user grades"""
         values = self.session.query(
             Subjects.subject_name, Grades.grade_value, Grades.grade_date, Enrollments.enrollment_date
         ).join(
@@ -319,6 +321,9 @@ class StudentDatabase(BaseDataBase):
         ).all()
 
         return len(values)
+
+    def quantity_of_subjects(self, user_id) -> int:
+        return len(self.get_student_subjects(user_id=user_id))
 
 
 class TaskDatabase(BaseDataBase):

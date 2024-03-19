@@ -3,7 +3,7 @@ import flet as ft
 
 def create_container(content, col=None):
     box_shadow = ft.BoxShadow(
-        color=ft.colors.GREY,
+        color=ft.colors.SURFACE_TINT,
         offset=ft.Offset(1, 2),
         blur_radius=10,
     )

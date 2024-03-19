@@ -8,6 +8,7 @@ from user_controls.average_grades_card import AverageGradesCard
 from user_controls.todo_card import TodoCard
 from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
+from user_controls.user_subjects_card import UserSubjectsCard
 from utils.create_container_home_view import create_container
 from utils.routes_url import StudentRoutes
 
@@ -98,6 +99,12 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         ]
     )
 
+    user_stat2_info_content = ft.Column(
+        [
+            UserSubjectsCard(USER_ID, lambda e: page.go(StudentRoutes.SUBJECTS_URL))
+        ]
+    )
+
     # endregion
 
     # region: Containers
@@ -109,7 +116,7 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     user_stat_container = create_container(user_stat_info_content, col=6)
 
     # second stats info container
-    user_stat2_container = create_container(user_stat_info_content, col=6)
+    user_stat2_container = create_container(user_stat2_info_content, col=6)
 
     # endregion
 

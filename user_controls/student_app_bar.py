@@ -116,8 +116,8 @@ class STAppBar(AppBar):
             Container(width=10),
             Image(LOGO_PATH, width=70, height=70),
             Container(width=10),
-            Text('FOX', size=20, weight=FontWeight.BOLD),
-            Text('Hub', size=20)
+            Text('FOX', size=20, weight=FontWeight.BOLD, color=ft.colors.INVERSE_SURFACE),
+            Text('Hub', size=20, color=ft.colors.INVERSE_SURFACE)
         ]
 
         self.dlg = ft.AlertDialog(modal=True, adaptive=True, actions=[
