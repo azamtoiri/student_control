@@ -21,16 +21,16 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         _subject_title = ft.Text(subject_title)
 
         _grade_date = ft.Text(grade_date)
+        grade_icon = ft.Icon(name=ft.icons.GRADE_OUTLINED)
 
         _card = ft.Card(col={"md": 12, "lg": 4})
+        _card.color = ft.colors.SURFACE_VARIANT
         if int(grade_value) == 100:
-            _card.color = ft.colors.INVERSE_SURFACE
-        elif int(grade_value) >= 80:
-            _card.color = ft.colors.SURFACE
-        else:
-            _card.color = ft.colors.RED
+            _card.color = ft.colors.SURFACE_VARIANT
+            grade_icon.name = ft.icons.GRADE
+            grade_icon.color = ft.colors.SURFACE_TINT
         _card.content = ft.Container(content=ft.Column([
-            ft.ListTile(leading=ft.Icon(ft.icons.GRADE_OUTLINED), title=_grade_value,
+            ft.ListTile(leading=grade_icon, title=_grade_value,
                         subtitle=ft.Column([_subject_title, _grade_date], adaptive=True)),
             ft.Row(alignment=ft.MainAxisAlignment.END)
         ]), width=400, padding=10)
