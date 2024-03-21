@@ -74,9 +74,11 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         dlg.title = ft.Text('Подтвердите действие')
         dlg.content = ft.Text('Вы точно хотите выйти?')
         dlg.actions = [
-            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_), bgcolor=ft.colors.SURFACE_TINT, color=ft.colors.WHITE,
+            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_), bgcolor=ft.colors.SURFACE_TINT,
+                              color=ft.colors.WHITE,
                               ),
-            ft.ElevatedButton('Нет', on_click=lambda e_: close_dlg(e_), bgcolor=ft.colors.GREY, color=ft.colors.WHITE)
+            ft.ElevatedButton('Нет', on_click=lambda e_: close_dlg(e_), bgcolor=ft.colors.GREY,
+                              color=ft.colors.WHITE)
         ]
         e.page.dialog = dlg
         dlg.open = True

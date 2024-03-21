@@ -50,7 +50,7 @@ class STAppBar(AppBar):
             [
                 PopupMenuButton(
                     content=ft.Icon(ft.icons.PALETTE_OUTLINED, color=ft.colors.INVERSE_SURFACE,
-                                    ref=self.color_scheme_pop_menu_icon),
+                                    ref=self.color_scheme_pop_menu_icon, size=30),
                     items=[
                         PopupMenuItem(ref=self.deep_purple_color_button, content=ft.Row([
                             ft.Icon(ft.icons.PALETTE_OUTLINED, color=ft.colors.DEEP_PURPLE),
@@ -96,13 +96,14 @@ class STAppBar(AppBar):
                             ft.Icon(ft.icons.PALETTE_OUTLINED, color=ft.colors.PINK),
                             ft.Text('Розовый')
                         ]), on_click=lambda e: self.change_seed_color(e, ft.colors.PINK)),
-                    ]
+                    ],
+                    tooltip='Цветовая Схема'
                 ),
-                ft.Text('Цвет интерфейса', color=ft.colors.INVERSE_SURFACE),
                 Container(
                     content=PopupMenuButton(
                         content=ft.Icon(ft.icons.MENU, color=ft.colors.INVERSE_SURFACE),
                         items=self.appbar_items,
+                        tooltip='Показать меню'
                     ),
                     margin=margin.only(right=25)
                 ),
@@ -120,13 +121,16 @@ class STAppBar(AppBar):
             Text('Hub', size=20, color=ft.colors.INVERSE_SURFACE)
         ]
 
-        self.dlg = ft.AlertDialog(modal=True, adaptive=True, actions=[
-            ft.ElevatedButton('Да', on_click=lambda e: self.yes_click(e), bgcolor=ft.colors.GREEN,
-                              color=ft.colors.WHITE),
-            ft.ElevatedButton('Нет', on_click=lambda e: self.close_dlg(e), bgcolor=ft.colors.GREY,
-                              color=ft.colors.WHITE),
-        ],
-                                  actions_alignment=ft.MainAxisAlignment.CENTER)
+        self.dlg = ft.AlertDialog(
+            modal=True,
+            adaptive=True,
+            actions=[
+                ft.ElevatedButton('Да', on_click=lambda e: self.yes_click(e), bgcolor=ft.colors.SURFACE_TINT,
+                                  color=ft.colors.WHITE),
+                ft.ElevatedButton('Нет', on_click=lambda e: self.close_dlg(e), bgcolor=ft.colors.GREY,
+                                  color=ft.colors.WHITE),
+            ],
+            actions_alignment=ft.MainAxisAlignment.CENTER)
         self.title = self.appbar_title
         self.actions = [self.appbar_actions]
 
