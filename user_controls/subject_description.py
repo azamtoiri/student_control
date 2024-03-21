@@ -1,6 +1,7 @@
 import flet as ft
 
 from database.database import StudentDatabase
+from utils.create_container_home_view import create_expand_container
 
 
 class SubjectDescription(ft.UserControl):
@@ -26,12 +27,7 @@ class SubjectDescription(ft.UserControl):
             ]
         )
 
-        styled_description_container = ft.Container(
-            expand=True, border_radius=8, bgcolor=ft.colors.ON_SURFACE_VARIANT, height=200,
-            content=ft.Text(self.subject_information.description, size=15, color=ft.colors.ON_INVERSE_SURFACE),
-            alignment=ft.alignment.top_left,
-            padding=10
-        )
+        styled_description_container = create_expand_container(ft.Text(self.subject_information.description))
         # teacher images gets from db with self.subject_information
         subject_image = ft.Image('../assets/Fox_Hub_logo.png', height=200, width=200, expand=0)  # get_subject image
         teacher_image_and_fio = ft.Column(
@@ -51,14 +47,8 @@ class SubjectDescription(ft.UserControl):
             alignment=ft.alignment.center, height=90
         )
 
-        styled_teacher_information = ft.Container(
-            expand=True, border_radius=8, bgcolor=ft.colors.ON_SURFACE_VARIANT, height=200,
-            content=ft.Column(
-                [
-                    ft.Text('Информация об учителе', color=ft.colors.ON_INVERSE_SURFACE)
-                ]
-            ), alignment=ft.alignment.top_left,
-            padding=10
+        styled_teacher_information = create_expand_container(
+            ft.Text('Информация об учителе')
         )
 
         return ft.Column(
