@@ -1,7 +1,8 @@
-SELECT
+SELECT DISTINCT
     Users.user_id,
   Subjects.subject_name AS subject_name,
-  Grades.grade_value AS grade_value
+  Grades.grade_value AS grade_value,
+  subject_tasks.task_name
 FROM
     Users
 JOIN
@@ -10,7 +11,7 @@ JOIN
   Subjects ON Enrollments.subject_id = Subjects.subject_id
 JOIN
   Grades ON Enrollments.enrollment_id = Grades.enrollment_id
+JOIN
+    subject_tasks ON Subjects.subject_id = subject_tasks.subject_id
 WHERE
-    Subjects.subject_name = 'Database Management'
-AND
-    Users.user_id = 1
+    users.user_id = 4

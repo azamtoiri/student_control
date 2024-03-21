@@ -1,11 +1,11 @@
 from typing import Type, Optional
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 
 from constants import Connection
 from constants import UserDefaults
-from database.models import Base, Users, Subjects, Task, Enrollments, Grades
+from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks
 from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed, \
     UserDontHaveGrade
 from utils.jwt_hash import verify, hash_
@@ -178,7 +178,7 @@ class StudentDatabase(BaseDataBase):
 
     def get_all_subjects(self) -> list[Type[Subjects]]:
         """Return all subjects use for subjects_view"""
-        return self.session.query(Subjects).all()
+        return self.session.query(Subjects).order_by(asc(Subjects.subject_name)).all()
 
     def get_subject(self, subject_id) -> Type[Subjects]:
         return self.session.query(Subjects).filter(Subjects.subject_id == subject_id).first()
@@ -194,8 +194,8 @@ class StudentDatabase(BaseDataBase):
             ).join(
                 Enrollments, Users.user_id == Enrollments.user_id
             ).join(
-                Subjects, Subjects.subject_id == Enrollments.subject_id)
-            .where(Users.user_id == user_id).all()
+                Subjects, Subjects.subject_id == Enrollments.subject_id
+            ).where(Users.user_id == user_id).all()
         )
         if len(user_subject) == 0:
             raise DontHaveGrades()
@@ -212,7 +212,7 @@ class StudentDatabase(BaseDataBase):
         ).join(
             Grades, Grades.enrollment_id == Enrollments.enrollment_id
         ).filter(
-            Subjects.subject_name == subject_name, Users.user_id == 1
+            Subjects.subject_name == subject_name, Users.user_id == user_id
         ).all()
         count = 0
         for value in values:
@@ -261,6 +261,9 @@ class StudentDatabase(BaseDataBase):
         ).where(
             Users.user_id == user_id
         ).all()
+
+        if len(values) < 1:
+            raise DontHaveGrades()
 
         for value in values:
             yield value
@@ -325,6 +328,38 @@ class StudentDatabase(BaseDataBase):
 
     def quantity_of_subjects(self, user_id) -> int:
         return len(self.get_student_subjects(user_id=user_id))
+
+    def get_student_subject_tasks(self, user_id) -> list:
+        """Get all subject_tasks of user"""
+        res = self.session.query(
+            SubjectTasks.subject_task_id, SubjectTasks.task_name, Users.user_id, Subjects.subject_name,
+            Enrollments.enrollment_id
+        ).join(
+            Enrollments, Users.user_id == Enrollments.user_id
+        ).join(
+            Subjects, Subjects.subject_id == Enrollments.subject_id
+        ).join(
+            SubjectTasks, SubjectTasks.subject_id == Subjects.subject_id
+        ).where(
+            Users.user_id == user_id
+        ).all()
+        return res
+
+    def get_student_subject_tasks_by_name(self, user_id, subject_name) -> list:
+        res = self.session.query(
+            SubjectTasks.task_name, Users.user_id, Subjects.subject_id,
+            Enrollments.enrollment_id
+        ).join(
+            Enrollments, Users.user_id == Enrollments.user_id
+        ).join(
+            Subjects, Subjects.subject_id == Enrollments.subject_id
+        ).join(
+            SubjectTasks, SubjectTasks.subject_id == Subjects.subject_id
+        ).filter(
+            Users.user_id == user_id, Subjects.subject_name == subject_name
+        ).all()
+
+        return res
 
 
 class TaskDatabase(BaseDataBase):

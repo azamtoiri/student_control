@@ -7,6 +7,16 @@ CREATE TABLE Subjects
     short_description VARCHAR(250) NOT NULL
 );
 
+CREATE TABLE SubjectTasks
+(
+    subject_task_id SERIAL PRIMARY KEY NOT NULL UNIQUE,
+    task_name VARCHAR(250) NOT NULL UNIQUE,
+    completed BOOLEAN default false,
+    subject_id INTEGER,
+
+    FOREIGN KEY (subject_id) REFERENCES Subjects(subject_id)
+);
+
 -- Таблица пользователей
 CREATE TABLE Users
 (

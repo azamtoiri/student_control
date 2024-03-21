@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, expression
 
 Base = declarative_base()
 
@@ -18,31 +18,41 @@ class Users(Base):
     email = Column(String)  # email
     username = Column(String, unique=True)  # username for login
     password = Column(String)  # password for login
-    is_staff = Column(Boolean, default=False)
-    is_superuser = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    user_image = Column(String, default='default_user_image.png')
+    is_staff = Column(Boolean, server_default=expression.false(), default=False)
+    is_superuser = Column(Boolean, server_default=expression.false(), default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), default=func.now())
+    user_image = Column(String, server_default='default_user_image.png', default='default_user_image.png')
 
     enrollments = relationship('Enrollments', backref='users', cascade='all, delete-orphan, delete')
+    subjects = relationship('Subjects', backref='users', cascade='all')
 
 
 # class Topics(Base):
 #     __tablename__ = 'topics'
-#
 #     topic_id = Column(Integer, primary_key=True, unique=True, nullable=False)
 #     topic_name = Column(String, unique=True, nullable=False)
+#     topic_task_id = Column(String, unique=True, nullable=False)
+
+class SubjectTasks(Base):
+    __tablename__ = 'subject_tasks'
+    subject_task_id = Column(Integer, primary_key=True, unique=True, nullable=False)
+    task_name = Column(String, nullable=False, unique=True)
+    completed = Column(Boolean, server_default=expression.false(), default=False)
+    subject_id = Column(Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'))
 
 
+# todo each subject has teacher: on creating subject will add user_id
 class Subjects(Base):
     __tablename__ = 'subjects'
 
     subject_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False)
     subject_name = Column(String)
     short_description = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    # topic_id = Column(Integer, ForeignKey('topics.topic_id'), nullable=True)
 
     enrollments = relationship('Enrollments', backref='subject', cascade='all')
+    subject_tasks = relationship('SubjectTasks', backref='subject', cascade='all')
 
 
 class Grades(Base):
@@ -51,8 +61,7 @@ class Grades(Base):
     grade_id = Column(Integer, primary_key=True)
     enrollment_id = Column(Integer, ForeignKey('enrollments.enrollment_id', ondelete='CASCADE'))
     grade_value = Column(Integer)
-    grade_date = Column(DateTime(timezone=True), server_default=func.now())
-    # topic_id = Column(Integer, ForeignKey('topics.topic_id'), nullable=True)
+    grade_date = Column(DateTime(timezone=True), server_default=func.now(), default=func.now())
 
 
 # todo: Date time now for creating
@@ -62,8 +71,8 @@ class Enrollments(Base):
     enrollment_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'))
     subject_id = Column(Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'))
-    # is_done = Column(Boolean, default=False) # for done or not subject
     enrollment_date = Column(DateTime(timezone=True), server_default=func.now())
+    completed = Column(Boolean, server_default=expression.false(), default=False)
 
 
 class Task(Base):
@@ -71,5 +80,5 @@ class Task(Base):
 
     task_id = Column(Integer, primary_key=True)
     task_name = Column(String, nullable=False)
-    completed = Column(Boolean, default=False)
+    completed = Column(Boolean, server_default=expression.false(), default=False)
     user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
