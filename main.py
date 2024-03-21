@@ -32,10 +32,12 @@ def main(page: ft.Page):
     # route.appbar = STAppBar()
     page.on_route_change = route.change_route
     # page.appbar = route.appbar
-    page.session.set('username', 'admin')
-    page.session.set('user_id', 1)
+    page.session.set('username', 'mark123')
+    page.session.set('user_id', 4)
     page.session.set('is_auth', True)
-    page.go('/')
+    # page.go('/home-edit')
+    page.go('/subject/1')
+    # page.go('/login')
 
 
 ft.app(target=main, upload_dir="assets/uploads", assets_dir="assets")

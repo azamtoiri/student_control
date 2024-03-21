@@ -1,12 +1,41 @@
 import flet as ft
 from flet_route import Params, Basket
 
+from database.database import StudentDatabase
+from user_controls.student_subject_tasks_card import StudentSubjectTasksCard
+from utils.exceptions import DontHaveGrades
 from utils.routes_url import StudentRoutes
 
 
 def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+    USER_ID = page.session.get('user_id')
+    USERNAME = page.session.get('username')
+
+    db = StudentDatabase()
+
+    content = ft.Column()
+
+    dont_have_tasks = ft.Row(
+        alignment=ft.MainAxisAlignment.CENTER,
+        visible=False,
+        controls=[ft.Text('Нет заданий', size=20, text_align=ft.TextAlign.CENTER, color=ft.colors.SURFACE_TINT)]
+    )
+
+    try:
+        subjects = db.get_student_subjects(user_id=USER_ID)
+
+        for subject in subjects:
+            content.controls.append(StudentSubjectTasksCard(USER_ID, subject[2]))
+    except DontHaveGrades as error:
+        dont_have_tasks.visible = True
+        page.update()
+
     return ft.View(
         bgcolor=ft.colors.SURFACE_VARIANT,
         route=StudentRoutes.TASKS_URL,
-        controls=[]
+        controls=[
+            content,
+            dont_have_tasks
+        ]
+        # controls=content
     )

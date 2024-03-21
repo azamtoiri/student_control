@@ -198,7 +198,7 @@ class TodoApp(ft.UserControl):
 
 def TodoView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     username = page.session.get('username')
-    user_id = UserDatabase().filter_users(username=username)[0].user_id
+    user_id = page.session.get('user_id')
     app = TodoApp(user_id)
     return ft.View(
         # vertical_alignment=ft.MainAxisAlignment.CENTER,

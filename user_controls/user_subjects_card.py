@@ -1,6 +1,7 @@
 import flet as ft
 
 from database.database import StudentDatabase
+from utils.exceptions import DontHaveGrades
 
 
 class UserSubjectsCard(ft.UserControl):
@@ -11,7 +12,10 @@ class UserSubjectsCard(ft.UserControl):
         self.db = StudentDatabase()
         self.count_of_grades_text = ft.Ref[ft.Text]()
         self.average_grades = ft.Ref[ft.Text]()
-        self.all_grades_count = self.db.get_all_grades(self.user_id)
+        try:
+            self.all_grades_count = self.db.quantity_of_subjects(self.user_id)
+        except DontHaveGrades as err:
+            self.all_grades_count = 0
 
     def build(self):
         subjects_and_values = self.create_grades_controls()
@@ -49,11 +53,16 @@ class UserSubjectsCard(ft.UserControl):
         )
 
     def create_grades_controls(self) -> list[ft.Control]:
-        all = []
-        for i in self.db.get_student_subjects(user_id=self.user_id):
-            all.append(
-                ft.ListTile(
-                    title=ft.Text(i[2]),
+        all_subjects = []
+        count = 1
+        try:
+            for i in self.db.get_student_subjects(user_id=self.user_id):
+                all_subjects.append(
+                    ft.ListTile(
+                        title=ft.Text(f'{count}. {i[2]}'),
+                    )
                 )
-            )
-        return all
+                count += 1
+            return all_subjects
+        except DontHaveGrades as ex:
+            return []

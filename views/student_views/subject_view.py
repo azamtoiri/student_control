@@ -93,13 +93,13 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     subscribe_button = ft.ElevatedButton('Записаться на курс')
     subscribe_button.on_click = lambda e: subscribe_click(e)
     subscribe_button.color = ft.colors.WHITE
-    subscribe_button.bgcolor = ft.colors.GREEN
+    subscribe_button.bgcolor = ft.colors.SURFACE_TINT
     subscribe_button.visible = not is_subscribed
 
     unsubscribe_button = ft.ElevatedButton('Отписаться от курса')
     unsubscribe_button.on_click = lambda e: unsubscribe_click(e)
     unsubscribe_button.color = ft.colors.WHITE
-    unsubscribe_button.bgcolor = ft.colors.RED
+    unsubscribe_button.bgcolor = ft.colors.INVERSE_SURFACE
     unsubscribe_button.visible = is_subscribed
 
     # endregion

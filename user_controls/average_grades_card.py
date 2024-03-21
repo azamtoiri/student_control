@@ -1,6 +1,7 @@
 import flet as ft
 
 from database.database import StudentDatabase
+from utils.exceptions import DontHaveGrades
 
 
 class AverageGradesCard(ft.UserControl):
@@ -47,11 +48,16 @@ class AverageGradesCard(ft.UserControl):
 
     def create_grades_controls(self) -> list[ft.Control]:
         all = []
-        for i in self.db.get_student_subjects(user_id=self.user_id):
-            all.append(
-                ft.ListTile(title=ft.Text(i[2]),
-                            subtitle=ft.Text(
-                                f'Средняя оценка {self.db.count_average_subject_grades(subject_name=i[2], user_id=self.user_id)}',
-                                text_align=ft.TextAlign.END))
-            )
-        return all
+        try:
+            for i in self.db.get_student_subjects(user_id=self.user_id):
+                all.append(
+                    ft.ListTile(
+                        title=ft.Text(i[2]),
+                        subtitle=ft.Text(
+                            f'Средняя оценка {self.db.count_average_subject_grades(subject_name=i[2], user_id=self.user_id)}',
+                            text_align=ft.TextAlign.END)
+                    )
+                )
+            return all
+        except DontHaveGrades as ex:
+            return []

@@ -13,15 +13,21 @@ def main(page: ft.Page) -> None:
                 horizontal_alignment=ft.CrossAxisAlignment.END,
                 controls=[
                     ft.ListTile(
-                        leading=ft.Icon(ft.icons.STARS),
-                        title=ft.Text('Всего оценок'),
+                        leading=ft.Icon(ft.icons.TASK_ALT),
+                        title=ft.Text('Имя предмета'),
                     ),
                     ft.ExpansionTile(
-                        title=ft.Text('Средние оценки по предметам'),
+                        title=ft.Text('Задания'),
                         controls=[
-                            ft.ListTile(title=ft.Text("Предмет 1"), subtitle=ft.Text('90', text_align="end")),
-                            ft.ListTile(title=ft.Text("Предмет 1"), subtitle=ft.Text('90', text_align="end")),
-                            ft.ListTile(title=ft.Text("Предмет 1"), subtitle=ft.Text('90', text_align="end")),
+                            ft.ListTile(
+                                title=ft.Row(
+                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                    controls=[
+                                        ft.Text("Прочитать роман Преступление и наказание"),
+                                        ft.Checkbox()
+                                    ]
+                                )
+                            ),
                         ]
                     ),
                     ft.ListTile(
