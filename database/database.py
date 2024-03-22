@@ -201,25 +201,17 @@ class StudentDatabase(BaseDataBase):
             raise DontHaveGrades()
         return user_subject
 
-    def count_average_subject_grades(self, subject_name=None, sub_name=None, user_id=None) -> int or str:
-        """Возвращает все оценки по предмету"""
-        values = self.session.query(
-            Users, Subjects.subject_name, Grades.grade_value, Enrollments
-        ).join(
-            Users, Users.user_id == Enrollments.user_id,
-        ).join(
-            Subjects, Subjects.subject_id == Enrollments.subject_id
-        ).join(
-            Grades, Grades.enrollment_id == Enrollments.enrollment_id
-        ).filter(
-            Subjects.subject_name == subject_name, Users.user_id == user_id
-        ).all()
-        count = 0
-        for value in values:
-            if value[2]:
-                count += value[2]
-        if values:
-            return count // len(values)
+    def get_user_subjects(self, user_id):
+        """Возвращает предмет пользователя который у него есть *(для учителя)*"""
+        user = self.session.query(Users).filter_by(user_id=user_id).first()
+        if user is None:
+            raise ValueError(f"User with ID {user_id} not found")
+
+        # Получаем предметы (Subjects) для данного пользователя
+        user_subjects = user.subjects
+
+        return user_subjects
+
     def count_average_subject_grades(self, subject_name=None, user_id=None) -> int or str:
         """Возвращает среднюю оценку по предмету для пользователя"""
         avg_grade = (
@@ -369,6 +361,66 @@ class StudentDatabase(BaseDataBase):
         ).all()
 
         return res
+
+    # region: Subject_task
+    def get_status_of_task_by_user_id(self, user_id, subject_task_id):
+        """Gets status of the subject_task"""
+        if not self.check_status_exist(user_id, subject_task_id):
+            self.add_subjects_task_status(user_id, subject_task_id)
+
+        status = self.session.query(
+            CompletedTaskStatus.completed
+        ).join(
+            SubjectTasks
+        ).filter(
+            CompletedTaskStatus.user_id == user_id,
+            SubjectTasks.subject_task_id == subject_task_id
+        ).first()
+
+        return status[0] if status is not None else None
+
+    def get_completed_task_status(self, user_id, subject_task_id) -> Type[CompletedTaskStatus]:
+        return self.session.query(CompletedTaskStatus).filter(
+            CompletedTaskStatus.user_id == user_id,
+            CompletedTaskStatus.subject_task_id == subject_task_id
+        ).first()
+
+    def check_status_exist(self, user_id, subject_task_id) -> bool:
+        """Проверяет есть ли такая запись в таблице"""
+        # Используем метод query.exists() для проверки существования записи в запросе
+        exists = self.session.query(
+            self.session.query(CompletedTaskStatus)
+            .join(SubjectTasks)
+            .filter(CompletedTaskStatus.user_id == user_id, SubjectTasks.subject_task_id == subject_task_id)
+            .exists()
+        ).scalar()
+
+        return exists
+
+    def add_subjects_task_status(self, user_id, subject_task_id) -> bool:
+        try:
+            # checking status exist before adding
+            sub_status = CompletedTaskStatus(user_id=user_id, subject_task_id=subject_task_id)
+            self.session.add(sub_status)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
+    def change_task_status(self, user_id, subject_task_id, value: bool) -> bool:
+        try:
+            completed_task_status = self.get_completed_task_status(user_id, subject_task_id)
+            completed_task_status.completed = value
+            self.session.add(completed_task_status)
+            self.session.commit()
+
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
+    # endregion
 
 
 class TaskDatabase(BaseDataBase):
