@@ -220,6 +220,19 @@ class StudentDatabase(BaseDataBase):
                 count += value[2]
         if values:
             return count // len(values)
+    def count_average_subject_grades(self, subject_name=None, user_id=None) -> int or str:
+        """Возвращает среднюю оценку по предмету для пользователя"""
+        avg_grade = (
+            self.session.query(func.avg(Grades.grade_value))
+            .join(Enrollments, Grades.enrollment_id == Enrollments.enrollment_id)
+            .join(Users, Users.user_id == Enrollments.user_id)
+            .join(Subjects, Subjects.subject_id == Enrollments.subject_id)
+            .filter(Subjects.subject_name == subject_name, Users.user_id == user_id)
+            .scalar()
+        )
+
+        if avg_grade is not None:
+            return round(avg_grade)  # Округляем до целого числа
         else:
             return 'Нет оценок'
 
@@ -258,7 +271,7 @@ class StudentDatabase(BaseDataBase):
             Subjects, Subjects.subject_id == Enrollments.subject_id
         ).join(
             Grades, Grades.enrollment_id == Enrollments.enrollment_id
-        ).where(
+        ).filter(
             Users.user_id == user_id
         ).all()
 
@@ -269,17 +282,13 @@ class StudentDatabase(BaseDataBase):
             yield value
 
     def check_student_subscribe(self, user_id, subject_id) -> bool:
-        b = self.session.query(
-            Enrollments
-        ).where(
-            Enrollments.user_id == user_id
-        ).where(
+        """Проверяет подписку студента на определенный предмет"""
+        subscription = self.session.query(Enrollments).filter(
+            Enrollments.user_id == user_id,
             Enrollments.subject_id == subject_id
         ).first()
-        if b:
-            return True
-        else:
-            return False
+
+        return bool(subscription)
 
     def subscribe_student_to_subject(self, user_id, subject_id) -> bool:
         try:
@@ -347,7 +356,7 @@ class StudentDatabase(BaseDataBase):
 
     def get_student_subject_tasks_by_name(self, user_id, subject_name) -> list:
         res = self.session.query(
-            SubjectTasks.task_name, Users.user_id, Subjects.subject_id,
+            SubjectTasks.task_name, SubjectTasks.subject_task_id, Users.user_id, Subjects.subject_id,
             Enrollments.enrollment_id
         ).join(
             Enrollments, Users.user_id == Enrollments.user_id
