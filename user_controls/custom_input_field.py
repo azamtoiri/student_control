@@ -1,4 +1,4 @@
-import time
+import asyncio
 from typing import Optional
 
 import flet_material as fm
@@ -38,14 +38,13 @@ class CustomInputField(UserControl):
         self.input_box_content = TextField(col={"md": 6, "lg": 4})
         self.input_box_content.hint_text = title
         self.input_box_content.hint_style = TextStyle(color=BORDER_COLOR)
-        self.input_box_content.focused_border_color = colors.ON_SURFACE_VARIANT
+        self.input_box_content.border_color = BORDER_COLOR
         self.input_box_content.border_width = 1
         self.input_box_content.cursor_width = 0.5
         self.input_box_content.border_radius = 8
-        self.input_box_content.color = colors.SURFACE_TINT
         self.input_box_content.cursor_color = colors.BLACK
+        self.input_box_content.color = BORDER_COLOR
         self.input_box_content.text_size = 14
-        self.input_box_content.border_color = colors.SURFACE_TINT
         self.input_box_content.bgcolor = BG_COLOR
         self.input_box_content.password = password
         self.input_box_content.can_reveal_password = password
@@ -95,39 +94,39 @@ class CustomInputField(UserControl):
         self.obj.spacing = 5
         self.object = self.obj
 
-    def set_ok(self) -> None:
+    async def set_ok(self) -> None:
         """does not work yet"""
         self.loader.value = 0
-        self.loader.update()
+        await self.loader.update_async()
 
         self.status.offset = Offset(-0.5, 0)
         self.status.opacity = 1
-        self.update()
-        time.sleep(1)
+        await self.update_async()
+        await asyncio.sleep(1)
 
         self.status.content.value = True
         self.status.animate_checkbox(e=None)
         self.status.update()
 
-    def set_fail(self, message: Optional[str] = "Error") -> None:
+    async def set_fail(self, message: Optional[str] = "Error") -> None:
         self.loader.value = 0
-        self.loader.update()
+        await self.loader.update_async()
 
         self.input_box_content.error_text = message
-        self.input_box_content.update()
-        time.sleep(1)
-        self.update()
+        await self.input_box_content.update_async()
+        await asyncio.sleep(1)
+        await self.update_async()
 
-    def set_loader_animation(self, e) -> None:
+    async def set_loader_animation(self, e) -> None:
         # function starts the loader if the text field lengths ore not 0
         if len(self.input_box.content.value) != 0:
             self.loader.value = None
         else:
             self.loader.value = 0
 
-        self.loader.update()
+        await self.loader.update_async()
 
-    def focus_shadow(self, e) -> None:
+    async def focus_shadow(self, e) -> None:
         """Focus shadow when focusing"""
         self.error.visible = False
         # self.input_box.content.border_color = BORDER_COLOR
@@ -139,14 +138,14 @@ class CustomInputField(UserControl):
             color=colors.with_opacity(0.25, BORDER_COLOR),
             offset=Offset(4, 4)
         )
-        self.update()
-        self.set_loader_animation(e=None)
+        await self.update_async()
+        await self.set_loader_animation(e=None)
 
-    def blur_shadow(self, e):
+    async def blur_shadow(self, e):
         """ Blur when the textfield loses focus"""
         self.input_box.shadow = None
-        self.update()
-        self.set_loader_animation(e=None)
+        await self.update_async()
+        await self.set_loader_animation(e=None)
 
     def build(self):
         return self.object

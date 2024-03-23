@@ -217,7 +217,7 @@ class Routing:
 
                 if url[1]:
                     self.page.views.clear()
-                view = await url[2](
+                view = url[2](
                     page=self.page,
                     params=self.__params,
                     basket=self.__basket

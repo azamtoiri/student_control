@@ -5,23 +5,20 @@ import flet as ft
 from flet_route import Params, Basket
 
 from constants import LOGO_PATH
-from utils.routes_url import BaseRoutes
 from database.database import UserDatabase
 from user_controls.banners import SuccessBanner
 from user_controls.custom_input_field import CustomInputField
 from user_controls.input_filter import TextOnlyInputFilterRu
 from utils.exceptions import RequiredField, PasswordDontMatching, AlreadyRegistered, NotRegistered
 from utils.jwt_hash import hash_
-from utils.lazy_db import LazyDatabase
+from utils.routes_url import BaseRoutes
 
-user_db = LazyDatabase(UserDatabase)
+user_db = UserDatabase()
 
 
 def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
-    page.session.clear()
-
     # region: Functions
-    def display_register_form_error(field: str, message: str) -> None:
+    async def display_register_form_error(field: str, message: str) -> None:
         password_field2 = password2_field
 
         fields = {
@@ -39,22 +36,23 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         if field in fields.keys():
             # fields[field].input_box_content.error_text = message
             fields[field].set_fail(message)
+            await page.update_async()
 
-    def display_success_banner(message: str) -> None:
+    async def display_success_banner(message: str) -> None:
         banner = SuccessBanner(page, message)
         page.show_banner(banner)
-        page.update()
+        await page.update_async()
 
-    def hide_banner() -> None:
+    async def hide_banner() -> None:
         if page.banner is not None:
             page.banner.open = False
-            page.update()
+            await page.update_async()
 
-    def login_click(e: ft.ControlEvent) -> None:
+    async def login_click(e: ft.ControlEvent) -> None:
         e.page.route = BaseRoutes.LOGIN_URL
-        e.page.update()
+        await e.page.update_async()
 
-    def register_click(e: ft.Container) -> None:
+    async def register_click(e: ft.Container) -> None:
         try:
 
             # region: Form fields
@@ -98,27 +96,27 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 # hashing password
                 password = hash_(password2)
 
-            user_db.database.register_user(
+            user_db.register_user(
                 first_name=first_name, last_name=last_name, middle_name=middle_name,
                 username=username, password=password, group=group, course=course, age=age, email=email
             )
 
             page.route = BaseRoutes.LOGIN_URL
-            page.update()
-            display_success_banner('Вы были успешно зарегистрированы')
+            await page.update_async()
+            await display_success_banner('Вы были успешно зарегистрированы')
             time.sleep(2)
-            hide_banner()
+            await hide_banner()
         except RequiredField as error:
-            display_register_form_error(error.field, str(error))
+            await display_register_form_error(error.field, str(error))
 
         except NotRegistered as error:
-            display_register_form_error('username', str(error))
+            await display_register_form_error('username', str(error))
 
         except AlreadyRegistered as error:
             # display_warning_banner(str(error))
-            display_register_form_error('username', str(error))
+            await display_register_form_error('username', str(error))
         except PasswordDontMatching as error:
-            display_register_form_error(error.field, str(error))
+            await display_register_form_error(error.field, str(error))
         except Exception as error:
             print(error)
             # display_warning_banner(str(error))
@@ -188,7 +186,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     login_button.content = ft.Text(
         value='Войти', size=15, color=ft.colors.with_opacity(0.5, ft.colors.BLUE)
     )
-    login_button.on_click = lambda e: login_click(e)
+    login_button.on_click = login_click
     # endregion
 
     # region: Some text

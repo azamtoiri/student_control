@@ -7,9 +7,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-flet = "0.21.1"
+flet = "^0.20.0"
 psycopg2 = "^2.9.9"
-psycopg2-binary = "^2.9.1"
 sqlalchemy = "^2.0.27"
 flet-route = "^0.3.2"
 flet-material = "^0.3.3"
@@ -18,6 +17,8 @@ python-decouple = "^3.8"
 bcrypt = "4.0.1"
 alembic = "^1.13.1"
 pytest = "^8.1.1"
+flet-fastapi = "^0.20.2"
+uvicorn = "^0.29.0"
 
 
 [build-system]

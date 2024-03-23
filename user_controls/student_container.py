@@ -1,5 +1,5 @@
 from typing import Optional
-import flet as ft
+
 from flet import UserControl, LinearGradient, alignment, Control, Container, Scale, animation, AnimationCurve, colors
 
 
@@ -35,9 +35,9 @@ class STContainer(UserControl):
         return self.main_container
 
     @staticmethod
-    def on_hover(e):
+    async def on_hover(e):
         if e.control.scale != 1.120:
             e.control.scale = 1.120
         else:
             e.control.scale = 1
-        e.control.update()
+        await e.control.update_async()

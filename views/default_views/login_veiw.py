@@ -1,3 +1,4 @@
+import asyncio
 import time
 
 import flet as ft
@@ -14,17 +15,15 @@ user_db = LazyDatabase(UserDatabase)
 
 
 def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
-    page.session.clear()
-
-    def display_login_form_error(field: str, message: str) -> None:
+    async def display_login_form_error(field: str, message: str) -> None:
         fields = {'username': username_field, 'password': password_field}
         if field in fields.keys():
             # fields[field].input_box_content.error_text = message
-            fields[field].set_fail(message)
+            await fields[field].set_fail(message)
+            await page.update_async()
 
     # region: Functions
-    def login_click(e: ft.ControlEvent) -> None:
-        """Login user to the system."""
+    async def login_click(e: ft.ControlEvent) -> None:
         username = str(username_field.input_box_content.value).strip() if len(
             username_field.input_box_content.value) else None
         password = str(password_field.input_box_content.value).strip() if len(
@@ -40,24 +39,24 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 e.page.session.set("is_staff", True)
                 e.page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
                 e.page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
-                e.page.update()
+                await e.page.update_async()
                 time.sleep(0.1)
-                e.page.go(BaseRoutes.TEACHER_MAIN_URL)
+                await e.page.go_async(BaseRoutes.TEACHER_MAIN_URL)
 
             else:
                 e.page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
                 e.page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
-                e.page.update()
+                await e.page.update_async()
                 time.sleep(0.1)
-                e.page.go(BaseRoutes.STUDENT_MAIN_URL)
+                await e.page.go_async(BaseRoutes.STUDENT_MAIN_URL)
 
         except RequiredField as error:
-            display_login_form_error(error.field, str(error))
+            await display_login_form_error(error.field, str(error))
         except NotRegistered as error:
-            display_login_form_error('username', str(error))
+            await display_login_form_error('username', str(error))
 
-    def register_click(e: ft.ControlEvent) -> None:
-        e.page.go(BaseRoutes.REGISTER_URL)
+    async def register_click(e: ft.ControlEvent) -> None:
+        await e.page.go_async(BaseRoutes.REGISTER_URL)
 
     # endregion
 
@@ -90,9 +89,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     # region: Buttons
-    login_button = ft.ElevatedButton(
-
-    )
+    login_button = ft.ElevatedButton()
     login_button.text = "Войти"
     login_button.icon = ft.icons.LOGIN
     login_button.width = 400
@@ -106,7 +103,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     create_account_button.alignment = ft.alignment.center
     create_account_button.width = 150
     create_account_button.height = 45
-    create_account_button.on_click = lambda e: register_click(e)
+    create_account_button.on_click = register_click
     # endregion
 
     # region: Texts

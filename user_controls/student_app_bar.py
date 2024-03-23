@@ -142,46 +142,46 @@ class STAppBar(AppBar):
         self.title = self.appbar_title
         self.actions = [self.appbar_actions]
 
-    def close_dlg(self, e: ft.ControlEvent):
+    async def close_dlg(self, e: ft.ControlEvent):
         self.dlg.open = False
-        e.control.page.update()
+        await e.control.page.update_async()
 
-    def yes_click(self, e: ft.ControlEvent):
+    async def yes_click(self, e: ft.ControlEvent):
         e.page.route = BaseRoutes.INDEX_URL
         e.page.session.clear()
-        e.page.update()
-        self.close_dlg(e)
+        await e.page.update_async()
+        await self.close_dlg(e)
 
-    def log_out(self, e: ft.ControlEvent) -> None:
+    async def log_out(self, e: ft.ControlEvent) -> None:
         self.dlg.title = ft.Text('Подтвердите действие')
         self.dlg.content = ft.Text('Вы точно хотите выйти?')
         e.page.dialog = self.dlg
         self.dlg.open = True
-        e.page.update()
+        await self.update_async()
 
-    def edit_view_click(self, e: ft.ControlEvent) -> None:
+    async def edit_view_click(self, e: ft.ControlEvent) -> None:
         self.edit_view_button._disabled = False
         e.page.route = BaseRoutes.HOME_EDIT_URL
-        e.page.update()
+        await e.page.update_async()
 
-    def change_seed_color(self, e: ft.ControlEvent, color: ft.colors) -> None:
+    async def change_seed_color(self, e: ft.ControlEvent, color: ft.colors) -> None:
         e.page.theme = ft.Theme(color_scheme_seed=color)
         UserDatabase().set_seed_color(user_id=e.page.session.get('user_id'), seed_color=color)
-        e.page.update()
-        self.update()
+        await e.page.update_async()
+        await self.update_async()
 
-    def change_theme_mode(self, e: ft.ControlEvent):
+    async def change_theme_mode(self, e: ft.ControlEvent):
         if e.page.theme_mode == ft.ThemeMode.DARK:
             e.page.theme_mode = ft.ThemeMode.LIGHT
             UserDatabase().set_theme_mode(user_id=e.page.session.get('user_id'), theme_mode=ft.ThemeMode.LIGHT.value)
             self.change_theme_mode_button.current.icon = ft.icons.DARK_MODE
             self.change_theme_mode_button.current.text = 'Темная тема'
-            e.page.update()
-            self.update()
+            await e.page.update_async()
+            await self.update_async()
         else:
             e.page.theme_mode = ft.ThemeMode.DARK
             self.change_theme_mode_button.current.icon = ft.icons.LIGHT_MODE
             UserDatabase().set_theme_mode(user_id=e.page.session.get('user_id'), theme_mode=ft.ThemeMode.DARK.value)
             self.change_theme_mode_button.current.text = 'Светлая тема'
-            e.page.update()
-            self.update()
+            await e.page.update_async()
+            await self.update_async()
