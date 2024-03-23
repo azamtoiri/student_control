@@ -48,4 +48,4 @@ def main(page: ft.Page):
     # page.go('/login')
 
 
-ft.app(target=main, upload_dir="assets/uploads", assets_dir="assets")
+ft.app(target=main, upload_dir="assets/uploads", assets_dir="assets", view=ft.AppView.WEB_BROWSER)
