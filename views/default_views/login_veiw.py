@@ -12,6 +12,7 @@ user_db = UserDatabase()
 
 def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     page.session.clear()
+
     def display_login_form_error(field: str, message: str) -> None:
         fields = {'username': username_field, 'password': password_field}
         if field in fields.keys():

@@ -73,6 +73,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         e.page.update()
 
     def subject_add(subject_name: str, subject_description: str, subject_url: str, is_subscribed=False) -> None:
+        """Subject card control"""
         course_title = ft.Text()
         course_title.value = subject_name
 
@@ -106,14 +107,16 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     search_field = ft.TextField(
-        hint_text="Введите имя курса", expand=True, filled=True, bgcolor=ft.colors.SURFACE_VARIANT, border_radius=8, adaptive=True
+        hint_text="Введите имя курса", expand=True, filled=True, bgcolor=ft.colors.SURFACE_VARIANT,
+        border_radius=8,
+        adaptive=True
     )
     search_field.on_submit = lambda e: search(e)
     search_field.on_focus = lambda e: on_focus_search_field(e)
     search_field.on_blur = lambda e: un_focus_search_field(e)
 
     subjects = ft.ResponsiveRow()
-    dont_have_subjects = ft.Text('У вас нет записанных курсов', size=20, color=ft.colors.WHITE)
+    dont_have_subjects = ft.Text('У вас нет записанных курсов', size=20, color=ft.colors.INVERSE_SURFACE)
     dont_have_subjects.visible = False
 
     filter = ft.Tabs(

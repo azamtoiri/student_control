@@ -31,6 +31,7 @@ def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         page.update()
 
     return ft.View(
+        scroll=ft.ScrollMode.AUTO,
         bgcolor=ft.colors.SURFACE_VARIANT,
         route=StudentRoutes.TASKS_URL,
         controls=[

@@ -1,20 +1,20 @@
 -- Таблица курсов
 CREATE TABLE Subjects
 (
-    subject_id   SERIAL PRIMARY KEY,
-    subject_name VARCHAR(100) NOT NULL,
-    description  TEXT,
+    subject_id        SERIAL PRIMARY KEY,
+    subject_name      VARCHAR(100) NOT NULL,
+    description       TEXT,
     short_description VARCHAR(250) NOT NULL
 );
 
 CREATE TABLE SubjectTasks
 (
     subject_task_id SERIAL PRIMARY KEY NOT NULL UNIQUE,
-    task_name VARCHAR(250) NOT NULL UNIQUE,
-    completed BOOLEAN default false,
-    subject_id INTEGER,
+    task_name       VARCHAR(250)       NOT NULL UNIQUE,
+    completed       BOOLEAN default false,
+    subject_id      INTEGER,
 
-    FOREIGN KEY (subject_id) REFERENCES Subjects(subject_id)
+    FOREIGN KEY (subject_id) REFERENCES Subjects (subject_id)
 );
 
 -- Таблица пользователей
@@ -55,4 +55,16 @@ CREATE TABLE Grades
     grade_value   FLOAT,
     grade_date    TIMESTAMP DEFAULT now(),
     FOREIGN KEY (enrollment_id) REFERENCES Enrollments (enrollment_id)
+);
+
+create table completed_task_status
+(
+	subject_task_id integer not null
+		references SubjectTasks
+			on delete cascade,
+	user_id integer not null
+		references users
+			on delete cascade,
+	completed boolean default false not null,
+	primary key (subject_task_id, user_id)
 );

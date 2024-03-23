@@ -41,7 +41,6 @@ class SubjectTasks(Base):
     subject_id = Column(Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'))
 
 
-# todo each subject has teacher: on creating subject will add user_id
 class Subjects(Base):
     __tablename__ = 'subjects'
 
@@ -69,7 +68,7 @@ class Enrollments(Base):
     __tablename__ = 'enrollments'
 
     enrollment_id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.user_id'))
+    user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'))
     subject_id = Column(Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'))
     enrollment_date = Column(DateTime(timezone=True), server_default=func.now())
     completed = Column(Boolean, server_default=expression.false(), default=False)
@@ -82,3 +81,15 @@ class Task(Base):
     task_name = Column(String, nullable=False)
     completed = Column(Boolean, server_default=expression.false(), default=False)
     user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
+
+
+class CompletedTaskStatus(Base):
+    __tablename__ = 'completed_task_status'
+
+    subject_task_id = Column(Integer, ForeignKey('subject_tasks.subject_task_id', ondelete='CASCADE'), nullable=False,
+                             primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False, primary_key=True)
+    completed = Column(Boolean, default=False, server_default=expression.false(), nullable=False)
+
+    subject_task = relationship('SubjectTasks', backref='completed_task_status', cascade='all')
+    user = relationship('Users', backref='completed_task_status', cascade='all')

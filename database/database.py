@@ -1,11 +1,11 @@
 from typing import Type, Optional
 
-from sqlalchemy import create_engine, asc
+from sqlalchemy import create_engine, asc, func
 from sqlalchemy.orm import sessionmaker
 
 from constants import Connection
 from constants import UserDefaults
-from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks
+from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, CompletedTaskStatus
 from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed, \
     UserDontHaveGrade
 from utils.jwt_hash import verify, hash_
@@ -201,6 +201,17 @@ class StudentDatabase(BaseDataBase):
             raise DontHaveGrades()
         return user_subject
 
+    def get_student_subjects_and_completed_tasks(self, user_id=None, subject_task_id=None) -> list[
+                                                                                                  CompletedTaskStatus] or list:
+        req = self.session.query(
+            CompletedTaskStatus
+        ).join(
+            SubjectTasks
+        ).filter(
+            CompletedTaskStatus.user_id == user_id, CompletedTaskStatus.subject_task_id == subject_task_id
+        ).all()
+        return req
+
     def get_user_subjects(self, user_id):
         """Возвращает предмет пользователя который у него есть *(для учителя)*"""
         user = self.session.query(Users).filter_by(user_id=user_id).first()
@@ -359,8 +370,8 @@ class StudentDatabase(BaseDataBase):
         ).filter(
             Users.user_id == user_id, Subjects.subject_name == subject_name
         ).all()
-
-        return res
+        for r in res:
+            yield r
 
     # region: Subject_task
     def get_status_of_task_by_user_id(self, user_id, subject_task_id):
