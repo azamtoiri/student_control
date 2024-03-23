@@ -3,16 +3,17 @@ from flet_route import Params, Basket
 
 from database.database import StudentDatabase
 from utils.exceptions import DontHaveGrades, UserDontHaveGrade
+from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
 
-sub_db = StudentDatabase()
+sub_db = LazyDatabase(StudentDatabase)
 
 
 def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     def add_grades():
         """adding user grades"""
         try:
-            for grade in sub_db.get_student_grades(user_id=page.session.get('user_id')):
+            for grade in sub_db.database.get_student_grades(user_id=page.session.get('user_id')):
                 add_grade(f'Предмет: {grade[1]}', f"{grade[2]}", f"Дата оценки: {grade[3].strftime('%d-%m-%Y')}")
         except DontHaveGrades as err:
             no_grades.value = 'У вас нет оценок'
@@ -50,7 +51,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             add_grades()
         else:
             try:
-                for _grade in sub_db.get_student_grade_for_exact_subject(e.page.session.get('username'), status):
+                for _grade in sub_db.database.get_student_grade_for_exact_subject(e.page.session.get('username'), status):
                     add_grade(f'Предмет: {_grade[1]}', f"{_grade[2]}",
                               f"Дата оценки: {_grade[3].strftime('%d-%m-%Y')}")
             except UserDontHaveGrade:
@@ -70,7 +71,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     tabs = [ft.Tab('Все')]
     # get all subjects and add to tabs
     try:
-        subjects = sub_db.get_student_subjects(page.session.get('username'))
+        subjects = sub_db.database.get_student_subjects(page.session.get('username'))
 
         for subject in subjects:
             tabs.append(ft.Tab(str(subject.subject_name)))

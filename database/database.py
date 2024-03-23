@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from constants import Connection
 from constants import UserDefaults
 from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, CompletedTaskStatus, \
-    UserTheme
+    UserTheme, SubjectTheory
 from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed, \
     UserDontHaveGrade
 from utils.jwt_hash import verify, hash_
@@ -481,6 +481,11 @@ class StudentDatabase(BaseDataBase):
             return False
 
     # endregion
+
+
+class TheoryDatabase(BaseDataBase):
+    def get_theory(self, subject_id) -> Type[SubjectTheory]:
+        return self.session.get(SubjectTheory, subject_id)
 
 
 class TaskDatabase(BaseDataBase):

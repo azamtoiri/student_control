@@ -10,10 +10,11 @@ from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
 from utils.create_container_home_view import create_container
 from utils.exceptions import RequiredField
+from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes, TeacherRoutes, BaseRoutes
 from utils.banners import display_success_banner
 
-user_db = UserDatabase()
+user_db = LazyDatabase(UserDatabase)
 
 
 def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -26,7 +27,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     ft_image = ft.Ref[ft.Image]()
 
     # route
-    main_page_url = TeacherRoutes.MAIN_URL if user_db.is_staff(USER_ID) else StudentRoutes.MAIN_URL
+    main_page_url = TeacherRoutes.MAIN_URL if user_db.database.is_staff(USER_ID) else StudentRoutes.MAIN_URL
 
     # region: Functions
     def display_register_form_error(field: str, message: str) -> None:
@@ -63,7 +64,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             email = str(email_field.get_value).strip() if len(
                 email_field.get_value) else None
 
-            user_db.update_user(
+            user_db.database.update_user(
                 user_id=USER_ID,
                 last_name=last_name,
                 first_name=first_name,
@@ -95,7 +96,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             pick_files.upload(uf)
 
             for f in pick_files.result.files:
-                user_db.set_new_user_image(USER_ID, f.name)
+                user_db.database.set_new_user_image(USER_ID, f.name)
                 user_avatar.change_user_image(f'/uploads/{f.name}')
                 user_avatar.update()
             page.update()
@@ -108,14 +109,14 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
                 # here will be updating data in db
                 _user_image_dir = f'{x.name}'
-                user_db.set_new_user_image(USER_ID, _user_image_dir)
+                user_db.database.set_new_user_image(USER_ID, _user_image_dir)
                 user_avatar.change_user_image(f'/uploads/{x.name}')
                 user_avatar.update()
                 page.update()
 
     # endregion
 
-    user = user_db.get_user_by_id(USER_ID)
+    user = user_db.database.get_user_by_id(USER_ID)
 
     # region: InputFields
     first_name_field = UserChangField(False, label="Фамилия *",
@@ -143,7 +144,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     page.overlay.append(pick_files)
     page.update()
 
-    user_image_dir = user_db.get_user_image_url(USER_ID)
+    user_image_dir = user_db.database.get_user_image_url(USER_ID)
 
     if (user_image_dir is None) or (os.path.exists(f'assets/uploads/{user_image_dir}') is False):
         user_avatar = UserImage(

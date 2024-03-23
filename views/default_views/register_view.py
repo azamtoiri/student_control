@@ -12,8 +12,9 @@ from user_controls.custom_input_field import CustomInputField
 from user_controls.input_filter import TextOnlyInputFilterRu
 from utils.exceptions import RequiredField, PasswordDontMatching, AlreadyRegistered, NotRegistered
 from utils.jwt_hash import hash_
+from utils.lazy_db import LazyDatabase
 
-user_db = UserDatabase()
+user_db = LazyDatabase(UserDatabase)
 
 
 def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -97,7 +98,7 @@ def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 # hashing password
                 password = hash_(password2)
 
-            user_db.register_user(
+            user_db.database.register_user(
                 first_name=first_name, last_name=last_name, middle_name=middle_name,
                 username=username, password=password, group=group, course=course, age=age, email=email
             )

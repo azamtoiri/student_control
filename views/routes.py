@@ -1,5 +1,6 @@
 from flet_route import path
 
+from utils.middleware import MiddleWareCheckAuthUser
 from utils.routes_url import BaseRoutes, StudentRoutes, TeacherRoutes
 from views.default_views import LoginView, RegisterView, HomeEditView
 from views.index_view import IndexView
@@ -13,6 +14,7 @@ from views.student_views import (
     TodoView,
     SubjectView
 )
+from views.student_views.subject_theory_view import SubjectTheoryView
 from views.teacher_views import (
     TeacherMainView,
     TeacherHomeView,
@@ -21,7 +23,6 @@ from views.teacher_views import (
     MyTasksView,
     SetGradesView
 )
-from utils.middleware import MiddleWareCheckAuthUser
 
 all_routes = [
     # region: base views
@@ -38,6 +39,7 @@ all_routes = [
     path(url=StudentRoutes.GRADES_URL, clear=False, view=GradesView, middleware=MiddleWareCheckAuthUser),
     path(url=StudentRoutes.TASKS_URL, clear=False, view=TasksView, middleware=MiddleWareCheckAuthUser),
     path(url=BaseRoutes.TODO_URL, clear=False, view=TodoView, middleware=MiddleWareCheckAuthUser),
+    path(url=StudentRoutes.SUBJECT_THEORY_URL, clear=False, view=SubjectTheoryView, middleware=MiddleWareCheckAuthUser),
 
     # endregion
 

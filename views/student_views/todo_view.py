@@ -3,6 +3,7 @@ from flet_route import Params, Basket
 
 from database.database import TaskDatabase, UserDatabase
 from database.models import Task as TaskDB
+from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
 
 
@@ -11,7 +12,7 @@ from utils.routes_url import StudentRoutes
 class Task(ft.UserControl):
     def __init__(self, task_name, task_status_change, task_delete, task_id, completed: bool = False):
         super().__init__()
-        self.db = TaskDatabase()
+        self.db = LazyDatabase(TaskDatabase)
         self.completed = completed
         self.task_name = task_name
         self.task_status_change = task_status_change
@@ -73,14 +74,14 @@ class Task(ft.UserControl):
 
     def save_clicked(self, e):
         self.display_task.label = self.edit_name.value
-        self.db.updated_task(self.task_id, self.edit_name.value)
+        self.db.database.updated_task(self.task_id, self.edit_name.value)
         self.display_view.visible = True
         self.edit_view.visible = False
         self.update()
 
     def status_changed(self, e):
         self.completed = self.display_task.value
-        self.db.set_status(task_id=self.task_id, status=self.display_task.value)
+        self.db.database.set_status(task_id=self.task_id, status=self.display_task.value)
         self.task_status_change(self)
 
     def delete_clicked(self, e):
@@ -91,7 +92,7 @@ class TodoApp(ft.UserControl):
     def __init__(self, user_id):
         super().__init__()
         self.user_id = user_id
-        self.db = TaskDatabase()
+        self.db = LazyDatabase(TaskDatabase)
         self.tasks = ft.Column()
         self.load_tasks()
 
@@ -149,7 +150,7 @@ class TodoApp(ft.UserControl):
     def add_clicked(self, e):
         if self.new_task.value:
             task_instance = TaskDB(task_name=self.new_task.value, completed=False, user_id=self.user_id)
-            added_task = self.db.add_task(task_instance)
+            added_task = self.db.database.add_task(task_instance)
             task = Task(self.new_task.value, self.task_status_change, self.task_delete, added_task.task_id)
 
             self.tasks.controls.append(task)
@@ -162,7 +163,7 @@ class TodoApp(ft.UserControl):
 
     def task_delete(self, task):
         self.tasks.controls.remove(task)
-        self.db.delete_task(task.controls[0].controls[0].controls[0].value)
+        self.db.database.delete_task(task.controls[0].controls[0].controls[0].value)
         self.update()
 
     def tabs_changed(self, e):
@@ -174,7 +175,7 @@ class TodoApp(ft.UserControl):
                 self.task_delete(task)
 
     def load_tasks(self):
-        tasks = self.db.get_all_user_tasks(user_id=self.user_id)
+        tasks = self.db.database.get_all_user_tasks(user_id=self.user_id)
         for task in tasks:
             _task = Task(task.task_name, self.task_status_change, self.task_delete, task.task_id,
                          completed=task.completed)

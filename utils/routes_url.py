@@ -22,7 +22,9 @@ class StudentRoutes:
     TASKS_URL = '/student/tasks'
     TODO_URL = '/todo'
     SUBJECT_URL = '/subject/:id'
+    SUBJECT_THEORY_URL = '/subject/theory/:id'
     SIMPLE_SUBJECT_URL = '/subject'  # without id for adding new subject
+    SIMPLE_SUBJECT_THEORY_URL = '/subject/theory'  # without id for adding new subject
 
 
 @dataclass

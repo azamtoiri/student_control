@@ -1,6 +1,7 @@
 import flet as ft
 
 from database.database import StudentDatabase
+from utils.routes_url import StudentRoutes
 
 
 class SubjectTile(ft.UserControl):
@@ -42,11 +43,12 @@ class SubjectTile(ft.UserControl):
 
 
 class StudentSubjectTasksCard(ft.UserControl):
-    def __init__(self, user_id, subject_name):
+    def __init__(self, user_id, subject_name, subject_id):
         super().__init__()
         self.user_id = user_id
         self.db = StudentDatabase()
         self.subject_name = subject_name
+        self.subject_id = subject_id
 
         self.task_icon = ft.Icon(ft.icons.TASK_OUTLINED, color=ft.colors.SURFACE_TINT)
         self.true_check = []
@@ -61,7 +63,15 @@ class StudentSubjectTasksCard(ft.UserControl):
                     controls=[
                         ft.ListTile(
                             leading=self.task_icon,
-                            title=ft.Text(self.subject_name),
+                            title=ft.Row(
+                                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                controls=[
+                                    ft.Text(self.subject_name),
+                                    ft.ElevatedButton(
+                                        'Теория', on_click=lambda e: self.theory_button_click(e)
+                                    )
+                                ]
+                            ),
                         ),
                         ft.ExpansionTile(
                             title=ft.Text('Задания'),
@@ -71,6 +81,10 @@ class StudentSubjectTasksCard(ft.UserControl):
                 )
             )
         )
+
+    def theory_button_click(self, e: ft.ControlEvent) -> None:
+        e.page.route = f'{StudentRoutes.SIMPLE_SUBJECT_THEORY_URL}/{self.subject_id}'
+        e.page.update()
 
     def get_subject_tasks(self) -> list:
         res = []

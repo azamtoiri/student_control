@@ -3,9 +3,10 @@ from flet_route import Params, Basket
 
 from database.database import StudentDatabase
 from utils.exceptions import DontHaveGrades
+from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
 
-st_db = StudentDatabase()
+st_db = LazyDatabase(StudentDatabase)
 
 
 def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -14,10 +15,10 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         page.views.pop()
 
     def add_all_subjects():
-        all_subjects = st_db.get_all_subjects()
+        all_subjects = st_db.database.get_all_subjects()
 
         for subject in all_subjects:
-            is_subscribed = st_db.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
+            is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
             subject_add(
                 f'Имя курса: {subject.subject_name}',
                 f'Описание: {subject.description}',
@@ -35,9 +36,9 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             dont_have_subjects.visible = False
         try:
             if status == 'Записанные':
-                values = st_db.get_student_subjects(e.page.session.get('username'), e.page.session.get('user_id'))
+                values = st_db.database.get_student_subjects(e.page.session.get('username'), e.page.session.get('user_id'))
                 for first_name, enrollment, subject_name, subject_description, subject_id in values:
-                    is_subscribed = st_db.check_student_subscribe(page.session.get('user_id'), subject_id)
+                    is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject_id)
                     subject_add(
                         f"Имя курса: {subject_name}",
                         f"Описание: {subject_description}",
@@ -61,9 +62,9 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             add_all_subjects()
             e.page.update()
             return
-        filtered_subjects = st_db.filter_subjects_by_name(str(search_field.value).strip())
+        filtered_subjects = st_db.database.filter_subjects_by_name(str(search_field.value).strip())
         for subject in filtered_subjects:
-            is_subscribed = st_db.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
+            is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
             subject_add(
                 f"Имя курса: {subject.subject_name}",
                 f'Описание: {subject.description}',

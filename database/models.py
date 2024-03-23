@@ -34,12 +34,17 @@ class UserTheme(Base):
     theme = Column(String, nullable=False, server_default='light', default='light')
     seed_color = Column(String, nullable=False, server_default='green', default='green')
 
-# class Topics(Base):
-#     __tablename__ = 'topics'
-#     topic_id = Column(Integer, primary_key=True, unique=True, nullable=False)
-#     topic_name = Column(String, unique=True, nullable=False)
-#     topic_task_id = Column(String, unique=True, nullable=False)
     users = relationship('Users', back_populates='user_theme')
+
+
+class SubjectTheory(Base):
+    __tablename__ = 'subject_theory'
+    theory_id = Column(Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'), primary_key=True)
+    theory_title = Column(String, unique=True, nullable=False)
+    theory_data = Column(String, nullable=False)
+
+    subject = relationship('Subjects', back_populates='subject_theory')
+
 
 class SubjectTasks(Base):
     __tablename__ = 'subject_tasks'

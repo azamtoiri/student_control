@@ -8,8 +8,9 @@ from database.database import UserDatabase
 from user_controls.custom_input_field import CustomInputField
 from utils.exceptions import RequiredField, NotRegistered
 from utils.routes_url import BaseRoutes
+from utils.lazy_db import LazyDatabase
 
-user_db = UserDatabase()
+user_db = LazyDatabase(UserDatabase)
 
 
 def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -30,22 +31,22 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             password_field.input_box_content.value) else None
 
         try:
-            user = user_db.login_user(username, password)
+            user = user_db.database.login_user(username, password)
             e.page.session.set("is_auth", True)
             e.page.session.set("username", username)
             e.page.session.set("user_id", user.user_id)
 
-            if user_db.is_staff(user.user_id):
+            if user_db.database.is_staff(user.user_id):
                 e.page.session.set("is_staff", True)
-                e.page.theme_mode = user_db.get_theme_mode(page.session.get('user_id'))
-                e.page.theme = ft.Theme(color_scheme_seed=user_db.get_seed_color(page.session.get('user_id')))
+                e.page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
+                e.page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
                 e.page.update()
                 time.sleep(0.1)
                 e.page.go(BaseRoutes.TEACHER_MAIN_URL)
 
             else:
-                e.page.theme_mode = user_db.get_theme_mode(page.session.get('user_id'))
-                e.page.theme = ft.Theme(color_scheme_seed=user_db.get_seed_color(page.session.get('user_id')))
+                e.page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
+                e.page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
                 e.page.update()
                 time.sleep(0.1)
                 e.page.go(BaseRoutes.STUDENT_MAIN_URL)

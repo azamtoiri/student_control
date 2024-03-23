@@ -4,16 +4,17 @@ from flet_route import Params, Basket
 from database.database import StudentDatabase
 from user_controls.subject_description import SubjectDescription
 from utils.banners import display_success_banner
+from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
 
-sub_db = StudentDatabase()
+sub_db = LazyDatabase(StudentDatabase)
 
 dlg = ft.AlertDialog(adaptive=True)
 
 
 def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # course models
-    course = sub_db.get_course_by_id(params.get('id'))
+    course = sub_db.database.get_course_by_id(params.get('id'))
 
     # CONSTANTS
     USERNAME = page.session.get('username')
@@ -26,7 +27,7 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         e.page.update()
 
     def yes_click(e: ft.ControlEvent) -> None:
-        sub_db.subscribe_student_to_subject(USER_ID, SUBJECT_ID)
+        sub_db.database.subscribe_student_to_subject(USER_ID, SUBJECT_ID)
         subscribe_button.visible = False
         unsubscribe_button.visible = True
         display_success_banner(page=e.page, message='Вы успешно зарегистрировались на курс',
@@ -35,7 +36,7 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         close_dlg(e)
 
     def yes_un_click(e: ft.ControlEvent) -> None:
-        sub_db.unsubscribe_student_from_subject(USER_ID, SUBJECT_ID)
+        sub_db.database.unsubscribe_student_from_subject(USER_ID, SUBJECT_ID)
         subscribe_button.visible = True
         unsubscribe_button.visible = False
         display_success_banner(page=e.page, message='Вы успешно отписались от курса',
@@ -87,7 +88,7 @@ def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         e.page.update()
 
     # endregion
-    is_subscribed = sub_db.check_student_subscribe(USER_ID, SUBJECT_ID)
+    is_subscribed = sub_db.database.check_student_subscribe(USER_ID, SUBJECT_ID)
 
     # region: Buttons
     subscribe_button = ft.ElevatedButton('Записаться на курс')
