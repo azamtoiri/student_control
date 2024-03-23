@@ -44,32 +44,32 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     containers = Containers()
 
     # region: Functions
-    def home_click(e: ft.ControlEvent) -> None:
-        page.go('/student/home')
+    async def home_click(e: ft.ControlEvent) -> None:
+        await page.go_async('/student/home')
 
-    def courses_click(e: ft.ControlEvent) -> None:
-        page.go('/student/courses')
+    async def courses_click(e: ft.ControlEvent) -> None:
+        await page.go_async('/student/courses')
 
-    def grades_click(e: ft.ControlEvent) -> None:
-        page.go('/student/grades')
+    async def grades_click(e: ft.ControlEvent) -> None:
+        await page.go_async('/student/grades')
 
-    def profile_click(e: ft.ControlEvent) -> None:
-        page.go('/todo')
+    async def profile_click(e: ft.ControlEvent) -> None:
+        await page.go_async('/todo')
 
-    def tasks_click(e: ft.ControlEvent) -> None:
-        page.go('/student/tasks')
+    async def tasks_click(e: ft.ControlEvent) -> None:
+        await page.go_async('/student/tasks')
 
-    def close_dlg(e: ft.ControlEvent) -> None:
+    async def close_dlg(e: ft.ControlEvent) -> None:
         dlg.open = False
-        e.page.update()
+        await e.page.update_async()
 
-    def yes_click(e: ft.ControlEvent) -> None:
+    async def yes_click(e: ft.ControlEvent) -> None:
         page.session.set('is_auth', False)
         page.session.clear()
-        page.go('/')
-        close_dlg(e)
+        await page.go_async('/')
+        await close_dlg(e)
 
-    def exit_click(e: ft.ControlEvent) -> None:
+    async def exit_click(e: ft.ControlEvent) -> None:
         dlg.title = ft.Text('Подтвердите действие')
         dlg.content = ft.Text('Вы точно хотите выйти?')
         dlg.actions = [
@@ -79,17 +79,17 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         ]
         e.page.dialog = dlg
         dlg.open = True
-        e.page.update()
+        await e.page.update_async()
 
     # endregion
 
     # region: handlers
-    containers.home_container.main_container.on_click = lambda e: home_click(e)
-    containers.grades_container.main_container.on_click = lambda e: grades_click(e)
-    containers.tasks_container.main_container.on_click = lambda e: tasks_click(e)
-    containers.to_do.main_container.on_click = lambda e: profile_click(e)
-    containers.courses_container.main_container.on_click = lambda e: courses_click(e)
-    containers.exit_container.main_container.on_click = lambda e: exit_click(e)
+    containers.home_container.main_container.on_click = home_click
+    containers.grades_container.main_container.on_click = grades_click
+    containers.tasks_container.main_container.on_click = tasks_click
+    containers.to_do.main_container.on_click = profile_click
+    containers.courses_container.main_container.on_click = courses_click
+    containers.exit_container.main_container.on_click = exit_click
 
     # endregion
 
@@ -97,13 +97,14 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # logo_image.top = 0
     # logo_image.left = 500
     # logo_image.expand = True
-    student_title = ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                              controls=[
-                                  ft.Text('Fox', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                  ft.Text('Hub', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.ORANGE_ACCENT),
-                                  ft.Text('Студент', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.GREY)
-                              ]
-                              )
+    student_title = ft.Column(
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            ft.Text('Fox', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
+            ft.Text('Hub', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.ORANGE_ACCENT),
+            ft.Text('Студент', size=30, weight=ft.FontWeight.BOLD, color=ft.colors.GREY)
+        ]
+    )
 
     return ft.View(
         scroll=ft.ScrollMode.AUTO,

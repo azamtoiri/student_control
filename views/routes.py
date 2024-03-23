@@ -17,7 +17,7 @@ all_routes = [
     # endregion
 
     # region: student views
-    # path('/student/main', clear=True, view=MainView),
+    path('/student/main', clear=True, view=MainView),
     # path('/student/courses', clear=False, view=SubjectsView),
     # path('/student/grades', clear=False, view=GradesView),
     # path('/student/home', clear=False, view=HomeView),

@@ -73,7 +73,7 @@ class STAppBar(AppBar):
         self.adaptive = True
 
         self.log_out_button = PopupMenuItem(text='Выход')
-        self.log_out_button.on_click = lambda e: self.log_out(e)
+        self.log_out_button.on_click = self.log_out
         self.appbar_items = [
             self.log_out_button,
             PopupMenuItem(),
@@ -99,13 +99,16 @@ class STAppBar(AppBar):
             Text('Hub', size=20)
         ]
 
-        self.dlg = ft.AlertDialog(modal=True, adaptive=True, actions=[
-            ft.ElevatedButton('Да', on_click=lambda e: self.yes_click(e), bgcolor=ft.colors.GREEN,
-                              color=ft.colors.WHITE),
-            ft.ElevatedButton('Нет', on_click=lambda e: self.close_dlg(e), bgcolor=ft.colors.GREY,
-                              color=ft.colors.WHITE),
-        ],
-                                  actions_alignment=ft.MainAxisAlignment.CENTER)
+        self.dlg = ft.AlertDialog(
+            modal=True, adaptive=True,
+            actions=[
+                ft.ElevatedButton('Да', on_click=self.yes_click, bgcolor=ft.colors.GREEN,
+                                  color=ft.colors.WHITE),
+                ft.ElevatedButton('Нет', on_click=self.close_dlg, bgcolor=ft.colors.GREY,
+                                  color=ft.colors.WHITE),
+            ],
+            actions_alignment=ft.MainAxisAlignment.CENTER
+        )
         self.title = self.appbar_title
         self.actions = [self.appbar_actions]
 
@@ -118,7 +121,6 @@ class STAppBar(AppBar):
         e.page.session.clear()
         await e.page.update_async()
         await self.close_dlg(e)
-        self.page.session.clear()
 
     async def log_out(self, e: ft.ControlEvent) -> None:
         self.dlg.title = ft.Text('Подтвердите действие')
