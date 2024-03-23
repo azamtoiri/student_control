@@ -2,8 +2,8 @@ import flet as ft
 from flet import *
 
 from constants import LOGO_PATH
-from utils.routes_url import BaseRoutes
 from database.database import UserDatabase
+from utils.routes_url import BaseRoutes
 
 
 class STAppBar(AppBar):
@@ -11,13 +11,14 @@ class STAppBar(AppBar):
     Custom app bar, for all Students views
     """
 
-    def __init__(self) -> None:
+    def __init__(self, page: ft.Page) -> None:
         super().__init__()
         self.center_title = False
         self.leading_width = 100
         self.toolbar_height = 80
         self.bgcolor = colors.SURFACE_TINT
         self.adaptive = True
+        self.page = page
 
         self.log_out_button = PopupMenuItem(text='Выход', icon=ft.icons.EXIT_TO_APP)
         self.log_out_button.on_click = lambda e: self.log_out(e)
@@ -25,12 +26,18 @@ class STAppBar(AppBar):
         self.edit_view_button.on_click = lambda e: self.edit_view_click(e)
         self.change_theme_mode_button = ft.Ref[ft.PopupMenuItem]()
 
+        self.icon = ft.icons.LIGHT_MODE
+        self.text = 'Светлая тема'
+        if self.page.theme_mode == ft.ThemeMode.LIGHT:
+            self.icon = ft.icons.DARK_MODE
+            self.text = 'Темная тема'
+
         self.appbar_items = [
             self.edit_view_button,
             ft.PopupMenuItem(
                 ref=self.change_theme_mode_button,
                 on_click=lambda e: self.change_theme_mode(e),
-                icon=ft.icons.DARK_MODE,
+                icon=self.icon,
                 text='Темная тема'
             ),
             self.log_out_button,

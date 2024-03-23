@@ -1,3 +1,5 @@
+import time
+
 import flet as ft
 from flet_route import Params, Basket
 
@@ -35,8 +37,17 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
             if user_db.is_staff(user.user_id):
                 e.page.session.set("is_staff", True)
+                e.page.theme_mode = user_db.get_theme_mode(page.session.get('user_id'))
+                e.page.theme = ft.Theme(color_scheme_seed=user_db.get_seed_color(page.session.get('user_id')))
+                e.page.update()
+                time.sleep(0.1)
                 e.page.go(BaseRoutes.TEACHER_MAIN_URL)
+
             else:
+                e.page.theme_mode = user_db.get_theme_mode(page.session.get('user_id'))
+                e.page.theme = ft.Theme(color_scheme_seed=user_db.get_seed_color(page.session.get('user_id')))
+                e.page.update()
+                time.sleep(0.1)
                 e.page.go(BaseRoutes.STUDENT_MAIN_URL)
 
         except RequiredField as error:
