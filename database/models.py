@@ -24,14 +24,22 @@ class Users(Base):
     user_image = Column(String, server_default='default_user_image.png', default='default_user_image.png')
 
     enrollments = relationship('Enrollments', backref='users', cascade='all, delete-orphan, delete')
-    subjects = relationship('Subjects', backref='users', cascade='all')
+    subjects = relationship('Subjects', backref='users', cascade='all, delete-orphan')
+    user_theme = relationship('UserTheme', back_populates='users', cascade='all, delete-orphan', uselist=False)
 
+
+class UserTheme(Base):
+    __tablename__ = 'user_theme'
+    user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True)
+    theme = Column(String, nullable=False, server_default='light', default='light')
+    seed_color = Column(String, nullable=False, server_default='green', default='green')
 
 # class Topics(Base):
 #     __tablename__ = 'topics'
 #     topic_id = Column(Integer, primary_key=True, unique=True, nullable=False)
 #     topic_name = Column(String, unique=True, nullable=False)
 #     topic_task_id = Column(String, unique=True, nullable=False)
+    users = relationship('Users', back_populates='user_theme')
 
 class SubjectTasks(Base):
     __tablename__ = 'subject_tasks'
@@ -50,8 +58,10 @@ class Subjects(Base):
     short_description = Column(String, nullable=False)
     description = Column(String, nullable=False)
 
-    enrollments = relationship('Enrollments', backref='subject', cascade='all')
-    subject_tasks = relationship('SubjectTasks', backref='subject', cascade='all')
+    enrollments = relationship('Enrollments', backref='subject', cascade='all, delete-orphan')
+    subject_tasks = relationship('SubjectTasks', backref='subject', cascade='all, delete-orphan')
+    subject_theory = relationship('SubjectTheory', uselist=False, back_populates='subject',
+                                  cascade='all, delete-orphan')
 
 
 class Grades(Base):
