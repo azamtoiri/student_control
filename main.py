@@ -1,5 +1,6 @@
 import flet as ft
 
+from database.database import UserDatabase
 from user_controls.student_app_bar import STAppBar
 from utils.new_router import Routing
 from views.routes import all_routes
@@ -23,20 +24,25 @@ def ViewNotFound(page: ft.Page, params, basket):
     )
 
 
+user_db = UserDatabase()
+
+
 def main(page: ft.Page):
     page.title = 'Student Control'
     page.theme_mode = ft.ThemeMode.LIGHT
-    page.theme = ft.Theme(color_scheme_seed=ft.colors.GREEN)
 
     route = Routing(page=page, app_routes=all_routes, not_found_view=ViewNotFound, appbar=STAppBar())
     # route.appbar = STAppBar()
     page.on_route_change = route.change_route
     # page.appbar = route.appbar
-    page.session.set('username', 'mark123')
-    page.session.set('user_id', 4)
+    page.session.set('username', 'admin')
+    page.session.set('user_id', 6)
     page.session.set('is_auth', True)
+    page.theme_mode = user_db.get_theme_mode(page.session.get('user_id'))
+    page.theme = ft.Theme(color_scheme_seed=user_db.get_seed_color(page.session.get('user_id')))
+    page.update()
     # page.go('/home-edit')
-    page.go('/subject/1')
+    page.go('/student/tasks')
     # page.go('/login')
 
 

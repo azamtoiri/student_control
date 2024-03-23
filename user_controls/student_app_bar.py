@@ -3,6 +3,7 @@ from flet import *
 
 from constants import LOGO_PATH
 from utils.routes_url import BaseRoutes
+from database.database import UserDatabase
 
 
 class STAppBar(AppBar):
@@ -158,12 +159,14 @@ class STAppBar(AppBar):
 
     def change_seed_color(self, e: ft.ControlEvent, color: ft.colors) -> None:
         e.page.theme = ft.Theme(color_scheme_seed=color)
+        UserDatabase().set_seed_color(user_id=e.page.session.get('user_id'), seed_color=color)
         e.page.update()
         self.update()
 
     def change_theme_mode(self, e: ft.ControlEvent):
         if e.page.theme_mode == ft.ThemeMode.DARK:
             e.page.theme_mode = ft.ThemeMode.LIGHT
+            UserDatabase().set_theme_mode(user_id=e.page.session.get('user_id'), theme_mode=ft.ThemeMode.LIGHT.value)
             self.change_theme_mode_button.current.icon = ft.icons.DARK_MODE
             self.change_theme_mode_button.current.text = 'Темная тема'
             e.page.update()
@@ -171,6 +174,7 @@ class STAppBar(AppBar):
         else:
             e.page.theme_mode = ft.ThemeMode.DARK
             self.change_theme_mode_button.current.icon = ft.icons.LIGHT_MODE
+            UserDatabase().set_theme_mode(user_id=e.page.session.get('user_id'), theme_mode=ft.ThemeMode.DARK.value)
             self.change_theme_mode_button.current.text = 'Светлая тема'
             e.page.update()
             self.update()

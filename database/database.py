@@ -5,7 +5,8 @@ from sqlalchemy.orm import sessionmaker
 
 from constants import Connection
 from constants import UserDefaults
-from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, CompletedTaskStatus
+from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, CompletedTaskStatus, \
+    UserTheme
 from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed, \
     UserDontHaveGrade
 from utils.jwt_hash import verify, hash_
@@ -170,6 +171,54 @@ class UserDatabase(BaseDataBase):
 
     def is_staff(self, user_id: int) -> bool:
         return self.session.get(Users, user_id).is_staff
+
+    def get_user_theme(self, user_id) -> Type[UserTheme]:
+        return self.session.get(UserTheme, user_id)
+
+    # region: Theme mode changing
+    def add_theme_mode(self, user_id) -> bool:
+        try:
+            self.session.add(UserTheme(user_id=user_id))
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
+    def set_theme_mode(self, user_id, theme_mode) -> bool:
+        try:
+            user_theme = self.get_user_theme(user_id)
+            user_theme.theme = theme_mode
+            self.session.add(user_theme)
+            self.session.commit()
+
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
+    def get_theme_mode(self, user_id) -> str:
+        try:
+            return self.session.get(UserTheme, user_id).theme
+        except AttributeError:
+            self.add_theme_mode(user_id)
+
+    def set_seed_color(self, user_id, seed_color) -> bool:
+        try:
+            user_theme = self.get_user_theme(user_id)
+            user_theme.seed_color = seed_color
+            self.session.add(user_theme)
+            self.session.commit()
+
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
+    def get_seed_color(self, user_id) -> str:
+        return self.session.get(UserTheme, user_id).seed_color
+
+    # endregion
 
 
 class StudentDatabase(BaseDataBase):
