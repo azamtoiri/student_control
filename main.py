@@ -1,3 +1,5 @@
+import os
+
 import flet as ft
 import flet_fastapi
 
@@ -43,4 +45,7 @@ async def main(page: ft.Page):
     await page.go_async('/')
 
 
-app = flet_fastapi.app(main)
+assets_abs_path = os.path.abspath('assets')
+uploads_abs_path = os.path.abspath('assets/uploads')
+
+app = flet_fastapi.app(main, assets_dir=assets_abs_path, upload_dir=uploads_abs_path)
