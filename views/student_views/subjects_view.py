@@ -27,7 +27,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             )
 
     # region: Functions
-    def tabs_changed(e: ft.ControlEvent) -> None:
+    async def tabs_changed(e: ft.ControlEvent) -> None:
         # get user that he is subscribed to subject
         status = filter.tabs[filter.selected_index].text
         subjects.controls.clear()
@@ -45,22 +45,22 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                         f'/subject/{subject_id}',
                         is_subscribed
                     )
-                    e.page.update()
+                    await e.page.update_async()
             else:
                 add_all_subjects()
-            e.page.update()
+            await e.page.update_async()
         except DontHaveGrades:
             subjects.controls.clear()
             # set visible True to this text
             dont_have_subjects.visible = True
-            e.page.update()
+            await e.page.update_async()
 
-    def search(e: ft.ControlEvent):
+    async def search(e: ft.ControlEvent):
         subjects.controls.clear()
         search_value = str(search_field.value).strip() if len(search_field.value) else None
         if search_value is None:
             add_all_subjects()
-            e.page.update()
+            await e.page.update_async()
             return
         filtered_subjects = st_db.database.filter_subjects_by_name(str(search_field.value).strip())
         for subject in filtered_subjects:
@@ -71,10 +71,13 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 f'/course/{subject.subject_id}',
                 is_subscribed=is_subscribed,
             )
-        e.page.update()
+        await e.page.update_async()
 
     def subject_add(subject_name: str, subject_description: str, subject_url: str, is_subscribed=False) -> None:
         """Subject card control"""
+        async def go_subject(e: ft.ControlEvent):
+            await e.page.go_async(subject_url)
+
         course_title = ft.Text()
         course_title.value = subject_name
 
@@ -84,7 +87,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         show_course = ft.ElevatedButton('Посмотреть курс')
         show_course.bgcolor = ft.colors.ON_SURFACE_VARIANT
         show_course.color = ft.colors.WHITE
-        show_course.on_click = lambda e: page.go(subject_url)
+        show_course.on_click = go_subject
 
         subject_icon = ft.Icon(ft.icons.TASK)
         subject_icon.color = ft.colors.SURFACE_TINT if is_subscribed else ft.colors.GREY
@@ -97,13 +100,13 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         ]), width=400, padding=10)
         subjects.controls.append(_card)
 
-    def on_focus_search_field(e: ft.ControlEvent) -> None:
+    async def on_focus_search_field(e: ft.ControlEvent) -> None:
         search_field.hint_text = None
-        e.page.update()
+        await e.page.update_async()
 
-    def un_focus_search_field(e: ft.ControlEvent) -> None:
+    async def un_focus_search_field(e: ft.ControlEvent) -> None:
         search_field.hint_text = "Введите имя курса"
-        e.page.update()
+        await e.page.update_async()
 
     # endregion
 
@@ -112,9 +115,9 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         border_radius=8,
         adaptive=True
     )
-    search_field.on_submit = lambda e: search(e)
-    search_field.on_focus = lambda e: on_focus_search_field(e)
-    search_field.on_blur = lambda e: un_focus_search_field(e)
+    search_field.on_submit = search
+    search_field.on_focus = on_focus_search_field
+    search_field.on_blur = un_focus_search_field
 
     subjects = ft.ResponsiveRow()
     dont_have_subjects = ft.Text('У вас нет записанных курсов', size=20, color=ft.colors.INVERSE_SURFACE)

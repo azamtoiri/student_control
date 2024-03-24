@@ -1,7 +1,7 @@
 import flet as ft
 from flet_route import Params, Basket
 
-from database.database import TaskDatabase, UserDatabase
+from database.database import TaskDatabase
 from database.models import Task as TaskDB
 from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
@@ -66,26 +66,26 @@ class Task(ft.UserControl):
         )
         return ft.Column(controls=[self.display_view, self.edit_view])
 
-    def edit_clicked(self, e):
+    async def edit_clicked(self, e):
         self.edit_name.value = self.display_task.label
         self.display_view.visible = False
         self.edit_view.visible = True
-        self.update()
+        await self.update_async()
 
-    def save_clicked(self, e):
+    async def save_clicked(self, e):
         self.display_task.label = self.edit_name.value
         self.db.database.updated_task(self.task_id, self.edit_name.value)
         self.display_view.visible = True
         self.edit_view.visible = False
-        self.update()
+        await self.update_async()
 
-    def status_changed(self, e):
+    async def status_changed(self, e):
         self.completed = self.display_task.value
         self.db.database.set_status(task_id=self.task_id, status=self.display_task.value)
-        self.task_status_change(self)
+        await self.task_status_change(self)
 
-    def delete_clicked(self, e):
-        self.task_delete(self)
+    async def delete_clicked(self, e):
+        await self.task_delete(self)
 
 
 class TodoApp(ft.UserControl):
@@ -147,7 +147,7 @@ class TodoApp(ft.UserControl):
             ],
         )
 
-    def add_clicked(self, e):
+    async def add_clicked(self, e):
         if self.new_task.value:
             task_instance = TaskDB(task_name=self.new_task.value, completed=False, user_id=self.user_id)
             added_task = self.db.database.add_task(task_instance)
@@ -155,24 +155,24 @@ class TodoApp(ft.UserControl):
 
             self.tasks.controls.append(task)
             self.new_task.value = ""
-            self.new_task.focus()
-            self.update()
+            await self.new_task.focus_async()
+            await self.update_async()
 
-    def task_status_change(self, task):
-        self.update()
+    async def task_status_change(self, task):
+        await self.update_async()
 
-    def task_delete(self, task):
+    async def task_delete(self, task):
         self.tasks.controls.remove(task)
         self.db.database.delete_task(task.controls[0].controls[0].controls[0].value)
-        self.update()
+        await self.update_async()
 
-    def tabs_changed(self, e):
-        self.update()
+    async def tabs_changed(self, e):
+        await self.update_async()
 
-    def clear_clicked(self, e):
+    async def clear_clicked(self, e):
         for task in self.tasks.controls[:]:
             if task.completed:
-                self.task_delete(task)
+                await self.task_delete(task)
 
     def load_tasks(self):
         tasks = self.db.database.get_all_user_tasks(user_id=self.user_id)
@@ -181,7 +181,7 @@ class TodoApp(ft.UserControl):
                          completed=task.completed)
             self.tasks.controls.append(_task)
 
-    def update(self):
+    async def update_async(self):
         status = self.filter.tabs[self.filter.selected_index].text
         count = 0
         for task in self.tasks.controls:
@@ -194,7 +194,7 @@ class TodoApp(ft.UserControl):
                 count += 1
         self.items_left.value = f"{count} задание не выполнено"
         self.items_left.visible = True
-        super().update()
+        await super().update_async()
 
 
 def TodoView(page: ft.Page, params: Params, basket: Basket) -> ft.View:

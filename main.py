@@ -49,7 +49,7 @@ async def main(page: ft.Page):
         page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
         await page.update_async()
     # page.go('/home-edit')
-    await page.go_async('/login')
+    await page.go_async('/student/main')
     # page.go('/login')
 
 
