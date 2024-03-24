@@ -45,61 +45,58 @@ def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     containers = Containers()
 
     # region: Functions
-    def home_click(e: ft.ControlEvent) -> None:
-        page.go(StudentRoutes.HOME_URL)
+    async def home_click(e: ft.ControlEvent) -> None:
+        await page.go_async(StudentRoutes.HOME_URL)
 
-    def courses_click(e: ft.ControlEvent) -> None:
-        page.go(StudentRoutes.SUBJECTS_URL)
+    async def courses_click(e: ft.ControlEvent) -> None:
+        await page.go_async(StudentRoutes.SUBJECTS_URL)
 
-    def grades_click(e: ft.ControlEvent) -> None:
-        page.go(StudentRoutes.GRADES_URL)
+    async def grades_click(e: ft.ControlEvent) -> None:
+        await page.go_async(StudentRoutes.GRADES_URL)
 
-    def to_do_click(e: ft.ControlEvent) -> None:
-        page.go(StudentRoutes.TODO_URL)
+    async def to_do_click(e: ft.ControlEvent) -> None:
+        await page.go_async(StudentRoutes.TODO_URL)
 
-    def tasks_click(e: ft.ControlEvent) -> None:
-        page.go(StudentRoutes.TASKS_URL)
+    async def tasks_click(e: ft.ControlEvent) -> None:
+        await page.go_async(StudentRoutes.TASKS_URL)
 
-    def close_dlg(e: ft.ControlEvent) -> None:
+    async def close_dlg(e: ft.ControlEvent) -> None:
         dlg.open = False
-        e.page.update()
+        await e.page.update_async()
 
-    def yes_click(e: ft.ControlEvent) -> None:
+    async def yes_click(e: ft.ControlEvent) -> None:
         page.session.set('is_auth', False)
         page.session.clear()
-        page.go(BaseRoutes.INDEX_URL)
-        close_dlg(e)
+        await page.go_async(BaseRoutes.INDEX_URL)
+        await close_dlg(e)
 
-    def exit_click(e: ft.ControlEvent) -> None:
+    async def exit_click(e: ft.ControlEvent) -> None:
         dlg.title = ft.Text('Подтвердите действие')
         dlg.content = ft.Text('Вы точно хотите выйти?')
         dlg.actions = [
-            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_), bgcolor=ft.colors.SURFACE_TINT,
+            ft.ElevatedButton('Да', on_click=yes_click, bgcolor=ft.colors.SURFACE_TINT,
                               color=ft.colors.WHITE,
                               ),
-            ft.ElevatedButton('Нет', on_click=lambda e_: close_dlg(e_), bgcolor=ft.colors.GREY,
+            ft.ElevatedButton('Нет', on_click=close_dlg, bgcolor=ft.colors.GREY,
                               color=ft.colors.WHITE)
         ]
         e.page.dialog = dlg
         dlg.open = True
-        e.page.update()
+        await e.page.update_async()
 
     # endregion
 
     # region: handlers
-    containers.home_container.main_container.on_click = lambda e: home_click(e)
-    containers.grades_container.main_container.on_click = lambda e: grades_click(e)
-    containers.tasks_container.main_container.on_click = lambda e: tasks_click(e)
-    containers.to_do.main_container.on_click = lambda e: to_do_click(e)
-    containers.courses_container.main_container.on_click = lambda e: courses_click(e)
-    containers.exit_container.main_container.on_click = lambda e: exit_click(e)
+    containers.home_container.main_container.on_click = home_click
+    containers.grades_container.main_container.on_click = grades_click
+    containers.tasks_container.main_container.on_click = tasks_click
+    containers.to_do.main_container.on_click = to_do_click
+    containers.courses_container.main_container.on_click = courses_click
+    containers.exit_container.main_container.on_click = exit_click
 
     # endregion
 
     logo_image = ft.Image(src=LOGO_PATH, width=200, height=200)
-    # logo_image.top = 0
-    # logo_image.left = 500
-    # logo_image.expand = True
     student_title = ft.Column(
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
