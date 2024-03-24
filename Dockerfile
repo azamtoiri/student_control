@@ -13,11 +13,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copying the rest of the code
 COPY . /app
 
-RUN alembic upgrade head
+RUN #alembic upgrade head
 # Run migrations (assuming there's a script for it)
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
 
 # Run app.py when the container launches
-CMD ["flet", "main.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

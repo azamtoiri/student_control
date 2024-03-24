@@ -41,16 +41,16 @@ async def main(page: ft.Page):
     route = Routing(page=page, app_routes=all_routes, not_found_view=ViewNotFound, appbar=STAppBar(page), async_is=True)
     page.on_route_change = route.change_route
     # page.appbar = route.appbar
-    page.session.set('username', 'admin')
-    page.session.set('user_id', 6)
-    page.session.set('is_auth', True)
+    # page.session.set('username', 'admin')
+    # page.session.set('user_id', 6)
+    # page.session.set('is_auth', True)
     if page.session.get('user_id'):
         page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
         page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
         await page.update_async()
     # page.go('/home-edit')
-    await page.go_async('/student/main')
-    # page.go('/login')
+    # await page.go_async('/student/main')
+    await page.go_async('/')
 
 
 assets_abs_path = os.path.abspath('assets')
