@@ -90,13 +90,6 @@ class StudentSubjectTasksCard(ft.UserControl):
         res = []
         count = 1
 
-        def change_task_status(e: ft.ControlEvent, subject_tasks_id) -> None:
-            self.db.change_task_status(
-                user_id=self.user_id,
-                subject_task_id=subject_tasks_id,
-                value=task_.check_box.value
-            )
-
         for value in self.db.get_student_subject_tasks_by_name(self.user_id, self.subject_name):
             task_ = SubjectTile(
                 count, value[0], value[1], self.user_id
