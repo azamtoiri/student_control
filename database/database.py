@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from constants import Connection
 from constants import UserDefaults
-from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, CompletedTaskStatus, \
+from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, UserTasksFiles, \
     UserTheme, SubjectTheory
 from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed, \
     UserDontHaveGrade
@@ -23,7 +23,7 @@ class BaseDataBase:
 class UserDatabase(BaseDataBase):
     def __init__(self) -> None:
         super().__init__()
-        self.create_default_user()
+        # self.create_default_user()
 
     # section user creating
     def create_default_user(self) -> None:
@@ -31,7 +31,7 @@ class UserDatabase(BaseDataBase):
         username = UserDefaults.DEFAULT_USERNAME
         password = hash_(UserDefaults.DEFAULT_PASSWORD)
         if not self.filter_users(username=username):
-            user = Users(username=username, password=password)
+            user = Users(username=username, password=password, email='admin@admin.com')
             self.insert_user(user)
 
     def filter_users(self, **value) -> list[Type[Users]]:
@@ -251,13 +251,13 @@ class StudentDatabase(BaseDataBase):
         return user_subject
 
     def get_student_subjects_and_completed_tasks(self, user_id=None, subject_task_id=None) -> list[
-                                                                                                  CompletedTaskStatus] or list:
+                                                                                                  UserTasksFiles] or list:
         req = self.session.query(
-            CompletedTaskStatus
+            UserTasksFiles
         ).join(
             SubjectTasks
         ).filter(
-            CompletedTaskStatus.user_id == user_id, CompletedTaskStatus.subject_task_id == subject_task_id
+            UserTasksFiles.user_id == user_id, UserTasksFiles.subject_task_id == subject_task_id
         ).all()
         return req
 
@@ -422,45 +422,46 @@ class StudentDatabase(BaseDataBase):
         for r in res:
             yield r
 
-    # region: Subject_task
-    def get_status_of_task_by_user_id(self, user_id, subject_task_id):
+    # region: subject_task_file
+    def get_status_of_task_by_user_id(self, user_id, subject_task_id, enrollment_id):
         """Gets status of the subject_task"""
-        if not self.check_status_exist(user_id, subject_task_id):
-            self.add_subjects_task_status(user_id, subject_task_id)
+        if not self.check_task_file_exist(user_id, subject_task_id):
+            self.add_subject_task_file(user_id, subject_task_id, enrollment_id)
 
         status = self.session.query(
-            CompletedTaskStatus.completed
+            UserTasksFiles.completed
         ).join(
             SubjectTasks
         ).filter(
-            CompletedTaskStatus.user_id == user_id,
+            UserTasksFiles.user_id == user_id,
             SubjectTasks.subject_task_id == subject_task_id
         ).first()
 
         return status[0] if status is not None else None
 
-    def get_completed_task_status(self, user_id, subject_task_id) -> Type[CompletedTaskStatus]:
-        return self.session.query(CompletedTaskStatus).filter(
-            CompletedTaskStatus.user_id == user_id,
-            CompletedTaskStatus.subject_task_id == subject_task_id
+    def get_completed_task_status(self, user_id, subject_task_id) -> Type[UserTasksFiles]:
+        return self.session.query(UserTasksFiles).filter(
+            UserTasksFiles.user_id == user_id,
+            UserTasksFiles.subject_task_id == subject_task_id
         ).first()
 
-    def check_status_exist(self, user_id, subject_task_id) -> bool:
+    def check_task_file_exist(self, user_id, subject_task_id) -> bool:
         """Проверяет есть ли такая запись в таблице"""
         # Используем метод query.exists() для проверки существования записи в запросе
         exists = self.session.query(
-            self.session.query(CompletedTaskStatus)
+            self.session.query(UserTasksFiles)
             .join(SubjectTasks)
-            .filter(CompletedTaskStatus.user_id == user_id, SubjectTasks.subject_task_id == subject_task_id)
+            .filter(UserTasksFiles.user_id == user_id, SubjectTasks.subject_task_id == subject_task_id)
             .exists()
         ).scalar()
 
         return exists
 
-    def add_subjects_task_status(self, user_id, subject_task_id) -> bool:
+    def add_subject_task_file(self, user_id, subject_task_id, enrollment_id, file_name) -> bool:
         try:
             # checking status exist before adding
-            sub_status = CompletedTaskStatus(user_id=user_id, subject_task_id=subject_task_id)
+            sub_status = UserTasksFiles(user_id=user_id, subject_task_id=subject_task_id, enrollment_id=enrollment_id,
+                                        task_file=file_name)
             self.session.add(sub_status)
             self.session.commit()
             return True
@@ -468,10 +469,10 @@ class StudentDatabase(BaseDataBase):
             print(ex)
             return False
 
-    def change_task_status(self, user_id, subject_task_id, value: bool) -> bool:
+    def change_task_file(self, user_id, subject_task_id, file_name: bool) -> bool:
         try:
             completed_task_status = self.get_completed_task_status(user_id, subject_task_id)
-            completed_task_status.completed = value
+            completed_task_status.task_file = file_name
             self.session.add(completed_task_status)
             self.session.commit()
 

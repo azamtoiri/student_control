@@ -28,7 +28,7 @@ def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         subjects = db.get_student_subjects(user_id=USER_ID)
 
         for subject in subjects:
-            content.controls.append(StudentSubjectTasksCard(USER_ID, subject[2], subject[4]))
+            content.controls.append(StudentSubjectTasksCard(USER_ID, subject[2], subject[4], page=page))
     except DontHaveGrades as error:
         dont_have_tasks.visible = True
         page.update()

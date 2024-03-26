@@ -1,30 +1,33 @@
+import os.path
+from datetime import datetime
+
 import flet as ft
+from flet_core.file_picker import FilePickerFile
 
 from database.database import StudentDatabase
+from utils.banners import display_success_banner
 from utils.routes_url import StudentRoutes
+from utils.zip_file import compress_file_to_zip
 
 
 class SubjectTile(ft.UserControl):
-    def __init__(self, count, subject_name, subject_task_id, user_id):
+    def __init__(self, count, subject_name, subject_task_id, user_id, enrollment_id, page):
         super().__init__()
+        self.page = page
         self.count = count
         self.subject_name = subject_name
+        self.enrollment_id = enrollment_id
         self.user_id = user_id
         self.subject_task_id = subject_task_id
+        self.icon_button = ft.Ref[ft.IconButton]()
+
+        self.my_file_picker = ft.FilePicker(
+            on_result=self.on_dialog_result,
+        )
+        self.page.overlay.append(self.my_file_picker)
+        self.page.update()
 
         self.db = StudentDatabase()
-
-        self.check_box = ft.Checkbox(
-            on_change=lambda e: self.change_status(e, user_id, subject_task_id),
-            # set first view value from db
-            value=bool(
-                self.db.get_status_of_task_by_user_id(
-                    user_id=self.user_id,
-                    subject_task_id=self.subject_task_id
-                )
-            ),
-            tooltip='изменить статус'
-        )
 
     def build(self):
         return ft.ListTile(
@@ -32,26 +35,74 @@ class SubjectTile(ft.UserControl):
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 controls=[
                     ft.Text(f'{self.count}. {self.subject_name}'),
-                    self.check_box
+                    ft.IconButton(
+                        ref=self.icon_button,
+                        icon=ft.icons.ADD_CIRCLE,
+                        icon_color=ft.colors.SURFACE_TINT,
+                        tooltip='Отправить задание',
+                        on_click=lambda e: self.my_file_picker.pick_files()
+                    )
                 ]
             )
         )
 
     def change_status(self, e: ft.ControlEvent, user_id, subject_task_id):
-        self.db.change_task_status(user_id=user_id, subject_task_id=subject_task_id, value=self.check_box.value)
         self.update()
+
+    def on_dialog_result(self, e: ft.FilePickerResultEvent) -> None:
+        if e.files is None: return
+        try:
+            self.upload_files(e)
+            display_success_banner(self.page, 'Задание успешно отправлено', ft.icons.CHECK)
+        except Exception as ex:
+            print(ex)
+        self.page.update()
+
+    def upload_files(self, e: ft.FilePickerUploadEvent) -> None:
+        uf = []
+        if self.page.web:
+            f: FilePickerFile
+            for f in self.my_file_picker.result.files:
+                uf.append(ft.FilePickerUploadFile(f.name, upload_url=self.page.get_upload_url(f.name, 600)))
+            self.my_file_picker.upload(uf)
+
+            for f in self.my_file_picker.result.files:
+                ...
+                # user_db.database.set_new_user_image(USER_ID, f.name)
+                # user_avatar.change_user_image(f'/uploads/{f.name}')
+                # user_avatar.update()
+            self.page.update()
+        else:
+            # task_file = self.db.get_completed_task_status(self.user_id, self.subject_task_id)
+            # if task_file.completed:
+            #     ...
+
+            for x in self.my_file_picker.result.files:
+                dest = os.path.join(os.getcwd(), "assets/uploads")
+                # Создание нового имени файла с текущим временем
+                new_filename = f"file_{self.page.session.get('username')}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{x.name}.zip"
+                new_filepath = os.path.join(dest, new_filename)
+                compress_file_to_zip(x.path, new_filepath)
+
+                # here will be updating data in db
+                self.db.add_subject_task_file(self.user_id, self.subject_task_id, self.enrollment_id, new_filename)
+                self.page.update()
+        self.icon_button.current.opacity = 0.5
+        self.icon_button.current.tooltip = "Прикрепить новый файл"
+        self.icon_button.current.update()
 
 
 class StudentSubjectTasksCard(ft.UserControl):
-    def __init__(self, user_id, subject_name, subject_id):
+    def __init__(self, user_id, subject_name, subject_id, page):
         super().__init__()
+        self.page = page
+
         self.user_id = user_id
         self.db = StudentDatabase()
         self.subject_name = subject_name
         self.subject_id = subject_id
 
         self.task_icon = ft.Icon(ft.icons.TASK_OUTLINED, color=ft.colors.SURFACE_TINT)
-        self.true_check = []
         self.subject_tasks = self.get_subject_tasks()
 
     def build(self):
@@ -92,16 +143,8 @@ class StudentSubjectTasksCard(ft.UserControl):
 
         for value in self.db.get_student_subject_tasks_by_name(self.user_id, self.subject_name):
             task_ = SubjectTile(
-                count, value[0], value[1], self.user_id
+                count, value[0], value[1], self.user_id, page=self.page, enrollment_id=value[4]
             )
             res.append(task_)
-
             count += 1
-            self.true_check.append(task_.check_box.value)
-
-        self.update()
         return res
-
-    def update(self):
-        if all(self.true_check):
-            self.task_icon.name = ft.icons.TASK

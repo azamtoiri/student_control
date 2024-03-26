@@ -119,11 +119,11 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     user = user_db.database.get_user_by_id(USER_ID)
 
     # region: InputFields
-    first_name_field = UserChangField(False, label="Фамилия *",
+    first_name_field = UserChangField(True, label="Фамилия *",
                                       value=user.first_name, save_changes=save_changes)  # Фамилия
-    last_name_field = UserChangField(False, label="Имя *",
+    last_name_field = UserChangField(True, label="Имя *",
                                      value=user.last_name, save_changes=save_changes)  # Имя
-    middle_name_field = UserChangField(False, label="Отчество *",
+    middle_name_field = UserChangField(True, label="Отчество *",
                                        value=user.middle_name, save_changes=save_changes)  # Отчество
     group_field = UserChangField(False, label="Группа",
                                  value=user.group, save_changes=save_changes)  # Группа
