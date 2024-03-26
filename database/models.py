@@ -37,7 +37,7 @@ class Users(Base):
     )
 
     enrollments = relationship('Enrollments', backref='users', cascade='all, delete-orphan, delete')
-    subjects = relationship('Subjects', backref='users', cascade='all, delete-orphan')
+    subjects = relationship('Subjects', back_populates='users', cascade='all, delete-orphan')
     user_theme = relationship(
         'UserTheme', back_populates='users', cascade='all, delete-orphan', uselist=False
     )
@@ -137,7 +137,7 @@ class Subjects(Base):
         'SubjectTheory', uselist=False, back_populates='subject', cascade='all, delete-orphan'
     )
 
-    # user = relationship('Users', back_populates='subjects')
+    users = relationship('Users', back_populates='subjects')
 
 
 class Grades(Base):

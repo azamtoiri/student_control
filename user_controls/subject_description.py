@@ -1,6 +1,7 @@
 import flet as ft
 
 from database.database import StudentDatabase
+from user_controls.user_image_picker import UserImage
 from utils.create_container_home_view import create_expand_container
 
 
@@ -12,6 +13,15 @@ class SubjectDescription(ft.UserControl):
     def build(self):
         self.database = StudentDatabase()
         self.subject_information = self.database.get_subject(self.subject_id)
+
+        teacher_description = 'Пока нет информации о преподавателе'
+        teacher_experience = 'неизвестно'
+
+        if self.subject_information.users.teacher_info:
+            teacher_experience = self.subject_information.users.teacher_info.teacher_experience
+
+        if self.subject_information.users.teacher_info:
+            teacher_description = self.subject_information.users.teacher_info.teacher_description
 
         styled_title_container = ft.Container(
             expand=True, border_radius=8, ink=True, bgcolor=ft.colors.SURFACE_TINT, opacity=0.8,
@@ -27,14 +37,32 @@ class SubjectDescription(ft.UserControl):
             ]
         )
 
-        styled_description_container = create_expand_container(ft.Text(self.subject_information.description))
+        styled_description_container = create_expand_container(
+            ft.Text(self.subject_information.description), height=200
+        )
         # teacher images gets from db with self.subject_information
-        subject_image = ft.Image('../assets/Fox_Hub_logo.png', height=200, width=200, expand=0)  # get_subject image
+        if self.subject_information.users.user_image is not None:
+            teacher_image = UserImage(
+                f'/uploads/{self.subject_information.users.user_image}'
+            )
+        else:
+            teacher_image = UserImage(
+                '/default_user_image.png'
+            )
+
+        subject_image = ft.Image('/Fox_Hub_logo.png', height=200, width=200, expand=0)  # get_subject image
         teacher_image_and_fio = ft.Column(
             [
-                ft.Image('../assets/Fox_Hub_logo.png', height=150, width=150),  # need url of teacher photo
-                ft.Row([ft.Text('Имя преподавателя'), ft.Text('Фамилия')]),  # teacher information
-                ft.Text('Опыт преподавателя'),  # teacher information
+                teacher_image,
+                # need url of teacher photo
+                ft.Row(
+                    controls=[
+                        ft.Text(f'{self.subject_information.users.first_name}'),
+                        ft.Text(f'{self.subject_information.users.middle_name}')
+                    ]
+                ),  # teacher information
+                ft.Text(f'Стаж преподавателя: {teacher_experience}'),
+                # teacher information
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
 
@@ -47,9 +75,14 @@ class SubjectDescription(ft.UserControl):
             alignment=ft.alignment.center, height=90
         )
 
-        styled_teacher_information = create_expand_container(
-            ft.Text('Информация об учителе')
-        )
+        if teacher_description == 'Пока нет информации о преподавателе':
+            styled_teacher_information = create_expand_container(
+                ft.Text(f'{teacher_description}'), height=200
+            )
+        else:
+            styled_teacher_information = create_expand_container(
+                ft.Text(f'{teacher_description}')
+            )
 
         return ft.Column(
             controls=[

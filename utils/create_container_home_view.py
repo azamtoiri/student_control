@@ -5,7 +5,7 @@ def create_container(content, col=None) -> ft.Container:
     box_shadow = ft.BoxShadow(
         color=ft.colors.SURFACE_TINT,
         offset=ft.Offset(1, 2),
-        blur_radius=10,
+        blur_radius=5,
     )
 
     container = ft.Container(
@@ -20,7 +20,7 @@ def create_container(content, col=None) -> ft.Container:
     return container
 
 
-def create_expand_container(content, col=None):
+def create_expand_container(content, col=None, height=None):
     box_shadow = ft.BoxShadow(
         color=ft.colors.SURFACE_TINT,
         offset=ft.Offset(1, 2),
@@ -29,7 +29,7 @@ def create_expand_container(content, col=None):
 
     container = ft.Container(
         bgcolor=ft.colors.SURFACE_VARIANT, border_radius=8, padding=ft.padding.all(10),
-        alignment=ft.alignment.top_left, expand=1, height=200
+        alignment=ft.alignment.top_left, expand=1, height=height
     )
     container.shadow = box_shadow
     container.content = ft.Column(
