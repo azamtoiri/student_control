@@ -8,19 +8,31 @@ from flet_route import Params, Basket
 from database.database import UserDatabase
 from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
+from utils.banners import display_success_banner
 from utils.create_container_home_view import create_container
 from utils.exceptions import RequiredField
 from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes, TeacherRoutes, BaseRoutes
-from utils.banners import display_success_banner
 
 user_db = LazyDatabase(UserDatabase)
+
+user_db2 = UserDatabase()
 
 
 def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # constants
     USER_ID = page.session.get('user_id')
     USERNAME = page.session.get('username')
+
+    teacher_experience = ''
+    teacher_description = ''
+    IS_DONE = False
+    if page.session.get("is_staff") is not None:
+        user_db.database.create_teacher_information(USER_ID)
+        teacher = user_db.database.get_teacher_info(USER_ID)
+        teacher_experience = teacher.teacher_experience
+        teacher_description = teacher.teacher_description
+        IS_DONE = bool(teacher.is_done)
 
     # ref controls
     upload_button = ft.Ref[ft.ElevatedButton]()
@@ -35,6 +47,8 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             'Имя': first_name_field,
             'Фамилия': last_name_field,
             'Отчество': middle_name_field,
+            'Опыт': teacher_description_field,
+            'Описание': teacher_description_field
         }
         if field in fields.keys():
             # fields[field].input_box_content.error_text = message
@@ -82,6 +96,23 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
         # page.go(main_page_url)
 
+    def save_changes_teacher(e: ft.ControlEvent) -> None:
+        try:
+            teacher_experience_ = str(teacher_experience_field.get_value).strip() if len(
+                teacher_experience_field.get_value) else None
+
+            teacher_description_ = str(teacher_description_field.get_value).strip() if len(
+                teacher_description_field.get_value) else None
+            is_done = True
+
+            user_db.database.update_teacher_information(USER_ID, teacher_experience_, teacher_description_, is_done)
+
+            display_success_banner(page, 'Изменения сохранены', ft.icons.SUNNY)
+        except RequiredField as error:
+            display_register_form_error(error.field, str(error))
+        except Exception as ex:
+            print(ex)
+
     def on_dialog_result(e: ft.FilePickerResultEvent) -> None:
         if e.files is None: return
         upload_files(e)
@@ -116,7 +147,8 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # endregion
 
-    user = user_db.database.get_user_by_id(USER_ID)
+    # user = user_db.database.get_user_by_id(USER_ID)
+    user = user_db2.get_user_by_id(USER_ID)
 
     # region: InputFields
     first_name_field = UserChangField(True, label="Фамилия *",
@@ -134,6 +166,13 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     email_field = UserChangField(True, label="Email",
                                  value=user.email)  # Email
     username_field = UserChangField(disabled=True, value=f'{USERNAME}', label='Имя пользователя')
+
+    teacher_experience_field = UserChangField(
+        IS_DONE, teacher_experience, label='Ваш опыт', save_changes=save_changes_teacher
+    )
+    teacher_description_field = UserChangField(
+        IS_DONE, teacher_description, label='Расскажите о себе', multiline=True, save_changes=save_changes_teacher
+    )
 
     # filters
     age_field.edit_value.input_filter = ft.NumbersOnlyInputFilter()
@@ -157,23 +196,49 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             on_click=lambda _: pick_files.pick_files(), disabled=False
         )
     title = ft.Text('Изменить данные', size=40, color=ft.colors.BLACK, text_align=ft.TextAlign.CENTER)
+    teacher_title = ft.Text('Изменить информацию о себе (преподаватель)', size=40, color=ft.colors.BLACK,
+                            text_align=ft.TextAlign.CENTER)
 
     content = ft.ResponsiveRow(spacing=5, alignment=ft.MainAxisAlignment.CENTER, controls=[
-        ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[title]),
+        ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[
+            ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER,controls=[
+                title,
+                ft.ElevatedButton('На главную страницу', on_click=lambda e: page.go(main_page_url))
+            ]),
+        ]),
         ft.Column(col={"sm": 6, "md": 4},
                   controls=[user_avatar], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
         ft.Column(col={"sm": 12, "md": 4},
                   controls=[first_name_field, last_name_field, middle_name_field, course_field]),
         ft.Column(col={"sm": 12, "md": 4},
                   controls=[group_field, age_field, email_field, username_field]),
-        ft.Row(alignment=ft.MainAxisAlignment.END,
-               controls=[
-                   ft.ElevatedButton('На главную страницу', on_click=lambda e: page.go(main_page_url))
-               ]),
     ])
 
+    teacher_warning_text = ft.Container(
+        content=ft.Text(
+            value=('Внимание!\nДанные можно редактировать только один раз, '
+                   'пожалуйста убедитесь что все данные верны, перед тем как сохранить!'),
+            text_align=ft.TextAlign.CENTER,
+            weight=ft.FontWeight.BOLD,
+            color=ft.colors.SURFACE_TINT,
+            size=20,
+        )
+    )
+    teacher_content = ft.ResponsiveRow(
+        spacing=5, alignment=ft.MainAxisAlignment.CENTER,
+        controls=[
+            ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[teacher_title]),
+            ft.Column(col={"sm": 6, "md": 4}, visible=not IS_DONE,
+                      controls=[teacher_warning_text], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+            ft.Column(
+                controls=[teacher_experience_field, teacher_description_field]
+            )
+        ]
+    )
     # Background container for color and other
     user_data_container = create_container(content)
+    teacher_container = create_container(teacher_content)
+    teacher_container.visible = user.is_staff
 
     return ft.View(
         route=BaseRoutes.HOME_EDIT_URL,
@@ -181,6 +246,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         scroll=ft.ScrollMode.AUTO,
         controls=[
             ft.Container(),
-            user_data_container
+            user_data_container,
+            teacher_container
         ]
     )

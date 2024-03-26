@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from constants import Connection
 from constants import UserDefaults
 from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, UserTasksFiles, \
-    UserTheme, SubjectTheory
+    UserTheme, SubjectTheory, TeacherInformation
 from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed, \
     UserDontHaveGrade
 from utils.jwt_hash import verify, hash_
@@ -218,6 +218,43 @@ class UserDatabase(BaseDataBase):
     def get_seed_color(self, user_id) -> str:
         return self.session.get(UserTheme, user_id).seed_color
 
+    # region: Teacher info
+
+    def get_teacher_info(self, user_id) -> Type[TeacherInformation]:
+        return self.session.query(TeacherInformation).filter(TeacherInformation.user_id == user_id).first()
+
+    def update_teacher_information(self, user_id, teacher_experience, teacher_description, is_done) -> bool:
+        """Добавляем дополнительную информацию об учителе"""
+        if teacher_description is None:
+            raise RequiredField('Описание')
+        if teacher_experience is None:
+            raise RequiredField('Опыт')
+
+        try:
+            teacher_info = self.get_teacher_info(user_id)
+            teacher_info.teacher_experience = teacher_experience
+            teacher_info.teacher_description = teacher_description
+            teacher_info.is_done = is_done
+            self.session.add(teacher_info)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
+    def create_teacher_information(self, user_id) -> bool:
+        """Создаем в бд поле для заполнения информации об учителе"""
+        try:
+            if self.get_teacher_info(user_id) is not None:
+                return True
+            teacher_info = TeacherInformation(user_id=user_id)
+            self.session.add(teacher_info)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
     # endregion
 
 
@@ -371,6 +408,22 @@ class StudentDatabase(BaseDataBase):
         """Для поиска предмета по имени"""
         return self.session.query(Subjects).filter(Subjects.subject_name.ilike(f'%{subject_name}%')).all()
 
+    def get_student_subject_tasks(self, user_id) -> list:
+        """Get all subject_tasks of user"""
+        res = self.session.query(
+            SubjectTasks.subject_task_id, SubjectTasks.task_name, Users.user_id, Subjects.subject_name,
+            Enrollments.enrollment_id
+        ).join(
+            Enrollments, Users.user_id == Enrollments.user_id
+        ).join(
+            Subjects, Subjects.subject_id == Enrollments.subject_id
+        ).join(
+            SubjectTasks, SubjectTasks.subject_id == Subjects.subject_id
+        ).where(
+            Users.user_id == user_id
+        ).all()
+        return res
+
     def get_all_grades(self, user_id) -> int:
         """Return quantity of user grades"""
         values = self.session.query(
@@ -389,22 +442,6 @@ class StudentDatabase(BaseDataBase):
 
     def quantity_of_subjects(self, user_id) -> int:
         return len(self.get_student_subjects(user_id=user_id))
-
-    def get_student_subject_tasks(self, user_id) -> list:
-        """Get all subject_tasks of user"""
-        res = self.session.query(
-            SubjectTasks.subject_task_id, SubjectTasks.task_name, Users.user_id, Subjects.subject_name,
-            Enrollments.enrollment_id
-        ).join(
-            Enrollments, Users.user_id == Enrollments.user_id
-        ).join(
-            Subjects, Subjects.subject_id == Enrollments.subject_id
-        ).join(
-            SubjectTasks, SubjectTasks.subject_id == Subjects.subject_id
-        ).where(
-            Users.user_id == user_id
-        ).all()
-        return res
 
     def get_student_subject_tasks_by_name(self, user_id, subject_name) -> list:
         res = self.session.query(

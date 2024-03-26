@@ -102,10 +102,10 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     user_data_container = create_container(user_info_content)
 
     # first stats container
-    user_stat_container = create_container(user_stat_info_content, col=6)
+    user_stat_container = create_container(user_stat_info_content, col={"sm": 12, "md": 6})
 
     # second stats info container
-    user_stat2_container = create_container(user_stat2_info_content, col=6)
+    user_stat2_container = create_container(user_stat2_info_content, col={"sm": 12, "md": 6})
 
     # endregion
 

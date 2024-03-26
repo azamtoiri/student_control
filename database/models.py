@@ -38,7 +38,36 @@ class Users(Base):
 
     enrollments = relationship('Enrollments', backref='users', cascade='all, delete-orphan, delete')
     subjects = relationship('Subjects', backref='users', cascade='all, delete-orphan')
-    user_theme = relationship('UserTheme', back_populates='users', cascade='all, delete-orphan', uselist=False)
+    user_theme = relationship(
+        'UserTheme', back_populates='users', cascade='all, delete-orphan', uselist=False
+    )
+    teacher_info = relationship(
+        'TeacherInformation', back_populates='user', cascade='all, delete-orphan', uselist=False
+    )
+
+
+class TeacherInformation(Base):
+    __tablename__ = 'teacher_information'
+    __table_args__ = {
+        "comment": "Дополнительная информация о преподавателе"
+    }
+
+    teacher_information_id = Column(
+        Integer, primary_key=True, nullable=False, autoincrement=True, comment='идентификатор информации'
+    )
+    user_id = Column(
+        Integer, ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False,
+        comment='id пользователя'
+    )
+    teacher_experience = Column(
+        Integer, nullable=True, comment='опыт преподавателя',
+    )
+    teacher_description = Column(
+        String, nullable=True, comment='Информация о преподавателе',
+    )
+    is_done = Column(Boolean, nullable=False, default=False, server_default=expression.false())
+
+    user = relationship('Users', back_populates='teacher_info')
 
 
 class UserTheme(Base):
@@ -70,7 +99,7 @@ class SubjectTheory(Base):
     theory_title = Column(String, unique=True, nullable=False, comment='Заголовок теории')
     theory_data = Column(String, nullable=False, comment='Данные теории (файл, текст, ссылка)')
 
-    subject = relationship('Subjects', back_populates='subject_theory')
+    subject = relationship('Subjects', back_populates='subject_theory', uselist=False)
 
 
 class SubjectTasks(Base):
@@ -78,14 +107,12 @@ class SubjectTasks(Base):
     __table_args__ = {'comment': 'Задания для предмета. У каждого предмета может быть несколько заданий'}
 
     subject_task_id = Column(
-        Integer, primary_key=True, unique=True, nullable=False,
-        comment='Идентификатор задания'
+        Integer, primary_key=True, unique=True, nullable=False, comment='Идентификатор задания'
     )
     task_name = Column(String, nullable=False, unique=True, comment='Название задания')
     completed = Column(Boolean, server_default=expression.false(), default=False, comment='Статус задания')
     subject_id = Column(
-        Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'),
-        comment='Идентификатор предмета'
+        Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'), comment='Идентификатор предмета'
     )
 
 
@@ -109,6 +136,8 @@ class Subjects(Base):
     subject_theory = relationship(
         'SubjectTheory', uselist=False, back_populates='subject', cascade='all, delete-orphan'
     )
+
+    # user = relationship('Users', back_populates='subjects')
 
 
 class Grades(Base):
@@ -175,9 +204,15 @@ class UserTasksFiles(Base):
         Integer, ForeignKey('subject_tasks.subject_task_id', ondelete='CASCADE'), nullable=False,
         primary_key=True, comment='Идентификатор задания'
     )
-    user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False, primary_key=True)
-    enrollment_id = Column(Integer, ForeignKey('enrollments.enrollment_id', ondelete='CASCADE'), nullable=False)
-    task_file = Column(String, nullable=False)
+    user_id = Column(
+        Integer, ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False,
+        primary_key=True, comment='пользователь'
+    )
+    enrollment_id = Column(
+        Integer, ForeignKey('enrollments.enrollment_id', ondelete='CASCADE'), nullable=False,
+        comment='предмет на который записан пользователй'
+    )
+    task_file = Column(String, nullable=False, comment='файл прикрепленный к заданию')
     completed = Column(
         Boolean, nullable=False, default=True, server_default=expression.true(), comment='Отправил ли ученик задание'
     )

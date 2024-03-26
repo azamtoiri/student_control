@@ -1,7 +1,7 @@
 import flet as ft
 
 
-def create_container(content, col=None):
+def create_container(content, col=None) -> ft.Container:
     box_shadow = ft.BoxShadow(
         color=ft.colors.SURFACE_TINT,
         offset=ft.Offset(1, 2),

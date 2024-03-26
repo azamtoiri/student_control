@@ -11,6 +11,7 @@ class UserChangField(ft.UserControl):
             label: str = None,
             save_changes: Type[Callable] = None,
             read_only: bool = True,
+            multiline: bool = False,
     ):
         super().__init__()
         self.save_changes = save_changes
@@ -22,9 +23,12 @@ class UserChangField(ft.UserControl):
             value=self.value, label=self.label, col={"md": 6},
             expand=1, read_only=read_only, hint_text='Пусто',
             focused_border_color=ft.colors.ON_SURFACE_VARIANT, border_color=ft.colors.SURFACE_TINT,
-            bgcolor=ft.colors.SURFACE_VARIANT
+            bgcolor=ft.colors.SURFACE_VARIANT, multiline=multiline
         )
-        self.edit_value = ft.TextField(label=self.label, expand=1, bgcolor=ft.colors.ON_SECONDARY)
+        self.edit_value = ft.TextField(
+            label=self.label, expand=1, bgcolor=ft.colors.SURFACE_VARIANT, multiline=multiline,
+            focused_border_color=ft.colors.ON_SURFACE_VARIANT, border_color=ft.colors.SURFACE_TINT,
+        )
 
     def build(self):
         self.display_view = ft.Row(
