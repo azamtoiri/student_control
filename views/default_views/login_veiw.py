@@ -37,6 +37,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             e.page.session.set("user_id", user.user_id)
 
             if user_db.database.is_staff(user.user_id):
+                # changing color cheme values from db
                 e.page.session.set("is_staff", True)
                 e.page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
                 e.page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
@@ -45,6 +46,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 e.page.go(BaseRoutes.TEACHER_MAIN_URL)
 
             else:
+                # changing color cheme values from db
                 e.page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
                 e.page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
                 e.page.update()

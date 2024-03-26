@@ -1,10 +1,11 @@
 from flet_route import path
 
-from utils.middleware import MiddleWareCheckAuthUser
+from utils.middleware import MiddleWareCheckAuthUser, MiddleWareCheckIsStaff
 from utils.routes_url import BaseRoutes, StudentRoutes, TeacherRoutes
 from views.default_views import LoginView, RegisterView, HomeEditView
 from views.index_view import IndexView
-from views.not_registered_view import NotRegistered
+from views.not_registered_view import NotRegisteredView
+from views.not_teacher_view import NotTeacherView
 from views.student_views import (
     HomeView,
     MainView,
@@ -44,12 +45,12 @@ all_routes = [
     # endregion
 
     # region: teacher views
-    path(url=TeacherRoutes.MAIN_URL, clear=False, view=TeacherMainView, middleware=MiddleWareCheckAuthUser),
-    path(url=TeacherRoutes.HOME_URL, clear=False, view=TeacherHomeView, middleware=MiddleWareCheckAuthUser),
-    path(url=TeacherRoutes.SUBJECTS_URL, clear=False, view=MySubjectsView, middleware=MiddleWareCheckAuthUser),
-    path(url=TeacherRoutes.SUBJECT_URL, clear=False, view=MySubjectView, middleware=MiddleWareCheckAuthUser),
-    path(url=TeacherRoutes.TASKS_URL, clear=False, view=MyTasksView, middleware=MiddleWareCheckAuthUser),
-    path(url=TeacherRoutes.GRADES_URL, clear=False, view=SetGradesView, middleware=MiddleWareCheckAuthUser),
+    path(url=TeacherRoutes.MAIN_URL, clear=False, view=TeacherMainView, middleware=MiddleWareCheckIsStaff),
+    path(url=TeacherRoutes.HOME_URL, clear=False, view=TeacherHomeView, middleware=MiddleWareCheckIsStaff),
+    path(url=TeacherRoutes.SUBJECTS_URL, clear=False, view=MySubjectsView, middleware=MiddleWareCheckIsStaff),
+    path(url=TeacherRoutes.SUBJECT_URL, clear=False, view=MySubjectView, middleware=MiddleWareCheckIsStaff),
+    path(url=TeacherRoutes.TASKS_URL, clear=False, view=MyTasksView, middleware=MiddleWareCheckIsStaff),
+    path(url=TeacherRoutes.GRADES_URL, clear=False, view=SetGradesView, middleware=MiddleWareCheckIsStaff),
 
     # endregion
 
@@ -58,6 +59,7 @@ all_routes = [
     # endregion
 
     # not registred
-    path(BaseRoutes.NOT_REGISTERED_URL, clear=False, view=NotRegistered),
+    path(BaseRoutes.NOT_REGISTERED_URL, clear=False, view=NotRegisteredView),
+    path(BaseRoutes.NOT_TEACHER_URL, clear=False, view=NotTeacherView),
     path(BaseRoutes.HOME_EDIT_URL, clear=True, view=HomeEditView, middleware=MiddleWareCheckAuthUser)
 ]

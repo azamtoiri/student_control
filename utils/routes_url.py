@@ -8,6 +8,7 @@ class BaseRoutes:
     REGISTER_URL = '/register'
     TODO_URL = '/todo'
     NOT_REGISTERED_URL = '/not-registered'
+    NOT_TEACHER_URL = '/not-teacher'
     STUDENT_MAIN_URL = '/student/main'
     TEACHER_MAIN_URL = '/teacher/main'
     HOME_EDIT_URL = '/home-edit'

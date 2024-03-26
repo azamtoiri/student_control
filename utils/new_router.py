@@ -83,7 +83,7 @@ class Routing:
     def change_route(self, route: flet.RouteChangeEvent):
         notfound = True
         without_app_bar_routes = [
-            '', '/', '/login', '/register', '/teacher/main', '/student/main', '/not-registered'
+            '', '/', '/login', '/register', '/teacher/main', '/student/main', '/not-registered', '/not-teacher'
         ]
         for url in self.app_routes:
             path_match = match(url[0], self.page.route)

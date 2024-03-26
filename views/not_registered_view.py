@@ -4,7 +4,7 @@ from flet_route import Params, Basket
 from utils.routes_url import BaseRoutes
 
 
-def NotRegistered(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+def NotRegisteredView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     return ft.View(
         bgcolor=ft.colors.SURFACE_VARIANT,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
