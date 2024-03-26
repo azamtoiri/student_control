@@ -91,7 +91,8 @@ class SubjectTile(ft.UserControl):
         else:
             task_file = self.db.get_completed_task_status(self.user_id, self.subject_task_id)
             if task_file:
-                os.remove(f'assets/uploads/{task_file.task_file}')
+                if os.path.exists(f'assets/uploads/{task_file.task_file}'):
+                    os.remove(f'assets/uploads/{task_file.task_file}')
                 self.db.delete_task_file(task_file)
 
             for x in self.my_file_picker.result.files:
