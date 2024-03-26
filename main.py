@@ -14,7 +14,7 @@ def ViewNotFound(page: ft.Page, params, basket):
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
             ft.Text(
-                f"View {page.route} Page not found error 404",
+                f"{page.route} Page not found error 404",
                 size=30,
             ),
             ft.TextButton(
