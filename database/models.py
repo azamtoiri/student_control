@@ -182,5 +182,5 @@ class UserTasksFiles(Base):
         Boolean, nullable=False, default=True, server_default=expression.true(), comment='Отправил ли ученик задание'
     )
 
-    subject_task = relationship('SubjectTasks', backref='user_task_files', cascade='all')
-    user = relationship('Users', backref='user_task_files', cascade='all')
+    subject_task = relationship('SubjectTasks', backref='user_task_files')
+    user = relationship('Users', backref='user_task_files')

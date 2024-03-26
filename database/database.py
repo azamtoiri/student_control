@@ -445,6 +445,16 @@ class StudentDatabase(BaseDataBase):
             UserTasksFiles.subject_task_id == subject_task_id
         ).first()
 
+    def delete_task_file(self, task_file) -> bool:
+        try:
+            self.session.delete(task_file)
+            self.session.commit()
+
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
     def check_task_file_exist(self, user_id, subject_task_id) -> bool:
         """Проверяет есть ли такая запись в таблице"""
         # Используем метод query.exists() для проверки существования записи в запросе

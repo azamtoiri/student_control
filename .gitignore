@@ -5,6 +5,7 @@ tailwindcss/
 *.json
 *.log
 *.pot
+poetry.lock
 *.pyc
 *.png
 *.jpg

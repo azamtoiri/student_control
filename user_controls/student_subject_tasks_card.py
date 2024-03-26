@@ -28,26 +28,42 @@ class SubjectTile(ft.UserControl):
         self.page.update()
 
         self.db = StudentDatabase()
+        self.completed = self.db.get_completed_task_status(self.user_id, self.subject_task_id)
 
     def build(self):
-        return ft.ListTile(
-            title=ft.Row(
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    ft.Text(f'{self.count}. {self.subject_name}'),
-                    ft.IconButton(
-                        ref=self.icon_button,
-                        icon=ft.icons.ADD_CIRCLE,
-                        icon_color=ft.colors.SURFACE_TINT,
-                        tooltip='Отправить задание',
-                        on_click=lambda e: self.my_file_picker.pick_files()
-                    )
-                ]
+        if self.completed:
+            return ft.ListTile(
+                title=ft.Row(
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    controls=[
+                        ft.Text(f'{self.count}. {self.subject_name}'),
+                        ft.IconButton(
+                            ref=self.icon_button,
+                            icon=ft.icons.ADD_CIRCLE,
+                            icon_color=ft.colors.SURFACE_TINT,
+                            tooltip="Прикрепить новый файл",
+                            opacity=0.5,
+                            on_click=lambda e: self.my_file_picker.pick_files(),
+                        )
+                    ]
+                )
             )
-        )
-
-    def change_status(self, e: ft.ControlEvent, user_id, subject_task_id):
-        self.update()
+        else:
+            return ft.ListTile(
+                title=ft.Row(
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    controls=[
+                        ft.Text(f'{self.count}. {self.subject_name}'),
+                        ft.IconButton(
+                            ref=self.icon_button,
+                            icon=ft.icons.ADD_CIRCLE,
+                            icon_color=ft.colors.SURFACE_TINT,
+                            tooltip='Отправить задание',
+                            on_click=lambda e: self.my_file_picker.pick_files(),
+                        )
+                    ]
+                )
+            )
 
     def on_dialog_result(self, e: ft.FilePickerResultEvent) -> None:
         if e.files is None: return
@@ -73,9 +89,10 @@ class SubjectTile(ft.UserControl):
                 # user_avatar.update()
             self.page.update()
         else:
-            # task_file = self.db.get_completed_task_status(self.user_id, self.subject_task_id)
-            # if task_file.completed:
-            #     ...
+            task_file = self.db.get_completed_task_status(self.user_id, self.subject_task_id)
+            if task_file:
+                os.remove(f'assets/uploads/{task_file.task_file}')
+                self.db.delete_task_file(task_file)
 
             for x in self.my_file_picker.result.files:
                 dest = os.path.join(os.getcwd(), "assets/uploads")
