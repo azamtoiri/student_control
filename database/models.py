@@ -130,6 +130,10 @@ class Subjects(Base):
     subject_name = Column(String, nullable=False, comment='Название предмета')
     short_description = Column(String, nullable=False, comment='Краткое описание предмета')
     description = Column(String, nullable=False, comment='Полное описание предмета')
+    subject_image = Column(
+        String, nullable=False, default='subject_image.png', server_default='subject_image.png',
+        comment='Изображения для предмета'
+    )
 
     enrollments = relationship('Enrollments', backref='subject', cascade='all, delete-orphan')
     subject_tasks = relationship('SubjectTasks', backref='subject', cascade='all, delete-orphan')

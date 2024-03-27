@@ -50,7 +50,9 @@ class SubjectDescription(ft.UserControl):
                 '/default_user_image.png'
             )
 
-        subject_image = ft.Image('/Fox_Hub_logo.png', height=200, width=200, expand=0)  # get_subject image
+        subject_image = ft.Image(
+            f'/{self.subject_information.subject_image}', height=200, width=200
+        )  # get_subject image
         teacher_image_and_fio = ft.Column(
             [
                 teacher_image,
