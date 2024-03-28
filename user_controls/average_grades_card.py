@@ -1,3 +1,5 @@
+#  Для отображения средней оценки по предметам
+
 import flet as ft
 
 from database.database import StudentDatabase

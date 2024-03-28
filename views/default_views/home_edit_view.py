@@ -47,7 +47,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             'Имя': first_name_field,
             'Фамилия': last_name_field,
             'Отчество': middle_name_field,
-            'Опыт': teacher_description_field,
+            'Опыт': teacher_experience_field,
             'Описание': teacher_description_field
         }
         if field in fields.keys():
@@ -147,8 +147,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # endregion
 
-    # user = user_db.database.get_user_by_id(USER_ID)
-    user = user_db2.get_user_by_id(USER_ID)
+    user = user_db.database.get_user_by_id(USER_ID)
 
     # region: InputFields
     first_name_field = UserChangField(True, label="Фамилия *",
@@ -176,6 +175,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # filters
     age_field.edit_value.input_filter = ft.NumbersOnlyInputFilter()
+    teacher_experience_field.edit_value.input_filter = ft.NumbersOnlyInputFilter()
 
     # endregion
 
@@ -188,12 +188,12 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     if (user_image_dir is None) or (os.path.exists(f'assets/uploads/{user_image_dir}') is False):
         user_avatar = UserImage(
             f'/default_user_image.png',
-            on_click=lambda _: pick_files.pick_files(), disabled=False
+            on_click=lambda _: pick_files.pick_files(file_type=ft.FilePickerFileType.IMAGE), disabled=False
         )
     else:
         user_avatar = UserImage(
             f'/uploads/{user_image_dir}',
-            on_click=lambda _: pick_files.pick_files(), disabled=False
+            on_click=lambda _: pick_files.pick_files(file_type=ft.FilePickerFileType.IMAGE), disabled=False
         )
     title = ft.Text('Изменить данные', size=40, color=ft.colors.BLACK, text_align=ft.TextAlign.CENTER)
     teacher_title = ft.Text('Изменить информацию о себе (преподаватель)', size=40, color=ft.colors.BLACK,
@@ -201,7 +201,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     content = ft.ResponsiveRow(spacing=5, alignment=ft.MainAxisAlignment.CENTER, controls=[
         ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[
-            ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER,controls=[
+            ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER, controls=[
                 title,
                 ft.ElevatedButton('На главную страницу', on_click=lambda e: page.go(main_page_url))
             ]),

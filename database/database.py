@@ -218,6 +218,8 @@ class UserDatabase(BaseDataBase):
     def get_seed_color(self, user_id) -> str:
         return self.session.get(UserTheme, user_id).seed_color
 
+    # endregion
+
     # region: Teacher info
 
     def get_teacher_info(self, user_id) -> Type[TeacherInformation]:
@@ -225,10 +227,10 @@ class UserDatabase(BaseDataBase):
 
     def update_teacher_information(self, user_id, teacher_experience, teacher_description, is_done) -> bool:
         """Добавляем дополнительную информацию об учителе"""
-        if teacher_description is None:
-            raise RequiredField('Описание')
         if teacher_experience is None:
             raise RequiredField('Опыт')
+        if teacher_description is None:
+            raise RequiredField('Описание')
 
         try:
             teacher_info = self.get_teacher_info(user_id)
@@ -287,8 +289,9 @@ class StudentDatabase(BaseDataBase):
             raise DontHaveGrades()
         return user_subject
 
-    def get_student_subjects_and_completed_tasks(self, user_id=None, subject_task_id=None) -> list[
-                                                                                                  UserTasksFiles] or list:
+    def get_student_subjects_and_completed_tasks(
+            self, user_id=None, subject_task_id=None
+    ) -> list[UserTasksFiles] or list:
         req = self.session.query(
             UserTasksFiles
         ).join(
@@ -527,6 +530,12 @@ class StudentDatabase(BaseDataBase):
         except Exception as ex:
             print(ex)
             return False
+
+    # endregion
+
+    # region: Teacher subjects
+    def get_teacher_subjects(self, user_id) -> list[Type[Subjects]]:
+        return self.session.query(Subjects).filter(Subjects.user_id == user_id).all()
 
     # endregion
 

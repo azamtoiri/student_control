@@ -1,3 +1,5 @@
+# Анимированный контейнер для main_view
+
 from typing import Optional
 import flet as ft
 from flet import UserControl, LinearGradient, alignment, Control, Container, Scale, animation, AnimationCurve, colors

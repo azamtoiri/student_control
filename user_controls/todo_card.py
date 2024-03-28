@@ -1,3 +1,5 @@
+# отображение статистики to-do
+
 import flet as ft
 
 

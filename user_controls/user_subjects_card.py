@@ -1,3 +1,5 @@
+#  Для отображения статистики по предметам
+
 import flet as ft
 
 from database.database import StudentDatabase

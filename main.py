@@ -36,16 +36,17 @@ def main(page: ft.Page):
     # route.appbar = STAppBar()
     page.on_route_change = route.change_route
     # page.appbar = route.appbar
-    # page.session.set('username', 'admin')
-    # page.session.set('user_id', 6)
-    # page.session.set('is_auth', True)
+    page.session.set('username', 'jane123')
+    page.session.set('user_id', 2)
+    page.session.set('is_auth', True)
+    page.session.set('is_staff', True)
     if page.session.get('user_id'):
         page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
         page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
         page.update()
-    # page.go('/home-edit')
-    # page.go('/student/main')
-    page.go('/login')
+    page.go('/teacher/my-subjects')
+    # page.go('/teacher/home')
+    # page.go('/subject/1')
 
 
 ft.app(target=main, upload_dir="assets/uploads", assets_dir="assets")

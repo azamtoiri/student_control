@@ -1,3 +1,5 @@
+# вспомогательный элемент для task_view, отображает каждое задание отдельно и для прикрепления файлов
+
 import os.path
 from datetime import datetime
 
@@ -78,8 +80,10 @@ class SubjectTile(ft.UserControl):
         uf = []
         if self.page.web:
             f: FilePickerFile
-            for f in self.my_file_picker.result.files:
-                uf.append(ft.FilePickerUploadFile(f.name, upload_url=self.page.get_upload_url(f.name, 600)))
+            if self.my_file_picker.result is not None and self.my_file_picker.result.files is not None:
+                for f in self.my_file_picker.result.files:
+                    uf.append(ft.FilePickerUploadFile(f.name, upload_url=self.page.get_upload_url(f.name, 600)))
+                    print(uf)
             self.my_file_picker.upload(uf)
 
             for f in self.my_file_picker.result.files:

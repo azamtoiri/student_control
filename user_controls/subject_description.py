@@ -1,3 +1,5 @@
+# отображения детальной информации
+
 import flet as ft
 
 from database.database import StudentDatabase
