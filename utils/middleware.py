@@ -7,7 +7,7 @@ def MiddleWareCheckAuthUser(page: ft.Page, params: Params, basket: Basket) -> No
         page.route = '/not-registered'
 
     if page.session.get('is_staff'):
-        if page.route == '/home-edit': return
+        if page.route == '/home-edit' or page.route == '/todo': return
         if page.session.get('is_auth') and page.session.get('is_staff'):
             page.route = '/not-registered'
 
