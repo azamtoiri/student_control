@@ -277,7 +277,7 @@ class StudentDatabase(BaseDataBase):
             user_id = UserDatabase().get_user_id(username).user_id
         user_subject = (
             self.session.query(
-                Users.first_name, Enrollments, Subjects.subject_name, Subjects.description,
+                Users.first_name, Enrollments, Subjects.subject_name, Subjects.short_description,
                 Subjects.subject_id
             ).join(
                 Enrollments, Users.user_id == Enrollments.user_id
@@ -537,6 +537,60 @@ class StudentDatabase(BaseDataBase):
     def get_teacher_subjects(self, user_id) -> list[Type[Subjects]]:
         return self.session.query(Subjects).filter(Subjects.user_id == user_id).all()
 
+    def update_subject(
+            self, subject_id, subject_name, subject_short_description, subject_description,
+    ) -> bool:
+        if subject_name is None:
+            raise RequiredField('Имя предмета')
+        if subject_short_description is None:
+            raise RequiredField('Краткое описание предмета')
+        if subject_description is None:
+            raise RequiredField('Описание предмета')
+
+        try:
+            subject = self.get_subject(subject_id)
+            subject.subject_name = subject_name
+            subject.short_description = subject_short_description
+            subject.description = subject_description
+            self.session.add(subject)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
+    def create_subject(self, user_id, subject_name, subject_short_description, subject_description) -> bool:
+        if subject_name is None:
+            raise RequiredField('Имя предмета')
+        if subject_short_description is None:
+            raise RequiredField('Краткое описание предмета')
+        if subject_description is None:
+            raise RequiredField('Описание предмета')
+
+        try:
+            subject = Subjects(
+                user_id=user_id,
+                subject_name=subject_name,
+                short_description=subject_short_description,
+                description=subject_description
+            )
+            self.session.add(subject)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()  # Откатываем транзакцию в случае ошибки
+            return False
+
+    def delete_subject(self, subject_id) -> bool:
+        try:
+            subject = self.get_subject(subject_id)
+            self.session.delete(subject)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
     # endregion
 
 

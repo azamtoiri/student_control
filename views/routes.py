@@ -51,6 +51,7 @@ all_routes = [
     path(url=TeacherRoutes.SUBJECT_URL, clear=False, view=MySubjectView, middleware=MiddleWareCheckIsStaff),
     path(url=TeacherRoutes.TASKS_URL, clear=False, view=MyTasksView, middleware=MiddleWareCheckIsStaff),
     path(url=TeacherRoutes.GRADES_URL, clear=False, view=SetGradesView, middleware=MiddleWareCheckIsStaff),
+    path(url=TeacherRoutes.SUBJECT_ADD_URL, clear=False, view=MySubjectView, middleware=MiddleWareCheckIsStaff),
 
     # endregion
 

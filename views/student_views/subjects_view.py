@@ -20,8 +20,8 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         for subject in all_subjects:
             is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
             subject_add(
-                f'Имя курса: {subject.subject_name}',
-                f'Описание: {subject.description}',
+                f'{subject.subject_name}',
+                f'{subject.short_description}',
                 f'{StudentRoutes.SIMPLE_SUBJECT_URL}/{subject.subject_id}',
                 is_subscribed
             )
@@ -40,8 +40,8 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 for first_name, enrollment, subject_name, subject_description, subject_id in values:
                     is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject_id)
                     subject_add(
-                        f"Имя курса: {subject_name}",
-                        f"Описание: {subject_description}",
+                        f"{subject_name}",
+                        f"{subject_description}",
                         f'/subject/{subject_id}',
                         is_subscribed
                     )
@@ -66,8 +66,8 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         for subject in filtered_subjects:
             is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
             subject_add(
-                f"Имя курса: {subject.subject_name}",
-                f'Описание: {subject.description}',
+                f"{subject.subject_name}",
+                f'Описание: {subject.short_description}',
                 f'/course/{subject.subject_id}',
                 is_subscribed=is_subscribed,
             )

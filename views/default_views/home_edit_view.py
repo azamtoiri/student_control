@@ -42,7 +42,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     main_page_url = TeacherRoutes.MAIN_URL if user_db.database.is_staff(USER_ID) else StudentRoutes.MAIN_URL
 
     # region: Functions
-    def display_register_form_error(field: str, message: str) -> None:
+    def display_form_error(field: str, message: str) -> None:
         fields = {
             'Имя': first_name_field,
             'Фамилия': last_name_field,
@@ -90,7 +90,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             )
             display_success_banner(page, 'Изменения сохранены', ft.icons.SUNNY)
         except RequiredField as error:
-            display_register_form_error(error.field, str(error))
+            display_form_error(error.field, str(error))
         except Exception as ex:
             print(ex)
 
@@ -109,7 +109,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
             display_success_banner(page, 'Изменения сохранены', ft.icons.SUNNY)
         except RequiredField as error:
-            display_register_form_error(error.field, str(error))
+            display_form_error(error.field, str(error))
         except Exception as ex:
             print(ex)
 

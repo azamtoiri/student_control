@@ -3,7 +3,7 @@ from flet_route import Basket, Params
 
 from database.database import StudentDatabase
 from utils.lazy_db import LazyDatabase
-from utils.routes_url import TeacherRoutes, StudentRoutes
+from utils.routes_url import TeacherRoutes
 
 # st_db = StudentDatabase()
 st_db = LazyDatabase(StudentDatabase)
@@ -13,22 +13,25 @@ def MySubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # delete the last view duplicated view
     USER_ID = page.session.get('user_id')
 
-    if len(page.views) > 1:
+    if len(page.views) > 2:
         page.views.pop()
 
     def add_all_subjects():
         all_subjects = st_db.database.get_teacher_subjects(USER_ID)
 
         for subject in all_subjects:
-            is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
+            # is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
             subject_add(
-                f'Имя курса: {subject.subject_name}',
-                f'Описание: {subject.description}',
-                f'{StudentRoutes.SIMPLE_SUBJECT_URL}/{subject.subject_id}',
-                is_subscribed
+                f'{subject.subject_name}',
+                f'{subject.short_description}',
+                f'{TeacherRoutes.SIMPLE_SUBJECT_URL}{subject.subject_id}',
             )
 
     # region: Functions
+    def go_to_add_subject_page(e: ft.ControlEvent) -> None:
+        e.page.route = TeacherRoutes.SUBJECT_ADD_URL
+        e.page.update()
+
     def search(e: ft.ControlEvent):
         subjects.controls.clear()
         search_value = str(search_field.value).strip() if len(search_field.value) else None
@@ -38,12 +41,11 @@ def MySubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             return
         filtered_subjects = st_db.database.filter_subjects_by_name(str(search_field.value).strip())
         for subject in filtered_subjects:
-            is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
             subject_add(
-                f"Имя курса: {subject.subject_name}",
-                f'Описание: {subject.description}',
-                f'/course/{subject.subject_id}',
-                is_subscribed=is_subscribed,
+                f"{subject.subject_name}",
+                f'{subject.description}',
+                f'{TeacherRoutes.SIMPLE_SUBJECT_URL}{subject.subject_id}',
+                # is_subscribed=is_subscribed,
             )
         e.page.update()
 
@@ -108,7 +110,7 @@ def MySubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                         bgcolor=ft.colors.SURFACE_VARIANT, tooltip='Поиск'
                     ),  # Search button
                     ft.FloatingActionButton(
-                        icon=ft.icons.ADD, on_click=lambda e: search(e),
+                        icon=ft.icons.ADD, on_click=lambda e: go_to_add_subject_page(e),
                         bgcolor=ft.colors.SURFACE_VARIANT, tooltip='Добавить курс'
                     )  # Subject add button
                 ]

@@ -2,16 +2,19 @@ import flet as ft
 
 
 class ModalAlertDialog(ft.UserControl):
-    def __init__(self, title: ft.Control, content: ft.Control, on_ok_click, on_cancel_click):
+    def __init__(self, title: ft.Control, content: ft.Control, yes_click):
         super().__init__()
         self.title = title
         self.content = content
-        self.on_ok_click = on_ok_click
-        self.on_cancel_click = on_cancel_click
+        self.yes_click = yes_click
+
+        self.dlg = ft.AlertDialog()
 
         self.actions = [
-            ft.TextButton('Да', on_click=lambda e: self.on_ok_click(e)),
-            ft.TextButton('Нет', on_click=lambda e: self.on_cancel_click(e))
+            ft.ElevatedButton('Да', on_click=lambda e: self.yes_click(e), bgcolor=ft.colors.SURFACE_TINT,
+                              color=ft.colors.WHITE),
+            ft.ElevatedButton('Нет', on_click=lambda e: self.on_cancel_click(e), bgcolor=ft.colors.GREY,
+                              color=ft.colors.WHITE),
         ]
 
     def build(self):
@@ -24,3 +27,8 @@ class ModalAlertDialog(ft.UserControl):
             open=True
         )
         return self.dlg
+
+    def on_cancel_click(self, e: ft.ControlEvent):
+        self.dlg.open = False
+        self.dlg.update()
+        e.page.update()

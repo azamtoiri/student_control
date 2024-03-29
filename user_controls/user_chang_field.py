@@ -25,11 +25,11 @@ class UserChangField(ft.UserControl):
             value=self.value, label=self.label, col={"md": 6},
             expand=1, read_only=read_only, hint_text='Пусто',
             focused_border_color=ft.colors.ON_SURFACE_VARIANT, border_color=ft.colors.SURFACE_TINT,
-            bgcolor=ft.colors.SURFACE_VARIANT, multiline=multiline
+            bgcolor=ft.colors.SURFACE_VARIANT, multiline=multiline, max_lines=5
         )
         self.edit_value = ft.TextField(
             label=self.label, expand=1, bgcolor=ft.colors.SURFACE_VARIANT, multiline=multiline,
-            focused_border_color=ft.colors.ON_SURFACE_VARIANT, border_color=ft.colors.SURFACE_TINT,
+            focused_border_color=ft.colors.ON_SURFACE_VARIANT, border_color=ft.colors.SURFACE_TINT, max_lines=5
         )
 
     def build(self):

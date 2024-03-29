@@ -34,5 +34,7 @@ class TeacherRoutes:
     HOME_URL = '/teacher/home'
     SUBJECTS_URL = '/teacher/my-subjects'
     SUBJECT_URL = '/teacher/my-subject/:id'
+    SIMPLE_SUBJECT_URL = '/teacher/my-subject/'
     GRADES_URL = '/teacher/set-grades'
     TASKS_URL = '/teacher/subjects-tasks'
+    SUBJECT_ADD_URL = '/teacher/add-subject'
