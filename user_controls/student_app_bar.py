@@ -15,7 +15,10 @@ class STAppBar(AppBar):
 
     def __init__(self, page: ft.Page) -> None:
         super().__init__()
-        self.center_title = False
+
+        self._who_text = Text(size=10, color=ft.colors.INVERSE_SURFACE, weight=ft.FontWeight.BOLD)
+        self._route_text = Text(size=25, color=colors.INVERSE_SURFACE, text_align=ft.TextAlign.CENTER)
+
         self.leading_width = 100
         self.toolbar_height = 80
         self.bgcolor = colors.SURFACE_TINT
@@ -122,13 +125,15 @@ class STAppBar(AppBar):
 
         self.appbar_title = Row()
         self.appbar_title.alignment = MainAxisAlignment.START
-        self.appbar_title.spacing = 0
+        self.appbar_title.spacing = 1
         self.appbar_title.controls = [
-            Container(width=10),
             Image(LOGO_PATH, width=70, height=70),
-            Container(width=10),
             Text('FOX', size=20, weight=FontWeight.BOLD, color=ft.colors.INVERSE_SURFACE),
-            Text('Hub', size=20, color=ft.colors.INVERSE_SURFACE)
+            Text('Hub', size=20, color=ft.colors.INVERSE_SURFACE),
+            self._who_text,
+            ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER, controls=[self._route_text], expand=1
+            ),
         ]
 
         self.dlg = ft.AlertDialog(
@@ -187,3 +192,11 @@ class STAppBar(AppBar):
             self.change_theme_mode_button.current.text = 'Светлая тема'
             e.page.update()
             self.update()
+
+    @property
+    def who_text(self):
+        return self._who_text
+
+    @property
+    def route_text(self):
+        return self._route_text

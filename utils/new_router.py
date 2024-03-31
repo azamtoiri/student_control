@@ -7,6 +7,8 @@ from flet_route.not_found_view import ViewNotFound, ViewNotFound_async
 from flet_route.params import Params
 from repath import match
 
+from utils import routes_names
+
 
 def route_str(route):
     if type(route) == str:
@@ -121,6 +123,14 @@ class Routing:
                     params=self.__params,
                     basket=self.__basket
                 )
+
+                # changing the name of who is
+                self.appbar.who_text.value = 'Студент'
+                if self.page.session.get('is_staff') is True:
+                    self.appbar.who_text.value = 'Преподаватель'
+
+                self.appbar.route_text.value = routes_names.routes_names.get(route.route)
+
                 view.appbar = self.appbar
                 view.navigation_bar = self.navigation_bar
                 self.page.views.append(
