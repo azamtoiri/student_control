@@ -20,10 +20,11 @@ class SubjectDescription(ft.UserControl):
         teacher_experience = 'неизвестно'
 
         if self.subject_information.users.teacher_info:
-            teacher_experience = self.subject_information.users.teacher_info.teacher_experience
+            if self.subject_information.users.teacher_info.teacher_experience is not None:
+                teacher_experience = self.subject_information.users.teacher_info.teacher_experience
 
-        if self.subject_information.users.teacher_info:
-            teacher_description = self.subject_information.users.teacher_info.teacher_description
+            if self.subject_information.users.teacher_info.teacher_description is not None:
+                teacher_description = self.subject_information.users.teacher_info.teacher_description
 
         styled_title_container = ft.Container(
             expand=True, border_radius=8, ink=True, bgcolor=ft.colors.SURFACE_TINT, opacity=0.8,
