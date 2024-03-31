@@ -151,9 +151,9 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # region: InputFields
     first_name_field = UserChangField(True, label="Фамилия *",
-                                      value=user.first_name, save_changes=save_changes)  # Фамилия
+                                      value=user.last_name, save_changes=save_changes)  # Фамилия
     last_name_field = UserChangField(True, label="Имя *",
-                                     value=user.last_name, save_changes=save_changes)  # Имя
+                                     value=user.first_name, save_changes=save_changes)  # Имя
     middle_name_field = UserChangField(True, label="Отчество *",
                                        value=user.middle_name, save_changes=save_changes)  # Отчество
     group_field = UserChangField(False, label="Группа",
