@@ -37,8 +37,8 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     user = user_db.database.get_user_by_id(USER_ID)
 
     # region: InputFields
-    first_name_field = UserChangField(True, value=user.first_name, label='Фамилия')  # Фамилия
-    last_name_field = UserChangField(True, value=user.last_name, label='Имя')  # Имя
+    first_name_field = UserChangField(True, value=user.last_name, label='Фамилия')  # Фамилия
+    last_name_field = UserChangField(True, value=user.first_name, label='Имя')  # Имя
     middle_name_field = UserChangField(True, value=user.middle_name, label='Отчество')  # Отчество
     group_field = UserChangField(True, value=user.group, label='Группа')  # Группа
     course_field = UserChangField(True, value=user.course, label='Курс')  # Звание
@@ -77,7 +77,6 @@ def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         page.go(StudentRoutes.TODO_URL, skip_route_change_event=True)
         # page.views.reverse()
 
-    # user_stat count of TODO
     todo_count = task_db.database.get_count_of_tasks(USER_ID)
     user_stat_info_content = ft.Column(
         [
