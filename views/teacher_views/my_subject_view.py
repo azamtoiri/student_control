@@ -70,13 +70,16 @@ def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         e.page.route = e.page.views[-2].route
         e.page.update()
 
+    # show dialog functions
     def show_dlg(e: ft.ControlEvent) -> None:
+        """Show save dialog function"""
         e.page.dialog = dlg
         dlg.dlg.open = True
         e.page.update()
         dlg.update()
 
     def show_delete_dlg(e: ft.ControlEvent) -> None:
+        """Show delete dialog function"""
         e.page.dialog = delete_dlg
         delete_dlg.dlg.open = True
         e.page.update()
@@ -86,6 +89,7 @@ def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         dlg.dlg.open = False
         dlg.update()
         save_changes(e)
+        e.page.route = TeacherRoutes.SUBJECTS_URL
         e.page.update()
 
     def yes_delete_click(e: ft.ControlEvent) -> None:
@@ -159,7 +163,8 @@ def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                     upload_files(e)
             display_success_banner(
                 page=page,
-                message='Успешно обновлено' if SUBJECT_ID is not None else 'Успешно добавлено', icons=ft.icons.SUNNY
+                message='Успешно обновлено' if SUBJECT_ID is not None else 'Успешно добавлено', icons=ft.icons.SUNNY,
+                duration=500
             )
             e.page.update()
         except RequiredField as err:

@@ -278,7 +278,7 @@ class StudentDatabase(BaseDataBase):
         user_subject = (
             self.session.query(
                 Users.first_name, Enrollments, Subjects.subject_name, Subjects.short_description,
-                Subjects.subject_id
+                Subjects
             ).join(
                 Enrollments, Users.user_id == Enrollments.user_id
             ).join(
@@ -591,11 +591,59 @@ class StudentDatabase(BaseDataBase):
         except Exception as ex:
             print(ex)
             return False
+
+    # endregion
+
+    # region: Teacher tasks
+
+    def get_teacher_subject_tasks(self, user_id, subject_id) -> list[Type[SubjectTasks]]:
+        return self.session.query(
+            Users.user_id, Users.username, Subjects.subject_id, Subjects.subject_name, SubjectTasks.task_name,
+            SubjectTasks.subject_task_id
+        ).join(
+            Subjects, Users.user_id == Subjects.user_id
+        ).join(
+            SubjectTasks, Subjects.subject_id == SubjectTasks.subject_id
+        ).filter(
+            Users.user_id == user_id, Subjects.subject_id == subject_id
+        ).all()
+
+    def add_teacher_subject_task(self, subject_id, task_name) -> bool:
+        if task_name is None:
+            raise RequiredField('task_name')
+
+        try:
+            task = SubjectTasks(subject_id=subject_id, task_name=task_name)
+            self.session.add(task)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
+    def get_task_by_id(self, task_id) -> Type[SubjectTasks]:
+        return self.session.get_one(SubjectTasks, task_id)
+
+    def delete_teacher_subject_task(self, subject_task_id) -> bool:
+        try:
+            task = self.get_task_by_id(subject_task_id)
+            self.session.delete(task)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()
+            return False
+
     # endregion
 
 
 class TheoryDatabase(BaseDataBase):
     def get_theory(self, subject_id) -> Type[SubjectTheory]:
+        """
+        Возвращает теорию по предмету
+        subject_id = theory_id
+        """
         return self.session.get(SubjectTheory, subject_id)
 
 
