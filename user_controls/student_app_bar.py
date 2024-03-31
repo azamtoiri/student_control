@@ -16,7 +16,7 @@ class STAppBar(AppBar):
     def __init__(self, page: ft.Page) -> None:
         super().__init__()
 
-        self._who_text = Text(size=10, color=ft.colors.INVERSE_SURFACE, weight=ft.FontWeight.BOLD)
+        self._who_text = Text(size=10, color=ft.colors.INVERSE_SURFACE, weight=ft.FontWeight.BOLD, text_align="center")
         self._route_text = Text(size=25, color=colors.INVERSE_SURFACE, text_align=ft.TextAlign.CENTER)
 
         self.leading_width = 100
@@ -123,18 +123,23 @@ class STAppBar(AppBar):
             ]
         )
 
-        self.appbar_title = Row()
-        self.appbar_title.alignment = MainAxisAlignment.START
-        self.appbar_title.spacing = 1
+        self.appbar_title = Row(expand=True)
+        self.appbar_title.alignment = MainAxisAlignment.CENTER
         self.appbar_title.controls = [
             Image(LOGO_PATH, width=70, height=70),
-            Text('FOX', size=20, weight=FontWeight.BOLD, color=ft.colors.INVERSE_SURFACE),
-            Text('Hub', size=20, color=ft.colors.INVERSE_SURFACE),
-            self._who_text,
-            ft.Row(
-                alignment=ft.MainAxisAlignment.CENTER, controls=[self._route_text], expand=1
-            ),
+            ft.Column(
+                horizontal_alignment=CrossAxisAlignment.CENTER,
+                spacing=0, controls=[
+                ft.Row(spacing=0, controls=[
+                    Text('FOX', size=20, weight=FontWeight.BOLD, color=ft.colors.INVERSE_SURFACE),
+                    Text('Hub', size=20, color=ft.colors.INVERSE_SURFACE),
+
+                ]),
+                self._who_text,
+            ]),
+            self._route_text,
         ]
+        self.appbar_title.spacing = 1
 
         self.dlg = ft.AlertDialog(
             modal=True,
@@ -147,6 +152,7 @@ class STAppBar(AppBar):
             ],
             actions_alignment=ft.MainAxisAlignment.CENTER)
         self.title = self.appbar_title
+        self.center_title = True
         self.actions = [self.appbar_actions]
 
     def close_dlg(self, e: ft.ControlEvent):
