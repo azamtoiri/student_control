@@ -13,11 +13,11 @@ from utils.zip_file import compress_file_to_zip
 
 
 class SubjectTile(ft.UserControl):
-    def __init__(self, count, subject_name, subject_task_id, user_id, enrollment_id, page):
+    def __init__(self, count, task_name, subject_task_id, user_id, enrollment_id, page):
         super().__init__()
         self.page = page
         self.count = count
-        self.subject_name = subject_name
+        self.task_name = task_name
         self.enrollment_id = enrollment_id
         self.user_id = user_id
         self.subject_task_id = subject_task_id
@@ -38,12 +38,12 @@ class SubjectTile(ft.UserControl):
                 title=ft.Row(
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                     controls=[
-                        ft.Text(f'{self.count}. {self.subject_name}'),
+                        ft.Text(f'{self.count}. {self.task_name}'),
                         ft.IconButton(
                             ref=self.icon_button,
                             icon=ft.icons.ADD_CIRCLE,
                             icon_color=ft.colors.SURFACE_TINT,
-                            tooltip="Прикрепить новый файл",
+                            tooltip="удалить задание",
                             opacity=0.5,
                             on_click=lambda e: self.my_file_picker.pick_files(),
                         )
@@ -55,7 +55,7 @@ class SubjectTile(ft.UserControl):
                 title=ft.Row(
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                     controls=[
-                        ft.Text(f'{self.count}. {self.subject_name}'),
+                        ft.Text(f'{self.count}. {self.task_name}'),
                         ft.IconButton(
                             ref=self.icon_button,
                             icon=ft.icons.ADD_CIRCLE,

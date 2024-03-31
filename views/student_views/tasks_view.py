@@ -4,6 +4,7 @@ from flet_route import Params, Basket
 from database.database import StudentDatabase
 from user_controls.student_subject_tasks_card import StudentSubjectTasksCard
 from utils.exceptions import DontHaveGrades
+from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
 
 
@@ -14,7 +15,7 @@ def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     if len(page.views) > 1:
         page.views.pop()
 
-    db = StudentDatabase()
+    db = LazyDatabase(StudentDatabase)
 
     content = ft.Column()
 
@@ -25,10 +26,10 @@ def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     )
 
     try:
-        subjects = db.get_student_subjects(user_id=USER_ID)
+        subjects = db.database.get_student_subjects(user_id=USER_ID)
 
         for subject in subjects:
-            content.controls.append(StudentSubjectTasksCard(USER_ID, subject[2], subject[4], page=page))
+            content.controls.append(StudentSubjectTasksCard(USER_ID, subject[2], subject[4].subject_id, page=page))
     except DontHaveGrades as error:
         dont_have_tasks.visible = True
         page.update()

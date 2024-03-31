@@ -2,6 +2,7 @@ import flet as ft
 from flet_route import Params, Basket
 
 from database.database import TheoryDatabase
+from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
 
 # theory_db: LazyDatabase = LazyDatabase(TheoryDatabase)

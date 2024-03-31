@@ -36,5 +36,5 @@ class TeacherRoutes:
     SUBJECT_URL = '/teacher/my-subject/:id'
     SIMPLE_SUBJECT_URL = '/teacher/my-subject/'
     GRADES_URL = '/teacher/set-grades'
-    TASKS_URL = '/teacher/subjects-tasks'
+    TASKS_URL = '/teacher/subject-tasks'
     SUBJECT_ADD_URL = '/teacher/add-subject'

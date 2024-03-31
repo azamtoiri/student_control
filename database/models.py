@@ -109,11 +109,13 @@ class SubjectTasks(Base):
     subject_task_id = Column(
         Integer, primary_key=True, unique=True, nullable=False, comment='Идентификатор задания'
     )
-    task_name = Column(String, nullable=False, unique=True, comment='Название задания')
+    task_name = Column(String, nullable=False, unique=False, comment='Название задания')
     completed = Column(Boolean, server_default=expression.false(), default=False, comment='Статус задания')
     subject_id = Column(
         Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'), comment='Идентификатор предмета'
     )
+
+    task_files = relationship('UserTasksFiles', backref='subject_task', cascade='all, delete-orphan')
 
 
 class Subjects(Base):
@@ -221,5 +223,4 @@ class UserTasksFiles(Base):
         Boolean, nullable=False, default=True, server_default=expression.true(), comment='Отправил ли ученик задание'
     )
 
-    subject_task = relationship('SubjectTasks', backref='user_task_files')
     user = relationship('Users', backref='user_task_files')

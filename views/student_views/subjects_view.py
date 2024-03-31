@@ -23,7 +23,9 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 f'{subject.subject_name}',
                 f'{subject.short_description}',
                 f'{StudentRoutes.SIMPLE_SUBJECT_URL}/{subject.subject_id}',
-                is_subscribed
+                is_subscribed,
+                subject.users.first_name,
+                subject.users.middle_name,
             )
 
     # region: Functions
@@ -36,14 +38,19 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             dont_have_subjects.visible = False
         try:
             if status == 'Записанные':
-                values = st_db.database.get_student_subjects(e.page.session.get('username'), e.page.session.get('user_id'))
-                for first_name, enrollment, subject_name, subject_description, subject_id in values:
-                    is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject_id)
+                values = st_db.database.get_student_subjects(e.page.session.get('username'),
+                                                             e.page.session.get('user_id'))
+                for first_name, enrollment, subject_name, subject_description, subject in values:
+                    is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'),
+                                                                           subject.subject_id)
                     subject_add(
                         f"{subject_name}",
                         f"{subject_description}",
-                        f'/subject/{subject_id}',
-                        is_subscribed
+                        f'/subject/{subject.subject_id}',
+                        is_subscribed,
+                        subject.users.first_name,
+                        subject.users.middle_name,
+
                     )
                     e.page.update()
             else:
@@ -69,11 +76,17 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                 f"{subject.subject_name}",
                 f'Описание: {subject.short_description}',
                 f'/course/{subject.subject_id}',
-                is_subscribed=is_subscribed,
+                is_subscribed,
+                subject.users.first_name,
+                subject.users.middle_name,
+
             )
         e.page.update()
 
-    def subject_add(subject_name: str, subject_description: str, subject_url: str, is_subscribed=False) -> None:
+    def subject_add(
+            subject_name: str, subject_description: str, subject_url: str, is_subscribed=False,
+            teacher_name: str = None, teacher_last_name: str = None
+    ) -> None:
         """Subject card control"""
         course_title = ft.Text()
         course_title.value = subject_name
@@ -93,6 +106,14 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         _card.color = ft.colors.SURFACE_VARIANT
         _card.content = ft.Container(content=ft.Column([
             ft.ListTile(leading=subject_icon, title=course_title, subtitle=course_description),
+            ft.Row(
+                controls=[
+                    ft.ListTile(
+                        leading=ft.Icon(ft.icons.PERSON),
+                        title=ft.Row([ft.Text(teacher_name), ft.Text(teacher_last_name)]),
+                    ),
+                ]
+            ),
             ft.Row(alignment=ft.MainAxisAlignment.END, controls=[show_course])
         ]), width=400, padding=10)
         subjects.controls.append(_card)
