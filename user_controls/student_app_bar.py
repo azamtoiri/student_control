@@ -5,7 +5,7 @@ from flet import *
 
 from constants import LOGO_PATH
 from database.database import UserDatabase
-from utils.routes_url import BaseRoutes
+from utils.routes_url import BaseRoutes, StudentRoutes, TeacherRoutes
 
 
 class STAppBar(AppBar):
@@ -16,7 +16,7 @@ class STAppBar(AppBar):
     def __init__(self, page: ft.Page) -> None:
         super().__init__()
 
-        self._who_text = Text(size=10, color=ft.colors.INVERSE_SURFACE, weight=ft.FontWeight.BOLD, text_align="center")
+        self._who_text = Text(size=10, color=ft.colors.INVERSE_SURFACE, weight=ft.FontWeight.BOLD)
         self._route_text = Text(size=25, color=colors.INVERSE_SURFACE, text_align=ft.TextAlign.CENTER)
 
         self.leading_width = 100
@@ -130,13 +130,13 @@ class STAppBar(AppBar):
             ft.Column(
                 horizontal_alignment=CrossAxisAlignment.CENTER,
                 spacing=0, controls=[
-                ft.Row(spacing=0, controls=[
-                    Text('FOX', size=20, weight=FontWeight.BOLD, color=ft.colors.INVERSE_SURFACE),
-                    Text('Hub', size=20, color=ft.colors.INVERSE_SURFACE),
+                    ft.Row(spacing=0, controls=[
+                        Text('FOX', size=20, weight=FontWeight.BOLD, color=ft.colors.INVERSE_SURFACE),
+                        Text('Hub', size=20, color=ft.colors.INVERSE_SURFACE),
 
+                    ]),
+                    self._who_text,
                 ]),
-                self._who_text,
-            ]),
             self._route_text,
         ]
         self.appbar_title.spacing = 1

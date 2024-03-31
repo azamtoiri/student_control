@@ -224,3 +224,27 @@ class UserTasksFiles(Base):
     )
 
     user = relationship('Users', backref='user_task_files')
+
+
+class TaskGrades(Base):
+    __tablename__ = 'task_grades'
+    __table_args__ = {'comment': 'Оценки за задания по предметам'}
+
+    task_grade_id = Column(Integer, primary_key=True, nullable=False, comment='Идентификатор оценки за задание')
+    enrollment_id = Column(
+        Integer, ForeignKey('enrollments.enrollment_id', ondelete='CASCADE'), nullable=False,
+        comment='Идентификатор записи о подписке'
+    )
+    subject_task_id = Column(
+        Integer, ForeignKey('subject_tasks.subject_task_id', ondelete='CASCADE'), nullable=False,
+        comment='Идентификатор задания'
+    )
+    grade_value = Column(Integer, nullable=False, comment='Оценка за задание')
+    grade_date = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), default=func.now(),
+        comment='Дата постановки оценки'
+    )
+
+    # Добавим связи
+    enrollment = relationship('Enrollments', backref='task_grades')
+    subject_task = relationship('SubjectTasks', backref='task_grades')
