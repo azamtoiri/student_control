@@ -2,6 +2,7 @@ import flet as ft
 from flet_route import Params, Basket
 
 from constants import LOGO_PATH
+from user_controls.modal_alert_dialog import ModalAlertDialog
 from user_controls.student_container import STContainer
 from utils.routes_url import TeacherRoutes, BaseRoutes
 
@@ -40,6 +41,11 @@ def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # Button
     #
     containers = TeacherContainers()
+    exit_dlg = ModalAlertDialog(
+        title=ft.Text('Подтвердите действие'),
+        content=ft.Text('Вы точно хотите выйти?'),
+        yes_click=lambda e: exit_click(e),
+    )
 
     # region: Functions
     def home_click(e: ft.ControlEvent) -> None:
@@ -61,6 +67,12 @@ def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         page.session.clear()
         page.go(BaseRoutes.INDEX_URL)
 
+    def open_dlg_click(e: ft.ControlEvent):
+        page.dialog = exit_dlg
+        exit_dlg.dlg.open = True
+        page.update()
+        exit_dlg.dlg.update()
+
     # endregion
 
     # region: handlers
@@ -69,7 +81,7 @@ def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     containers.tasks_container.main_container.on_click = lambda e: tasks_click(e)
     containers.to_do.main_container.on_click = lambda e: profile_click(e)
     containers.courses_container.main_container.on_click = lambda e: courses_click(e)
-    containers.exit_container.main_container.on_click = lambda e: exit_click(e)
+    containers.exit_container.main_container.on_click = lambda e: open_dlg_click(e)
 
     # endregion
 

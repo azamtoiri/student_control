@@ -8,15 +8,16 @@ from utils.routes_url import StudentRoutes, BaseRoutes
 
 class Containers:
     def __init__(self):
-        # TODO: Refactor code
         # home container
         self.home_container = STContainer(
             ft.Text('Домашняя страница', color=ft.colors.WHITE, weight=ft.FontWeight.BOLD, size=15),
-            alignment=ft.alignment.center, col=6)
+            alignment=ft.alignment.center, col=6
+        )
         # courses container
         self.courses_container = STContainer(
             content=ft.Text('Курсы', color=ft.colors.WHITE, weight=ft.FontWeight.BOLD, size=15),
-            alignment=ft.alignment.center, col=6)
+            alignment=ft.alignment.center, col=6
+        )
         self.grades_container = STContainer(
             content=ft.Text('Оценки', color=ft.colors.WHITE, weight=ft.FontWeight.BOLD, size=15),
             alignment=ft.alignment.center, col=6
