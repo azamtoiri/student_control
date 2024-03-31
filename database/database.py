@@ -77,6 +77,7 @@ class UserDatabase(BaseDataBase):
             if not verify(plain_password=password, hashed_password=hashed_password.password):
                 raise NotRegistered('username')
         except ValueError as err:
+            self.session.rollback()
             return False
         return True
 
@@ -92,6 +93,7 @@ class UserDatabase(BaseDataBase):
             self.session.commit()
             return True
         except Exception as ex:
+            self.session.rollback()
             print(ex)
             return False
 
@@ -183,6 +185,7 @@ class UserDatabase(BaseDataBase):
             return True
         except Exception as ex:
             print(ex)
+            self.session.rollback()
             return False
 
     def set_theme_mode(self, user_id, theme_mode) -> bool:
@@ -195,6 +198,7 @@ class UserDatabase(BaseDataBase):
             return True
         except Exception as ex:
             print(ex)
+            self.session.rollback()
             return False
 
     def get_theme_mode(self, user_id) -> str:
@@ -202,6 +206,7 @@ class UserDatabase(BaseDataBase):
             return self.session.get(UserTheme, user_id).theme
         except AttributeError:
             self.add_theme_mode(user_id)
+            # self.session.rollback()
 
     def set_seed_color(self, user_id, seed_color) -> bool:
         try:
@@ -213,6 +218,7 @@ class UserDatabase(BaseDataBase):
             return True
         except Exception as ex:
             print(ex)
+            self.session.rollback()
             return False
 
     def get_seed_color(self, user_id) -> str:
@@ -242,6 +248,7 @@ class UserDatabase(BaseDataBase):
             return True
         except Exception as ex:
             print(ex)
+            self.session.rollback()
             return False
 
     def create_teacher_information(self, user_id) -> bool:
@@ -254,6 +261,7 @@ class UserDatabase(BaseDataBase):
             self.session.commit()
             return True
         except Exception as ex:
+            self.session.rollback()
             print(ex)
             return False
 
@@ -392,6 +400,7 @@ class StudentDatabase(BaseDataBase):
         except UserAlreadySubscribed:
             return False
         except Exception as ex:
+            self.session.rollback()
             return False
 
     def unsubscribe_student_from_subject(self, user_id, subject_id) -> bool:
@@ -405,6 +414,7 @@ class StudentDatabase(BaseDataBase):
             self.session.delete(enrollment)
             self.session.commit()
         except Exception:
+            self.session.rollback()
             return True
 
     def filter_subjects_by_name(self, subject_name) -> list[Type[Subjects]]:
@@ -493,6 +503,7 @@ class StudentDatabase(BaseDataBase):
             return True
         except Exception as ex:
             print(ex)
+            self.session.rollback()
             return False
 
     def check_task_file_exist(self, user_id, subject_task_id) -> bool:
@@ -517,6 +528,7 @@ class StudentDatabase(BaseDataBase):
             return True
         except Exception as ex:
             print(ex)
+            self.session.rollback()
             return False
 
     def change_task_file(self, user_id, subject_task_id, file_name: bool) -> bool:
@@ -529,6 +541,7 @@ class StudentDatabase(BaseDataBase):
             return True
         except Exception as ex:
             print(ex)
+            self.session.rollback()
             return False
 
     # endregion
@@ -557,6 +570,7 @@ class StudentDatabase(BaseDataBase):
             return True
         except Exception as ex:
             print(ex)
+            self.session.rollback()
             return False
 
     def create_subject(self, user_id, subject_name, subject_short_description, subject_description) -> bool:
@@ -589,6 +603,7 @@ class StudentDatabase(BaseDataBase):
             self.session.commit()
             return True
         except Exception as ex:
+            self.session.rollback()
             print(ex)
             return False
 
@@ -618,6 +633,7 @@ class StudentDatabase(BaseDataBase):
             self.session.commit()
             return True
         except Exception as ex:
+            self.session.rollback()
             print(ex)
             return False
 
@@ -658,6 +674,7 @@ class TaskDatabase(BaseDataBase):
 
             return task
         except Exception as ex:
+            self.session.rollback()
             return False
 
     def get_task_by_id(self, _id) -> Type[Task]:
@@ -684,6 +701,7 @@ class TaskDatabase(BaseDataBase):
             return True
         except Exception as ex:
             print(ex)
+            self.session.rollback()
             return False
 
     def updated_task(self, task_id, new_task_value) -> bool:
@@ -695,6 +713,7 @@ class TaskDatabase(BaseDataBase):
             return True
         except Exception as ex:
             print(ex)
+            self.session.rollback()
             return False
 
     def get_count_of_tasks(self, user_id):
