@@ -1,14 +1,19 @@
+# TODO: add with uid to id column on all functions
 from typing import Type, Optional
 
 from sqlalchemy import create_engine, asc, func
-from sqlalchemy.orm import sessionmaker, joinedload
+from sqlalchemy.orm import sessionmaker
 
 from constants import Connection
 from constants import UserDefaults
-from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, UserTasksFiles, \
+from database.models import (
+    Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, UserTasksFiles,
     UserTheme, SubjectTheory, TeacherInformation, TaskGrades
-from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed, \
+)
+from utils.exceptions import (
+    RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed,
     UserDontHaveGrade
+)
 from utils.jwt_hash import verify, hash_
 
 

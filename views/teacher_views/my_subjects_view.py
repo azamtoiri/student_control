@@ -11,6 +11,7 @@ st_db = LazyDatabase(StudentDatabase)
 
 def MySubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # delete the last view duplicated view
+    print(page.views)
     USER_ID = page.session.get('user_id')
 
     if len(page.views) > 2:

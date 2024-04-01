@@ -21,6 +21,7 @@ db = StudentDatabase()
 
 
 def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+    print(page.views)
     # constants
     USER_ID = page.session.get('user_id')
     USERNAME = page.session.get('username')
@@ -68,6 +69,7 @@ def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     def delete_subject(e: ft.ControlEvent) -> None:
         db.delete_subject(SUBJECT_ID)
         e.page.route = e.page.views[-2].route
+        e.page.views.pop()
         e.page.update()
 
     # show dialog functions
@@ -89,7 +91,8 @@ def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         dlg.dlg.open = False
         dlg.update()
         save_changes(e)
-        e.page.route = TeacherRoutes.SUBJECTS_URL
+        e.page.route = e.page.views[-2].route
+        e.page.views.pop()
         e.page.update()
 
     def yes_delete_click(e: ft.ControlEvent) -> None:
