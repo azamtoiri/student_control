@@ -1,12 +1,12 @@
 from typing import Type, Optional
 
 from sqlalchemy import create_engine, asc, func
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, joinedload
 
 from constants import Connection
 from constants import UserDefaults
 from database.models import Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, UserTasksFiles, \
-    UserTheme, SubjectTheory, TeacherInformation
+    UserTheme, SubjectTheory, TeacherInformation, TaskGrades
 from utils.exceptions import RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed, \
     UserDontHaveGrade
 from utils.jwt_hash import verify, hash_
@@ -381,6 +381,49 @@ class StudentDatabase(BaseDataBase):
         for value in values:
             yield value
 
+    def get_student_task_grades_with_subject_name(self, user_id, subject_name) -> list[TaskGrades]:
+        """Возвращает оценки студента по конкретному заданию."""
+
+        # Запрос оценок для заданного пользователя и задания
+        grades = (
+            self.session.query(TaskGrades)
+            .join(Enrollments)
+            .join(Subjects)
+            .join(SubjectTasks)
+            .filter(
+                Enrollments.user_id == user_id,
+                Subjects.subject_name == subject_name
+            )
+            # .options(joinedload(TaskGrades.enrollment_grades))
+            .all()
+        )
+        if len(grades) <= 0:
+            raise UserDontHaveGrade
+
+        return grades
+
+    def get_student_tasks_grades_v2(self, user_id) -> list[Type[TaskGrades]] | list:
+        try:
+            return self.session.query(TaskGrades).filter(TaskGrades.user_id == user_id).all()
+        except Exception as ex:
+            self.session.rollback()
+            print(ex)
+            return []
+
+    def count_average_tasks_subject_grade(self, subject_name, user_id) -> int or str:
+        avg_grade = (
+            self.session.query(func.avg(TaskGrades.grade_value))
+            .join(Enrollments, Enrollments.enrollment_id == TaskGrades.enrollment_id)
+            .join(Subjects, Subjects.subject_id == Enrollments.subject_id)
+            .filter(Subjects.subject_name == subject_name, Enrollments.user_id == user_id)
+            .scalar()
+        )
+
+        if avg_grade is not None:
+            return round(avg_grade)  # Округляем до целого числа
+        else:
+            return 'Нет оценок'
+
     def check_student_subscribe(self, user_id, subject_id) -> bool:
         """Проверяет подписку студента на определенный предмет"""
         subscription = self.session.query(Enrollments).filter(
@@ -438,7 +481,7 @@ class StudentDatabase(BaseDataBase):
         return res
 
     def get_all_grades(self, user_id) -> int:
-        """Return quantity of user grades"""
+        """Return quantity of user final grades"""
         values = self.session.query(
             Subjects.subject_name, Grades.grade_value, Grades.grade_date, Enrollments.enrollment_date
         ).join(

@@ -116,6 +116,7 @@ class SubjectTasks(Base):
     )
 
     task_files = relationship('UserTasksFiles', backref='subject_task', cascade='all, delete-orphan')
+    subject = relationship('Subjects', back_populates='subject_tasks')
 
 
 class Subjects(Base):
@@ -138,7 +139,7 @@ class Subjects(Base):
     )
 
     enrollments = relationship('Enrollments', backref='subject', cascade='all, delete-orphan')
-    subject_tasks = relationship('SubjectTasks', backref='subject', cascade='all, delete-orphan')
+    subject_tasks = relationship('SubjectTasks', back_populates='subject', cascade='all, delete-orphan')
     subject_theory = relationship(
         'SubjectTheory', uselist=False, back_populates='subject', cascade='all, delete-orphan'
     )
@@ -148,7 +149,7 @@ class Subjects(Base):
 
 class Grades(Base):
     __tablename__ = 'grades'
-    __table_args__ = {'comment': 'Оценки студентов по предметам'}
+    __table_args__ = {'comment': 'Итоговая оценка студентов по предметам'}
 
     grade_id = Column(Integer, primary_key=True, nullable=False, comment='Идентификатор оценки')
     enrollment_id = Column(
@@ -239,6 +240,10 @@ class TaskGrades(Base):
         Integer, ForeignKey('subject_tasks.subject_task_id', ondelete='CASCADE'), nullable=False,
         comment='Идентификатор задания'
     )
+    user_id = Column(
+        Integer, ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False,
+        comment='Идентификатор пользователя, который выполнил задание'
+    )
     grade_value = Column(Integer, nullable=False, comment='Оценка за задание')
     grade_date = Column(
         DateTime(timezone=True), nullable=False, server_default=func.now(), default=func.now(),
@@ -248,3 +253,4 @@ class TaskGrades(Base):
     # Добавим связи
     enrollment = relationship('Enrollments', backref='task_grades')
     subject_task = relationship('SubjectTasks', backref='task_grades')
+    users = relationship('Users', backref='task_grades')

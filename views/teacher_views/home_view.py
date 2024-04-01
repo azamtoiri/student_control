@@ -17,7 +17,7 @@ user_db = LazyDatabase(UserDatabase)
 
 
 def TeacherHomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
-    if len(page.views) > 1:
+    if len(page.views) > 2:
         page.views.pop()
     USER_ID = page.session.get('user_id')
     USERNAME = page.session.get('username')

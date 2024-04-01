@@ -2,6 +2,7 @@ import flet as ft
 from flet_route import Params, Basket
 
 from database.database import StudentDatabase
+from user_controls.grades_card import create_subject_grade_card, create_task_grade_card
 from utils.exceptions import DontHaveGrades, UserDontHaveGrade
 from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
@@ -10,37 +11,40 @@ sub_db = LazyDatabase(StudentDatabase)
 
 
 def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
-    def add_grades():
-        """adding user grades"""
+    # constants
+    USER_ID = page.session.get('user_id')
+    USERNAME = page.session.get('username')
+
+    def add_final_grades():
+        """Добавления итоговых оценок на страницу"""
         try:
-            for grade in sub_db.database.get_student_grades(user_id=page.session.get('user_id')):
-                add_grade(f'Предмет: {grade[1]}', f"{grade[2]}", f"Дата оценки: {grade[3].strftime('%d-%m-%Y')}")
+            for grade in sub_db.database.get_student_grades(user_id=USER_ID):
+                create_subject_grade_card(
+                    f'Предмет: {grade[1]}', f"{grade[2]}",
+                    f"Дата оценки: {grade[3].strftime('%d-%m-%Y')}",
+                    grades
+                )
         except DontHaveGrades as err:
             no_grades.value = 'У вас нет оценок'
             no_grades.visible = True
             page.update()
 
-    def add_grade(subject_title: str, grade_value: str, grade_date: str) -> None:
-        """Add grade card"""
-        _grade_value = ft.Text(f'Оценка {grade_value}')
-
-        _subject_title = ft.Text(subject_title)
-
-        _grade_date = ft.Text(grade_date)
-        grade_icon = ft.Icon(name=ft.icons.GRADE_OUTLINED)
-
-        _card = ft.Card(col={"md": 12, "lg": 4})
-        _card.color = ft.colors.SURFACE_VARIANT
-        if int(grade_value) == 100:
-            _card.color = ft.colors.SURFACE_VARIANT
-            grade_icon.name = ft.icons.GRADE
-            grade_icon.color = ft.colors.SURFACE_TINT
-        _card.content = ft.Container(content=ft.Column([
-            ft.ListTile(leading=grade_icon, title=_grade_value,
-                        subtitle=ft.Column([_subject_title, _grade_date], adaptive=True)),
-            ft.Row(alignment=ft.MainAxisAlignment.END)
-        ]), width=400, padding=10)
-        grades.controls.append(_card)
+    def add_tasks_grade():
+        """Добавления оценок по заданиям на страницу"""
+        try:
+            _grades = sub_db.database.get_student_tasks_grades_v2(user_id=USER_ID)
+            for grade in _grades:
+                create_task_grade_card(
+                    subject_title=f'Предмет: {grade.subject_task.subject.subject_name}',
+                    grade_value=f"{grade.grade_value}",
+                    grade_date=f'Дата оценки: {grade.grade_date.strftime("%d-%m-%Y")}',
+                    name_of_task=grade.subject_task.task_name,
+                    grades=tasks_grades
+                )
+        except DontHaveGrades as err:
+            no_grades.value = 'У вас нет оценок'
+            no_grades.visible = True
+            page.update()
 
     def tabs_changed(e: ft.ControlEvent) -> None:
         """Function for filtering in filter tab"""
@@ -48,12 +52,23 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         status = filter_tab.tabs[filter_tab.selected_index].text
         grades.controls.clear()
         if status == 'Все':
-            add_grades()
+            add_tasks_grade()
+        elif status == 'Итоговые оценки':
+            tasks_grades.controls.clear()
+            add_final_grades()
         else:
+            tasks_grades.controls.clear()
             try:
-                for _grade in sub_db.database.get_student_grade_for_exact_subject(e.page.session.get('username'), status):
-                    add_grade(f'Предмет: {_grade[1]}', f"{_grade[2]}",
-                              f"Дата оценки: {_grade[3].strftime('%d-%m-%Y')}")
+                for _grade in sub_db.database.get_student_task_grades_with_subject_name(
+                        USER_ID, status
+                ):
+                    create_task_grade_card(
+                        subject_title=f'Предмет: {_grade.subject_task.subject.subject_name}',
+                        grade_value=f"{_grade.grade_value}",
+                        grade_date=f'Дата оценки: {_grade.grade_date.strftime("%d-%m-%Y")}',
+                        name_of_task=_grade.subject_task.task_name,
+                        grades=tasks_grades
+                    )
             except UserDontHaveGrade:
                 no_grades.value = 'Нет оценок по этому предмету'
                 no_grades.visible = True
@@ -61,17 +76,18 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         e.page.update()
 
     # the row that contains all grade controls on this page
-    grades = ft.ResponsiveRow()
+    grades = ft.ResponsiveRow()  # responsive row for final grades of subjects
+    tasks_grades = ft.ResponsiveRow()  # responsive row for grades of tasks
 
     # hided text if you don't have grades
     no_grades = ft.Text('У вас нет оценок', size=25, color=ft.colors.GREY)
     no_grades.visible = False
 
-    # list for tabs [default contains 'Все']
-    tabs = [ft.Tab('Все')]
+    # list for tabs [default contains 'Все' 'Итоговые оценки']
+    tabs = [ft.Tab('Все'), ft.Tab('Итоговые оценки')]
     # get all subjects and add to tabs
     try:
-        subjects = sub_db.database.get_student_subjects(page.session.get('username'))
+        subjects = sub_db.database.get_student_subjects(user_id=USER_ID)
 
         for subject in subjects:
             tabs.append(ft.Tab(str(subject.subject_name)))
@@ -89,7 +105,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     )
 
     # adding user grades to the page
-    add_grades()
+    add_tasks_grade()
 
     return ft.View(
         bgcolor=ft.colors.SURFACE_VARIANT,
@@ -100,6 +116,7 @@ def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         controls=[
             filter_tab,
             grades,
+            tasks_grades,
             no_grades,
         ]
     )
