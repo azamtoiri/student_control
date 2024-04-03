@@ -2,7 +2,7 @@
 from typing import Type, Optional
 
 from sqlalchemy import create_engine, asc, func
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, aliased
 
 from constants import Connection
 from constants import UserDefaults
@@ -702,6 +702,51 @@ class StudentDatabase(BaseDataBase):
     # endregion
 
 
+class TeacherDatabase(BaseDataBase):
+    def get_teacher_students(self, user_id) -> list[Type[Users]]:
+        """Возвращает студентов препод. Которые записались на его курс только одних"""
+        user1 = aliased(Users)
+
+        # Выполняем запрос для получения студентов
+        students = (
+            self.session.query(Users.user_id, Users.first_name, Users.last_name)
+            .join(Enrollments, Users.user_id == Enrollments.user_id)
+            .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
+            .join(user1, Subjects.user_id == user1.user_id)
+            .filter(user1.is_staff == True)
+            .distinct()
+            .filter(user1.user_id == user_id)
+            .all()
+        )
+        if len(students) <= 0:
+            raise DontHaveGrades
+        return students
+
+    def get_teacher_students_with_subjects(self, user_id) -> list[Type[Users]]:
+        """Возвращает студентов препод. Которые записались на его курс и имя курса"""
+        user1 = aliased(Users)
+
+        # Выполняем запрос для получения студентов
+        students = (
+            self.session.query(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name)
+            .join(Enrollments, Users.user_id == Enrollments.user_id)
+            .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
+            .join(user1, Subjects.user_id == user1.user_id)
+            .filter(user1.is_staff == True)
+            .distinct()
+            .filter(user1.user_id == user_id)
+            .all()
+        )
+
+        if len(students) <= 0:
+            raise DontHaveGrades
+
+        return students
+
+    def get_teacher_subjects(self, user_id) -> list[Type[Subjects]]:
+        return self.session.query(Subjects).filter(Subjects.user_id == user_id).all()
+
+
 class TheoryDatabase(BaseDataBase):
     def get_theory(self, subject_id) -> Type[SubjectTheory]:
         """
@@ -770,3 +815,5 @@ class TaskDatabase(BaseDataBase):
 
 if __name__ == '__main__':
     a = StudentDatabase()
+    t = TeacherDatabase()
+    u = UserDatabase()

@@ -21,7 +21,6 @@ db = StudentDatabase()
 
 
 def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
-    print(page.views)
     # constants
     USER_ID = page.session.get('user_id')
     USERNAME = page.session.get('username')

@@ -138,6 +138,7 @@ def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     search_field.on_blur = lambda e: un_focus_search_field(e)
 
     subjects = ft.ResponsiveRow()
+
     dont_have_subjects = ft.Text(
         'У вас нет записанных курсов', size=25, color=ft.colors.INVERSE_SURFACE,
         visible=False, weight=ft.FontWeight.BOLD, opacity=0.5

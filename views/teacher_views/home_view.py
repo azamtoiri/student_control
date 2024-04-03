@@ -4,6 +4,7 @@ import flet as ft
 from flet_route import Basket, Params
 
 from database.database import UserDatabase
+from user_controls.teacher_controls import TeacherStudentsCard
 from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
 from utils.create_container_home_view import create_container
@@ -61,7 +62,16 @@ def TeacherHomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                   controls=[group_field, age_field, email_field, username_text]),
     ])
 
+    teachers_students_content = ft.ResponsiveRow(
+        spacing=5, alignment=ft.MainAxisAlignment.CENTER,
+        controls=[
+            TeacherStudentsCard(USER_ID, lambda e: page.go(page.views[-2].route)),
+        ]
+    )
+
     user_data_container = create_container(user_info_content)
+
+    my_student_data_container = create_container(teachers_students_content)
 
     return ft.View(
         scroll=ft.ScrollMode.AUTO,
@@ -70,6 +80,6 @@ def TeacherHomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         controls=[
             ft.Container(),
             user_data_container,
-
+            my_student_data_container,
         ]
     )
