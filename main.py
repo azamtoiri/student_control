@@ -1,9 +1,14 @@
+import asyncio
+
 import flet as ft
 
+from constants import LOGO_PATH
 from database.database import UserDatabase
+from user_controls.bg_animation import Thing
 from user_controls.student_app_bar import STAppBar
 from utils.lazy_db import LazyDatabase
 from utils.new_router import Routing
+from utils.routes_url import BaseRoutes
 from views.routes import all_routes
 
 
@@ -44,8 +49,8 @@ def main(page: ft.Page):
         page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
         page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
         page.update()
-    page.go('/teacher/my-subjects')
-    # page.go('/teacher/home')
+    # page.go('/teacher/set-grades')
+    page.go('/set-grade/2/6')
     # page.go('/subject/1')
 
 

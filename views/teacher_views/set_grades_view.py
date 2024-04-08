@@ -2,7 +2,8 @@ import flet as ft
 from flet_route import Basket, Params
 
 from database.database import TeacherDatabase
-from utils.exceptions import DontHaveGrades, UserDontHaveGrade
+from user_controls.teacher_cards import create_students_subject_card
+from utils.exceptions import DontHaveGrades
 from utils.routes_url import TeacherRoutes
 
 db = TeacherDatabase()
@@ -18,7 +19,23 @@ def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # region: Search
     def search(e: ft.ControlEvent) -> None:
-        ...
+        dont_have_students.visible = False
+        subjects_row.clean()
+        students_row.controls.clear()
+        search_value = str(search_field.value).strip()
+        try:
+            for list_subject in db.get_teacher_students_with_filter(USER_ID, search_value):
+                create_students_subject_card(
+                    subject_title=list_subject[3],
+                    student_fio=f'{list_subject[2]} {list_subject[1]}',
+                    student_row=students_row,
+                    subject_url=f'/set-grade/{list_subject[4]}/{list_subject[0]}'
+                )
+            e.page.update()
+        except DontHaveGrades:
+            dont_have_students.value = 'Ничего не найдено'
+            dont_have_students.visible = True
+            e.page.update()
 
     search_field = ft.TextField(
         hint_text="Найти студента",
@@ -39,70 +56,83 @@ def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     dont_have_students = ft.Text(
         'Пока нет студентов по этому курсу', size=25, color=ft.colors.INVERSE_SURFACE,
-        visible=False, weight=ft.FontWeight.BOLD, opacity=0.5
+        visible=False, weight=ft.FontWeight.BOLD, opacity=0.5, text_align=ft.TextAlign.CENTER
     )
 
     # region: Tab
     def tabs_changed(e: ft.ControlEvent) -> None:
-        """Фильтруем все оценки"""
+        """Фильтруем все оценки по предметам"""
         dont_have_students.visible = False
-        status = ''
-        if subjects_filter_tab.visible is True:
-            status = subjects_filter_tab.tabs[subjects_filter_tab.selected_index].text
-        if student_filter_tab.visible is True:
-            status = student_filter_tab.tabs[student_filter_tab.selected_index].text
-        subjects.controls.clear()
-        if status == 'Все' or status == 'Мои студенты' or status == 'Предметы' or status == 'Студенты':
-            return
-        else:
-            subjects.controls.clear()
-            students.controls.clear()
-            try:
-                # for _grade in sub_db.database.get_student_task_grades_with_subject_name(
-                #         USER_ID, status
-                # ):
-                #     create_task_grade_card(
-                #         subject_title=f'Предмет: {_grade.subject_task.subject.subject_name}',
-                #         grade_value=f"{_grade.grade_value}",
-                #         grade_date=f'Дата оценки: {_grade.grade_date.strftime("%d-%m-%Y")}',
-                #         name_of_task=_grade.subject_task.task_name,
-                #         grades=tasks_grades
-                #     )
-                ...
-            except UserDontHaveGrade:
-                dont_have_students.visible = True
-                e.page.update()
+        student_filter_tab.visible = False
+        e.page.update()
+        subjects_row.controls.clear()
+        status = subjects_filter_tab.tabs[subjects_filter_tab.selected_index].text
+        try:
+            for list_subject in db.get_teacher_students_subjects_with_filter(USER_ID, status):
+                create_students_subject_card(
+                    subject_title=list_subject[3],
+                    student_fio=f'{list_subject[2]} {list_subject[1]}',
+                    student_row=subjects_row,
+                    subject_url=f'/set-grade/{list_subject[4]}/{list_subject[0]}'
+                )
+        except DontHaveGrades:
+            dont_have_students.visible = True
+            e.page.update()
+        e.page.update()
+
+    def student_tabs_changed(e: ft.ControlEvent) -> None:
+        """Фильтруем все оценки по студентам"""
+        dont_have_students.visible = False
+        subjects_filter_tab.visible = False
+        e.page.update()
+        status = student_filter_tab.tabs[student_filter_tab.selected_index].text
+        students_row.controls.clear()
+        subjects_row.clean()
+        try:
+            for list_subject in db.get_teacher_students_with_filter(USER_ID, status[0]):
+                create_students_subject_card(
+                    subject_title=list_subject[3],
+                    student_fio=f'{list_subject[2]} {list_subject[1]}',
+                    student_row=students_row,
+                    subject_url=f'/set-grade/{list_subject[4]}/{list_subject[0]}'
+                )
+        except DontHaveGrades:
+            dont_have_students.visible = True
+            e.page.update()
         e.page.update()
 
     def filter_change(e: ft.ControlEvent) -> None:
         """Фильтруем фильтры которые у нас есть"""
+        dont_have_students.visible = False
         filter_name = filter_for_filter.tabs[filter_for_filter.selected_index].text
         if filter_name == 'Все':
             student_filter_tab.visible = False
             subjects_filter_tab.visible = False
-
-        elif filter_name == 'Мои студенты':
-            student_filter_tab.visible = True
-            subjects_filter_tab.visible = False
+            subjects_row.clean()
+            students_row.clean()
+            show_all_subjects_row()
 
         elif filter_name == 'Предметы':
             student_filter_tab.visible = False
             subjects_filter_tab.visible = True
+            students_row.clean()
 
         elif filter_name == 'Студенты':
             student_filter_tab.visible = True
             subjects_filter_tab.visible = False
+            subjects_row.clean()
         e.page.update()
 
     filter_for_filter = ft.Tabs(
-        tabs=[ft.Tab(text='Все'), ft.Tab(text='Мои студенты'), ft.Tab(text='Предметы'), ft.Tab(text='Студенты')],
+        tabs=[ft.Tab(text='Все'), ft.Tab(text='Предметы'), ft.Tab(text='Студенты')],
         on_change=filter_change,
     )
+
     students_tabs = []
     try:
-        students = db.get_teacher_students(USER_ID)
-        for student in students:
-            name = f'{student[2]} {student[1]}'
+        students_db = db.get_teacher_students(USER_ID)
+        for _student in students_db:
+            name = f'{_student[2]} {_student[1]}'
             students_tabs.append(ft.Tab(text=f'{name}'))
     except DontHaveGrades as ex:
         dont_have_students.visible = True
@@ -110,8 +140,8 @@ def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     subjects_tabs = []
     try:
-        subjects = db.get_teacher_subjects(USER_ID)
-        for subject in subjects:
+        _subjects = db.get_teacher_subjects(USER_ID)
+        for subject in _subjects:
             subjects_tabs.append(ft.Tab(text=f'{subject.subject_name}'))
     except DontHaveGrades as ex:
         dont_have_students.visible = True
@@ -119,7 +149,7 @@ def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     student_filter_tab = ft.Tabs(
         scrollable=True,
-        on_change=tabs_changed,
+        on_change=student_tabs_changed,
         tabs=students_tabs,
         visible=False
     )
@@ -134,18 +164,36 @@ def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     # all content will be here
-    students = ft.ResponsiveRow()
+    students_row = ft.ResponsiveRow()
 
-    subjects = ft.ResponsiveRow()
+    subjects_row = ft.ResponsiveRow()
+
+    def show_all_subjects_row():
+        for list_subject in db.get_teacher_students_with_subjects(USER_ID):
+            create_students_subject_card(
+                subject_title=list_subject[3],
+                student_fio=f'{list_subject[2]} {list_subject[1]}',
+                student_row=subjects_row,
+                subject_url=f'/set-grade/{list_subject[4]}/{list_subject[0]}'
+            )
+
+    show_all_subjects_row()
 
     content = ft.Column(
         [
             ft.Row([search_field, search_button]),
             ft.Column([
-                ft.Row([filter_for_filter, student_filter_tab, subjects_filter_tab]),
-                students,
+                ft.Row(
+                    [
+                        ft.Icon(ft.icons.QUESTION_MARK, tooltip='Фильтр', size=15),
+                        filter_for_filter, student_filter_tab,
+                        subjects_filter_tab
+                    ]
+                ),
+                students_row,
+                subjects_row,
                 dont_have_students
-            ], spacing=25)
+            ], spacing=25, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
         ], scroll=ft.ScrollMode.ADAPTIVE
     )
 

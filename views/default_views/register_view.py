@@ -1,11 +1,9 @@
-import asyncio
 import time
 
 import flet as ft
 from flet_route import Params, Basket
 
 from constants import LOGO_PATH
-from utils.routes_url import BaseRoutes
 from database.database import UserDatabase
 from user_controls.banners import SuccessBanner
 from user_controls.custom_input_field import CustomInputField
@@ -13,6 +11,7 @@ from user_controls.input_filter import TextOnlyInputFilterRu
 from utils.exceptions import RequiredField, PasswordDontMatching, AlreadyRegistered, NotRegistered
 from utils.jwt_hash import hash_
 from utils.lazy_db import LazyDatabase
+from utils.routes_url import BaseRoutes
 
 user_db = LazyDatabase(UserDatabase)
 

@@ -24,10 +24,17 @@ def create_subject_grade_card(
     _card.content = ft.Container(
         content=ft.Column(
             [
-                ft.Row(alignment=ft.MainAxisAlignment.END, controls=[_final_grade_text]),
-                ft.ListTile(
-                    leading=grade_icon, title=_grade_value,
-                    subtitle=ft.Column([_subject_title, _grade_date], adaptive=True)
+                ft.Stack(
+                    controls=[
+                        ft.Row(alignment=ft.MainAxisAlignment.END, controls=[_final_grade_text]),
+                        ft.ListTile(
+                            leading=grade_icon, title=_grade_value,
+                            subtitle=ft.Column([
+                                _subject_title,
+                                ft.Row([_grade_date], alignment=ft.MainAxisAlignment.END),
+                            ], adaptive=True)
+                        ),
+                    ]
                 ),
             ]
         ), width=400, padding=10

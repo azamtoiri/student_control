@@ -24,6 +24,7 @@ from views.teacher_views import (
     MyTasksView,
     SetGradesView
 )
+from views.teacher_views.set_grade_detail_view import SetGradeDetailView
 
 all_routes = [
     # region: base views
@@ -52,6 +53,7 @@ all_routes = [
     path(url=TeacherRoutes.TASKS_URL, clear=False, view=MyTasksView, middleware=MiddleWareCheckIsStaff),
     path(url=TeacherRoutes.GRADES_URL, clear=False, view=SetGradesView, middleware=MiddleWareCheckIsStaff),
     path(url=TeacherRoutes.SUBJECT_ADD_URL, clear=False, view=MySubjectView, middleware=MiddleWareCheckIsStaff),
+    path(url=TeacherRoutes.SET_GRADE_DETAIL_URL, clear=False, view=SetGradeDetailView, middleware=MiddleWareCheckIsStaff),
 
     # endregion
 

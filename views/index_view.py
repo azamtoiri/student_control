@@ -1,7 +1,10 @@
+import asyncio
+
 import flet as ft
 from flet_route import Params, Basket
 
 from constants import LOGO_PATH
+from user_controls.bg_animation import Thing
 from utils.routes_url import BaseRoutes
 
 
@@ -11,34 +14,38 @@ def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     logo_image.width = 100
     logo_image.height = 100
     logo_image.expand = True
+    page.padding = 0
 
-    logo_text = ft.Text()
-    logo_text.value = "FoxHub"
-    logo_text.width = ft.FontWeight.BOLD
-    logo_text.text_align = ft.TextAlign.CENTER
-    logo_text.color = ft.colors.with_opacity(1, "White")
-    logo_text.size = 30
-    logo_text.expand = True
+    logo_text = ft.Text(
+        value="FoxHub",
+        weight=ft.FontWeight.BOLD,
+        color=ft.colors.with_opacity(1, "White"),
+        size=30,
+        expand=1,
+        text_align="center"
+    )
 
-    welcome_text = ft.Text()
-    welcome_text.value = "Добро пожаловать"
-    welcome_text.size = 34
-    welcome_text.width = ft.FontWeight.W_500
-    welcome_text.text_align = ft.TextAlign.CENTER
-    # welcome_text.color = ft.colors.with_opacity(1, "White")
-    welcome_text.expand = True
+    welcome_text = ft.Text(
+        value='Добро пожаловать',
+        size=34,
+        weight=ft.FontWeight.W_500,
+        text_align=ft.TextAlign.CENTER,
+        expand=1
+    )
 
-    login_button = ft.ElevatedButton()
-    login_button.text = 'Войти'
-    login_button.icon = ft.icons.LOGIN
-    login_button.expand = True
-    login_button.on_click = lambda _: page.go(BaseRoutes.LOGIN_URL)  # handler
+    login_button = ft.ElevatedButton(
+        text='Войти',
+        icon=ft.icons.LOGIN,
+        expand=True,
+        on_click=lambda _: page.go(BaseRoutes.LOGIN_URL)  # handler
+    )
 
-    register_button = ft.ElevatedButton()
-    register_button.text = 'Регистрация'
-    register_button.icon = ft.icons.APP_REGISTRATION
-    register_button.expand = True
-    register_button.on_click = lambda _: page.go(BaseRoutes.REGISTER_URL)  # handler
+    register_button = ft.ElevatedButton(
+        text='Регистрация',
+        icon=ft.icons.APP_REGISTRATION,
+        expand=True,
+        on_click=lambda _: page.go(BaseRoutes.REGISTER_URL)  # handler
+    )
 
     content = ft.Column()
     content.width = 400

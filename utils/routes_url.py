@@ -38,3 +38,5 @@ class TeacherRoutes:
     GRADES_URL = '/teacher/set-grades'
     TASKS_URL = '/teacher/subject-tasks'
     SUBJECT_ADD_URL = '/teacher/add-subject'
+    SET_GRADE_DETAIL_URL = '/set-grade/:subject_id/:student_id'
+    SIMPLE_SET_GRADE_DETAIL_URL = '/set-grade/'

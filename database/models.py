@@ -162,6 +162,35 @@ class Grades(Base):
     )
 
 
+class TaskGrades(Base):
+    __tablename__ = 'task_grades'
+    __table_args__ = {'comment': 'Оценки за задания по предметам'}
+
+    task_grade_id = Column(Integer, primary_key=True, nullable=False, comment='Идентификатор оценки за задание')
+    enrollment_id = Column(
+        Integer, ForeignKey('enrollments.enrollment_id', ondelete='CASCADE'), nullable=True,
+        comment='Идентификатор записи о подписке'
+    )
+    subject_task_id = Column(
+        Integer, ForeignKey('subject_tasks.subject_task_id', ondelete='CASCADE'), nullable=False,
+        comment='Идентификатор задания'
+    )
+    user_id = Column(
+        Integer, ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False,
+        comment='Идентификатор пользователя, который выполнил задание'
+    )
+    grade_value = Column(Integer, nullable=False, comment='Оценка за задание')
+    grade_date = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), default=func.now(),
+        comment='Дата постановки оценки'
+    )
+
+    # Добавим связи
+    enrollment = relationship('Enrollments', back_populates='task_grades_list', foreign_keys=[enrollment_id])
+    subject_task = relationship('SubjectTasks', backref='task_grades')
+    users = relationship('Users', backref='task_grades')
+
+
 # todo: Date time now for creating
 class Enrollments(Base):
     __tablename__ = 'enrollments'
@@ -185,6 +214,8 @@ class Enrollments(Base):
     )
 
     task_files = relationship('UserTasksFiles', backref='enrollments', cascade='all, delete-orphan')
+    task_grades_list = relationship('TaskGrades', back_populates='enrollment', cascade='all, delete-orphan',
+                                    foreign_keys=[TaskGrades.enrollment_id])
 
 
 class Task(Base):
@@ -225,32 +256,3 @@ class UserTasksFiles(Base):
     )
 
     user = relationship('Users', backref='user_task_files')
-
-
-class TaskGrades(Base):
-    __tablename__ = 'task_grades'
-    __table_args__ = {'comment': 'Оценки за задания по предметам'}
-
-    task_grade_id = Column(Integer, primary_key=True, nullable=False, comment='Идентификатор оценки за задание')
-    enrollment_id = Column(
-        Integer, ForeignKey('enrollments.enrollment_id', ondelete='CASCADE'), nullable=False,
-        comment='Идентификатор записи о подписке'
-    )
-    subject_task_id = Column(
-        Integer, ForeignKey('subject_tasks.subject_task_id', ondelete='CASCADE'), nullable=False,
-        comment='Идентификатор задания'
-    )
-    user_id = Column(
-        Integer, ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False,
-        comment='Идентификатор пользователя, который выполнил задание'
-    )
-    grade_value = Column(Integer, nullable=False, comment='Оценка за задание')
-    grade_date = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now(), default=func.now(),
-        comment='Дата постановки оценки'
-    )
-
-    # Добавим связи
-    enrollment = relationship('Enrollments', backref='task_grades')
-    subject_task = relationship('SubjectTasks', backref='task_grades')
-    users = relationship('Users', backref='task_grades')

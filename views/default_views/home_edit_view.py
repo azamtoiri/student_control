@@ -167,7 +167,7 @@ def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     username_field = UserChangField(disabled=True, value=f'{USERNAME}', label='Имя пользователя')
 
     teacher_experience_field = UserChangField(
-        IS_DONE, teacher_experience, label='Ваш опыт', save_changes=save_changes_teacher
+        IS_DONE, teacher_experience, label='Ваш стаж', save_changes=save_changes_teacher
     )
     teacher_description_field = UserChangField(
         IS_DONE, teacher_description, label='Расскажите о себе', multiline=True, save_changes=save_changes_teacher

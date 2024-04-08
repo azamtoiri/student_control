@@ -1,5 +1,5 @@
 # TODO: add with uid to id column on all functions
-from typing import Type, Optional
+from typing import Type, Optional, List
 
 from sqlalchemy import create_engine, asc, func
 from sqlalchemy.orm import sessionmaker, aliased
@@ -448,6 +448,7 @@ class StudentDatabase(BaseDataBase):
         except UserAlreadySubscribed:
             return False
         except Exception as ex:
+            print(ex)
             self.session.rollback()
             return False
 
@@ -461,7 +462,8 @@ class StudentDatabase(BaseDataBase):
         try:
             self.session.delete(enrollment)
             self.session.commit()
-        except Exception:
+        except Exception as ex:
+            print(ex)
             self.session.rollback()
             return True
 
@@ -519,6 +521,32 @@ class StudentDatabase(BaseDataBase):
         ).all()
         for r in res:
             yield r
+
+    def get_student_subject_tasks_by_subject_id(
+            self, user_id, subject_id
+    ) -> List[tuple[SubjectTasks, Users, Subjects, Enrollments, TaskGrades]]:
+        """
+        USE FOR TEACHER PAGE SET GRADES DETAIL VIEW
+        return models 0: SubjectTasks, 1: Users, 2: Subjects, 3: Enrollments
+        """
+        res = self.session.query(
+            SubjectTasks, Users, Subjects, Enrollments, TaskGrades
+        ).join(
+            Enrollments, Users.user_id == Enrollments.user_id
+        ).join(
+            Subjects, Subjects.subject_id == Enrollments.subject_id
+        ).join(
+            SubjectTasks, SubjectTasks.subject_id == Subjects.subject_id
+        ).outerjoin(
+            TaskGrades,
+            (TaskGrades.enrollment_id == Enrollments.enrollment_id) &
+            (TaskGrades.subject_task_id == SubjectTasks.subject_task_id) &
+            (TaskGrades.user_id == Users.user_id)
+        ).filter(
+            Users.user_id == user_id, Subjects.subject_id == subject_id
+        ).all()
+
+        return res
 
     # region: subject_task_file
     def get_status_of_task_by_user_id(self, user_id, subject_task_id, enrollment_id):
@@ -701,6 +729,43 @@ class StudentDatabase(BaseDataBase):
 
     # endregion
 
+    # region: SET Grade student
+    def set_grade_for_task(self, user_id, subject_task_id, enrollment_id, grade_value) -> bool:
+        try:
+            grade = TaskGrades(
+                user_id=user_id,
+                subject_task_id=subject_task_id,
+                enrollment_id=enrollment_id,
+                grade_value=grade_value
+            )
+            self.session.add(grade)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()
+            return False
+
+    def update_grade_for_task(self, enrollment_id, subject_task_id, user_id, grade_value) -> bool:
+        try:
+            task_grade = self.session.query(TaskGrades).filter(
+                TaskGrades.enrollment_id == enrollment_id,
+                TaskGrades.subject_task_id == subject_task_id,
+                TaskGrades.user_id == user_id
+            ).first()
+
+            task_grade.grade_value = grade_value
+
+            self.session.add(task_grade)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()
+            return False
+
+    # endregion
+
 
 class TeacherDatabase(BaseDataBase):
     def get_teacher_students(self, user_id) -> list[Type[Users]]:
@@ -728,13 +793,56 @@ class TeacherDatabase(BaseDataBase):
 
         # Выполняем запрос для получения студентов
         students = (
-            self.session.query(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name)
+            self.session.query(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
+                               Subjects.subject_id)
             .join(Enrollments, Users.user_id == Enrollments.user_id)
             .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
             .join(user1, Subjects.user_id == user1.user_id)
             .filter(user1.is_staff == True)
             .distinct()
             .filter(user1.user_id == user_id)
+            .all()
+        )
+
+        if len(students) <= 0:
+            raise DontHaveGrades
+
+        return students
+
+    def get_teacher_students_subjects_with_filter(self, user_id, subject_name) -> list[Type[Users]]:
+        user1 = aliased(Users)
+
+        # Выполняем запрос для получения студентов
+        students = (
+            self.session.query(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
+                               Subjects.subject_id)
+            .join(Enrollments, Users.user_id == Enrollments.user_id)
+            .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
+            .join(user1, Subjects.user_id == user1.user_id)
+            .filter(user1.is_staff == True)
+            .distinct()
+            .filter(user1.user_id == user_id, Subjects.subject_name.ilike(f'%{subject_name}%'))
+            .all()
+        )
+
+        if len(students) <= 0:
+            raise DontHaveGrades
+
+        return students
+
+    def get_teacher_students_with_filter(self, user_id, last_name) -> list[Type[Users]]:
+        user1 = aliased(Users)
+
+        # Выполняем запрос для получения студентов
+        students = (
+            self.session.query(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
+                               Subjects.subject_id)
+            .join(Enrollments, Users.user_id == Enrollments.user_id)
+            .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
+            .join(user1, Subjects.user_id == user1.user_id)
+            .filter(user1.is_staff == True)
+            .distinct()
+            .filter(user1.user_id == user_id, Users.last_name.ilike(f'%{last_name}%'))
             .all()
         )
 
