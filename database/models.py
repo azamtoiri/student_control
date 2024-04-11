@@ -115,7 +115,7 @@ class SubjectTasks(Base):
         Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'), comment='Идентификатор предмета'
     )
 
-    task_files = relationship('UserTasksFiles', backref='subject_task', cascade='all, delete-orphan')
+    task_files = relationship('UserTasksFiles', backref='subject_task', cascade='all, delete-orphan', uselist=False)
     subject = relationship('Subjects', back_populates='subject_tasks')
 
 

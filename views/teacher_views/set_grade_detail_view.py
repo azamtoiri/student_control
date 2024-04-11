@@ -4,6 +4,7 @@ from flet_route import Basket, Params
 from database.database import StudentDatabase
 from user_controls.modal_alert_dialog import ModalAlertDialog
 from user_controls.teacher_cards import create_student_task_card
+from utils.banners import display_success_banner
 from utils.routes_url import TeacherRoutes
 
 
@@ -15,23 +16,40 @@ def SetGradeDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     USER_NAME = page.session.get('username')
 
     db = StudentDatabase()
+    HAVE_FINAL_GRADE = db.have_final_grade_for_subject(STUDENT_ID, SUBJECT_ID)
 
-    set_grade_dlg = ModalAlertDialog(
-        title=ft.Text('Поставить оценку'),
+    set_final_grade_dlg = ModalAlertDialog(
+        title=ft.Text('Поставить итоговую оценку'),
         content=ft.Column(
             controls=[
-                ft.TextField(hint_text='Оценка'),
+                ft.TextField(hint_text='Итоговая оценка'),
             ], height=80, adaptive=True
         ),
-        yes_click=lambda _: print("Yes")
+        yes_click=lambda e: yes_click(e)
     )
 
-    # region: save_file
-    def save_file_result(e: ft.FilePickerResultEvent):
-        if e.path:
-            raise NotImplemented()
+    def show_dlg(e: ft.ControlEvent) -> None:
+        e.page.dialog = set_final_grade_dlg
+        set_final_grade_dlg.dlg.open = True
+        e.page.update()
+        set_final_grade_dlg.update()
 
-    save_file_dialog = ft.FilePicker(on_result=save_file_result)
+    def yes_click(e: ft.ControlEvent) -> None:
+        _grade_value = int(set_final_grade_dlg.dlg.content.controls[0].value)
+        if _grade_value > 100 or _grade_value < 0:
+            set_final_grade_dlg.dlg.content.controls[0].error_text = 'Оценка должна быть не больше 100 и больше 0'
+            set_final_grade_dlg.update()
+            return
+        db.set_final_grade_for_subject(STUDENT_ID, SUBJECT_ID, _grade_value)
+        set_final_grade_dlg.dlg.open = False
+        set_final_grade_dlg.update()
+        final_grade_value.value = f'Итоговая оценка: {_grade_value}'
+        final_grade_value.visible = True
+        display_success_banner(page=page, message='Итоговая оценка поставлена', icons=ft.icons.GRADE)
+        e.page.update()
+
+    # region: save_file
+    save_file_dialog = ft.FilePicker()
     page.overlay.append(save_file_dialog)
 
     student_grades_subject = ft.ResponsiveRow()
@@ -47,12 +65,23 @@ def SetGradeDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             enrollment_id=i[3].enrollment_id,
             subject_task_id=i[0].subject_task_id,
             user_id=i[1].user_id,
-            db=db
+            db=db,
+            task_file_url=i[0].task_files.task_file if i[0].task_files else None
         )
 
     # endregion
 
+    # region: final grade
+    _value = db.get_final_grade_for_subject(STUDENT_ID, SUBJECT_ID)
+    final_grade_value = ft.Text(
+        f'Итоговая оценка: {_value if _value else None}', size=25, color=ft.colors.INVERSE_SURFACE,
+        weight=ft.FontWeight.BOLD, opacity=0.5, text_align=ft.TextAlign.CENTER, visible=True if _value else False
+    )
+
+    # endregion
+
     # region: Filter Tab
+
     def tab_changed(e: ft.ControlEvent):
         ...
 
@@ -61,16 +90,17 @@ def SetGradeDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         scrollable=True,
         on_change=tab_changed,
         tabs=tabs,
+        visible=False
     )
 
     # endregion
 
     # region: search
     def search(e: ft.ControlEvent) -> None:
-        raise NotImplemented('')
+        search_value = str(search_field.value).strip()
 
     search_field = ft.TextField(
-        hint_text="Найти студента",
+        hint_text='Найти предмет',
         on_submit=lambda e: search(e),
         border_radius=8,
         expand=True,
@@ -87,6 +117,8 @@ def SetGradeDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     set_final_grade_icon_button = ft.IconButton(
         icon=ft.icons.GRADE,
         tooltip='Поставить итоговую оценку',
+        on_click=lambda e: show_dlg(e),
+        visible=False if HAVE_FINAL_GRADE else True
     )
     # endregion
 
@@ -94,6 +126,7 @@ def SetGradeDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         [
             ft.Row([search_field, search_button, set_final_grade_icon_button]),
             filter_tab,
+            final_grade_value,
             student_grades_subject
         ], scroll=ft.ScrollMode.ADAPTIVE
     )
@@ -103,7 +136,6 @@ def SetGradeDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         border_radius=8,
         padding=ft.padding.all(10), bgcolor=ft.colors.SURFACE_VARIANT,
         content=content,
-        # expand=True
     )
 
     return ft.View(
@@ -113,6 +145,7 @@ def SetGradeDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         controls=[
+            # content
             main_container
         ]
     )

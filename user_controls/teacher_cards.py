@@ -1,57 +1,10 @@
+import shutil
 from datetime import datetime
 
 import flet as ft
 
-from database.database import TeacherDatabase, StudentDatabase
+from database.database import StudentDatabase
 from user_controls.modal_alert_dialog import ModalAlertDialog
-
-
-class CreateStudentSubjectCard(ft.UserControl):
-    def __init__(self, student_id, students: ft.ResponsiveRow()):
-        super().__init__()
-        self.student_id = student_id
-        self.students = students
-        self.db = TeacherDatabase()
-
-    def build(self):
-        # _grade_value = ft.Text(f'Оценка {}')
-        #
-        # _task_title = ft.Text(task_title)
-        #
-        # _task_upload_date = ft.Text(task_upload_date, tooltip='Дата выполнения задания')
-        #
-        # _student_fio = ft.Text(student_fio, tooltip='Студент')
-        #
-        # tile_icon = ft.Icon(name=ft.icons.PERSON)
-        #
-        # _card = ft.Card(col={"md": 12, "lg": 4}, color=ft.colors.SURFACE_VARIANT)
-        #
-        # download_button = ft.IconButton(
-        #     ft.icons.DOWNLOAD,
-        # )
-        #
-        # _card.content = ft.Container(
-        #     content=ft.Column(
-        #         [
-        #             ft.ListTile(
-        #                 leading=tile_icon, title=_grade_value,
-        #                 subtitle=ft.Column([
-        #                     _task_title,
-        #                     _student_fio,
-        #                     ft.Row(
-        #                         [
-        #                             ft.ElevatedButton("Поставить оценку", on_click=lambda _: print('')),
-        #                             _task_upload_date,
-        #                             ft.IconButton(ft.icons.DOWNLOAD, on_click=lambda _: print(''))
-        #                         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN
-        #                     ),
-        #                 ], adaptive=True)
-        #             ),
-        #         ]
-        #     ), width=400, padding=10
-        # )
-        # self.students.controls.append(_card)
-        return self.students
 
 
 def create_student_subject_card(
@@ -104,15 +57,26 @@ def create_student_task_card(
         enrollment_id: int = None,
         subject_task_id: int = None,
         user_id: int = None,
-        db: StudentDatabase = None
+        db: StudentDatabase = None,
+        task_file_url: str = None
 ) -> ft.ResponsiveRow:
     """Карточка итоговой оценки по предмету"""
+
+    def save_file_result(e: ft.FilePickerResultEvent):
+        if e.path:
+            # Копирование файла
+            shutil.copy2(f'assets/uploads/{task_file_url}', e.path)
+
+    save_file_dialog.on_result = save_file_result
 
     set_grade_dlg = ModalAlertDialog(
         title=ft.Text('Поставить оценку'),
         content=ft.Column(
             controls=[
-                ft.TextField(hint_text='Оценка', input_filter=ft.NumbersOnlyInputFilter()),
+                ft.TextField(
+                    hint_text='Оценка', input_filter=ft.NumbersOnlyInputFilter(),
+                    on_submit=lambda e: yes_click(e), expand=True, height=100
+                ),
             ], height=80, scroll=ft.ScrollMode.AUTO, adaptive=True
         ),
         yes_click=lambda e: yes_click(e)
@@ -127,23 +91,27 @@ def create_student_task_card(
     def yes_click(e: ft.ControlEvent) -> None:
         set_grade_vale = int(set_grade_dlg.dlg.content.controls[0].value)
         try:
-            if set_grade_vale >= 100:
-                raise ValueError('Оценка должна быть не больше 100')
-        except ValueError:
-            set_grade_dlg.dlg.content.controls[0].error_text = 'Grade value must be less than 100'
+            if set_grade_vale > 100 or set_grade_vale < 0:
+                raise ValueError('Оценка должна быть не больше 100 и больше 0')
+        except ValueError as err:
+            set_grade_dlg.dlg.content.controls[0].error_text = str(err)
             set_grade_dlg.update()
             return
 
         if grade_value == "Нет оценки":
-            db_req: bool = db.set_grade_for_task(
-                enrollment_id=enrollment_id,
-                subject_task_id=subject_task_id,
-                user_id=user_id,
-                grade_value=set_grade_vale
-            )
-            _task_upload_date.value = datetime.now().strftime('%d.%m.%Y')
-            status.visible = True
-            set_grade_button.text = 'Изменить оценку'
+            # Если оценка различается от предыдущей, то обновляем ее
+            if grade_value != set_grade_vale:
+                db_req: bool = db.set_grade_for_task(
+                    enrollment_id=enrollment_id,
+                    subject_task_id=subject_task_id,
+                    user_id=user_id,
+                    grade_value=set_grade_vale
+                )
+                _task_upload_date.value = datetime.now().strftime('%d.%m.%Y')
+                status.visible = True
+                set_grade_button.text = 'Изменить оценку'
+            else:
+                e.page.update()
         else:
             db_req: bool = db.update_grade_for_task(
                 enrollment_id=enrollment_id,
@@ -155,11 +123,6 @@ def create_student_task_card(
             status.visible = True
             set_grade_button.text = 'Изменить оценку'
 
-        if db_req:
-            _grade_value.value = set_grade_vale
-            print('Grade set')
-        else:
-            print('Grade not set')
         set_grade_dlg.dlg.open = False
         set_grade_dlg.update()
         e.page.update()
@@ -182,32 +145,47 @@ def create_student_task_card(
         color=ft.colors.SURFACE_TINT,
         weight=ft.FontWeight.BOLD, size=15
     )
+    status2 = ft.Text(
+        value='Не выполнено',
+        visible=False if task_file_url else True,
+        color=ft.colors.SURFACE_TINT,
+        weight=ft.FontWeight.BOLD, size=15
+    )
     set_grade_button = ft.ElevatedButton(
         text="Поставить оценку" if grade_value == "Нет оценки" else "Изменить оценку",
-        on_click=lambda e: show_dlg(e)
+        on_click=lambda e: show_dlg(e), tooltip='Поставить оценку',
+        disabled=True if task_file_url is None else False
     )
 
     download_button = ft.IconButton(
         ft.icons.DOWNLOAD,
     )
-
     _card.content = ft.Container(
         content=ft.Column(
             [
                 ft.Stack(
                     controls=[
-                        ft.Row(alignment=ft.MainAxisAlignment.END, controls=[status]),
+                        ft.Row(
+                            alignment=ft.MainAxisAlignment.END, controls=[status, status2],
+                        ),
+                        ft.Container(height=20),
                         ft.ListTile(
-                            leading=tile_icon, title=_grade_value,
+                            leading=tile_icon, title=_task_title,
                             subtitle=ft.Column([
-                                _task_title,
+                                _grade_value,
                                 _student_fio,
                                 ft.Row(
                                     [
                                         set_grade_button,
                                         _task_upload_date,
-                                        ft.IconButton(ft.icons.DOWNLOAD,
-                                                      on_click=lambda e: save_file_dialog.save_file(e))
+                                        ft.IconButton(
+                                            ft.icons.DOWNLOAD,
+                                            on_click=lambda e: save_file_dialog.save_file(
+                                                e, file_name=f'{task_file_url}'
+                                            ),
+                                            tooltip='Скачать файл',
+                                            visible=False if task_file_url is None else True
+                                        )
                                     ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                                 ),
                             ], adaptive=True)

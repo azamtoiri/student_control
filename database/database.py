@@ -746,6 +746,49 @@ class StudentDatabase(BaseDataBase):
             self.session.rollback()
             return False
 
+    def set_final_grade_for_subject(self, user_id, subject_id, grade_value) -> bool:
+        try:
+            enrollment = self.session.query(Enrollments).filter(
+                Enrollments.user_id == user_id,
+                Enrollments.subject_id == subject_id
+            ).first()
+
+            grade = Grades(
+                enrollment_id=enrollment.enrollment_id,
+                grade_value=grade_value
+            )
+
+            self.session.add(grade)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()
+            return False
+
+    def get_final_grade_for_subject(self, user_id, subject_id) -> int:
+        grade = self.session.query(Grades).join(
+            Enrollments
+        ).filter(
+            Enrollments.user_id == user_id,
+            Enrollments.subject_id == subject_id
+        ).first()
+
+        if grade:
+            return grade.grade_value
+        else:
+            return None
+
+    def have_final_grade_for_subject(self, user_id, subject_id) -> bool:
+        grade = self.session.query(Grades).join(
+            Enrollments
+        ).filter(
+            Enrollments.user_id == user_id,
+            Enrollments.subject_id == subject_id
+        ).first()
+
+        return bool(grade)
+
     def update_grade_for_task(self, enrollment_id, subject_task_id, user_id, grade_value) -> bool:
         try:
             task_grade = self.session.query(TaskGrades).filter(
