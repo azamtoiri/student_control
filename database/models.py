@@ -90,14 +90,13 @@ class UserTheme(Base):
 
 class SubjectTheory(Base):
     __tablename__ = 'subject_theory'
-    __table_args__ = {'comment': 'Теория для предмета. У каждого предмета может быть только одна теория'}
+    __table_args__ = {'comment': 'Теория для предмета. У каждого предмета может быть только одна теория в виде файла'}
 
     theory_id = Column(
         Integer, ForeignKey('subjects.subject_id', ondelete='CASCADE'), primary_key=True,
         comment='Идентификатор теории'
     )
-    theory_title = Column(String, unique=True, nullable=False, comment='Заголовок теории')
-    theory_data = Column(String, nullable=False, comment='Данные теории (файл, текст, ссылка)')
+    theory_data = Column(String, nullable=True, comment='Данные теории (файл, текст, ссылка)')
 
     subject = relationship('Subjects', back_populates='subject_theory', uselist=False)
 

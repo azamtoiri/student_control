@@ -1,7 +1,7 @@
 import flet as ft
 
 
-def display_success_banner(page: ft.Page, message: str, icons: ft.icons.SUNNY, duration=300) -> None:
+def display_success_banner(page: ft.Page, message: str, icons: ft.icons = ft.icons.SUNNY, duration=300) -> None:
     banner = ft.SnackBar(
         content=ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,

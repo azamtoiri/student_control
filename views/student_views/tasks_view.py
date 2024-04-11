@@ -25,11 +25,26 @@ def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         controls=[ft.Text('Нет заданий', size=20, text_align=ft.TextAlign.CENTER, color=ft.colors.SURFACE_TINT)]
     )
 
+    # region: FilePicker
+    file_piker = ft.FilePicker()
+    page.overlay.append(file_piker)
+    page.update()
+
+    # endregion
+
     try:
         subjects = db.database.get_student_subjects(user_id=USER_ID)
 
         for subject in subjects:
-            content.controls.append(StudentSubjectTasksCard(USER_ID, subject[2], subject[4].subject_id, page=page))
+            content.controls.append(
+                StudentSubjectTasksCard(
+                    USER_ID, subject[2],
+                    subject[4].subject_id,
+                    page=page,
+                    file_picker=file_piker,
+                    theory_url=subject[4].subject_theory.theory_data if subject[4].subject_theory else None
+                )
+            )
     except DontHaveGrades as error:
         dont_have_tasks.visible = True
         page.update()

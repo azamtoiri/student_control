@@ -607,6 +607,17 @@ class StudentDatabase(BaseDataBase):
             self.session.rollback()
             return False
 
+    def delete_subject_theory_file(self, subject_id):
+        try:
+            theory = self.session.query(SubjectTheory).filter(SubjectTheory.theory_id == subject_id).first()
+            self.session.delete(theory)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()
+            return False
+
     def change_task_file(self, user_id, subject_task_id, file_name: bool) -> bool:
         try:
             completed_task_status = self.get_completed_task_status(user_id, subject_task_id)
@@ -808,6 +819,26 @@ class StudentDatabase(BaseDataBase):
             return False
 
     # endregion
+
+    # region: Theory files
+    def add_subject_theory_file(self, theory_id, theory_data) -> bool:
+        # theory_id = subject_id
+        try:
+            theory = SubjectTheory(theory_id=theory_id, theory_data=theory_data)
+            self.session.add(theory)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()
+            return False
+
+    def get_subject_theory_file(self, subject_id) -> Type[Subjects] | None:
+        subject = self.session.get(Subjects, subject_id)
+        if subject.subject_theory:
+            return subject.subject_theory.theory_data
+        else:
+            return None
 
 
 class TeacherDatabase(BaseDataBase):

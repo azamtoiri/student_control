@@ -50,7 +50,8 @@ def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     subject_name = ''
     subject_description = ''
     subject_short_description = ''
-    file_name = ft.Text(value='Прикрепить файл')
+    _db_file_name = db.get_subject_theory_file(SUBJECT_ID)
+    file_name = ft.Text(value='Прикрепить файл') if _db_file_name is None else ft.Text(value=_db_file_name)
     if SUBJECT_ID is not None:
         subject = db.get_subject(SUBJECT_ID)
 
@@ -121,8 +122,25 @@ def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         if e.files is None: return
         # нужно изменить file_name на файл который выбирается
         try:
+            if page.web:
+                ...
+            else:
+                _file_name = db.get_subject_theory_file(SUBJECT_ID)
+                if _file_name is not None:
+                    if os.path.exists(f'assets/uploads/{_file_name}'):
+                        os.remove(f'assets/uploads/{_file_name}')
+                    db.delete_subject_theory_file(SUBJECT_ID)
+                for f in my_picker.result.files:
+                    dest = os.path.join(os.getcwd(), "assets/uploads")
+                    new_filename = f"file_{page.session.get('username')}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{f.name}.zip"
+                    new_filepath = os.path.join(dest, new_filename)
+                    compress_file_to_zip(f.path, new_filepath)
+
+                    # shutil.copy2(f.path, os.path.join(os.getcwd(), "assets/uploads"))
+                    db.add_subject_theory_file(SUBJECT_ID, new_filename)
+                    file_name.value = f.name
+                    page.update()
             display_success_banner(page, 'Успешно загружено', ft.icons.SUNNY, duration=500)
-            file_name.value = e.files[0].name
             e.page.update()
         except Exception as ex:
             print(ex)
@@ -229,7 +247,11 @@ def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         ft.icons.ADD,
         bgcolor=ft.colors.ON_INVERSE_SURFACE,
         icon_color=ft.colors.SURFACE_TINT,
-        on_click=lambda _: my_picker.pick_files()
+        on_click=lambda _: my_picker.pick_files(
+            file_type=ft.FilePickerFileType.CUSTOM,
+            allowed_extensions=['zip', 'txt', 'pdf', 'docx'],
+            dialog_title='Выберите файл для предмета'
+        )
     )
 
     user_info_content = ft.ResponsiveRow(spacing=5, alignment=ft.MainAxisAlignment.CENTER, controls=[

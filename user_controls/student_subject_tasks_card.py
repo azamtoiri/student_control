@@ -1,6 +1,7 @@
 # вспомогательный элемент для task_view, отображает каждое задание отдельно и для прикрепления файлов
 
 import os.path
+import shutil
 from datetime import datetime
 
 import flet as ft
@@ -115,7 +116,10 @@ class SubjectTile(ft.UserControl):
 
 
 class StudentSubjectTasksCard(ft.UserControl):
-    def __init__(self, user_id, subject_name, subject_id, page):
+    def __init__(
+            self, user_id, subject_name, subject_id, page, file_picker: ft.FilePicker,
+            theory_url
+    ):
         super().__init__()
         self.page = page
 
@@ -123,11 +127,20 @@ class StudentSubjectTasksCard(ft.UserControl):
         self.db = StudentDatabase()
         self.subject_name = subject_name
         self.subject_id = subject_id
+        self.file_picker = file_picker
+        self.task_file_url = theory_url
 
         self.task_icon = ft.Icon(ft.icons.TASK_OUTLINED, color=ft.colors.SURFACE_TINT)
         self.subject_tasks = self.get_subject_tasks()
+        self.file_picker.on_result = self.save_file_result
 
     def build(self):
+        self.theory_button = ft.ElevatedButton(
+            'Теория',
+            on_click=lambda e: self.save_file_click(e),
+            icon=ft.icons.DOWNLOAD
+        )
+
         return ft.Card(
             content=ft.Container(
                 padding=ft.padding.symmetric(vertical=10),
@@ -140,9 +153,7 @@ class StudentSubjectTasksCard(ft.UserControl):
                                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                                 controls=[
                                     ft.Text(self.subject_name),
-                                    ft.ElevatedButton(
-                                        'Теория', on_click=lambda e: self.theory_button_click(e)
-                                    )
+                                    self.theory_button,
                                 ]
                             ),
                         ),
@@ -155,10 +166,6 @@ class StudentSubjectTasksCard(ft.UserControl):
             )
         )
 
-    def theory_button_click(self, e: ft.ControlEvent) -> None:
-        e.page.route = f'{StudentRoutes.SIMPLE_SUBJECT_THEORY_URL}/{self.subject_id}'
-        e.page.update()
-
     def get_subject_tasks(self) -> list:
         res = []
         count = 1
@@ -170,3 +177,19 @@ class StudentSubjectTasksCard(ft.UserControl):
             res.append(task_)
             count += 1
         return res
+
+    def save_file_result(self, e: ft.FilePickerResultEvent):
+        if e.path:
+            # Копирование файла
+            shutil.copy2(f'assets/uploads/{self.task_file_url}', e.path)
+
+    def save_file_click(self, e):
+        if self.task_file_url is None:
+            display_success_banner(self.page, 'Пока теории нет', ft.icons.ERROR)
+            return
+        else:
+            self.file_picker.save_file(
+                dialog_title='Скачать теорию', file_type=ft.FilePickerFileType.CUSTOM,
+                allowed_extensions=['.pdf', '.docx', '.doc', '.txt'],
+                file_name=self.task_file_url
+            )
