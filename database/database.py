@@ -927,6 +927,17 @@ class TeacherDatabase(BaseDataBase):
     def get_teacher_subjects(self, user_id) -> list[Type[Subjects]]:
         return self.session.query(Subjects).filter(Subjects.user_id == user_id).all()
 
+    def get_teacher_information(self, user_id) -> Type[TeacherInformation]:
+        try:
+            information = self.session.query(TeacherInformation).filter(TeacherInformation.user_id == user_id).first()
+
+            if not information:
+                raise DontHaveGrades
+            return information
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()
+
 
 class TheoryDatabase(BaseDataBase):
     def get_theory(self, subject_id) -> Type[SubjectTheory]:
