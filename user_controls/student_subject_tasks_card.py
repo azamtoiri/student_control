@@ -9,7 +9,6 @@ from flet_core.file_picker import FilePickerFile
 
 from database.database import StudentDatabase
 from utils.banners import display_success_banner
-from utils.routes_url import StudentRoutes
 from utils.zip_file import compress_file_to_zip
 
 
@@ -179,7 +178,7 @@ class StudentSubjectTasksCard(ft.UserControl):
         return res
 
     def save_file_result(self, e: ft.FilePickerResultEvent):
-        if e.path:
+        if e.path and self.task_file_url is not None:
             # Копирование файла
             shutil.copy2(f'assets/uploads/{self.task_file_url}', e.path)
 
@@ -190,6 +189,6 @@ class StudentSubjectTasksCard(ft.UserControl):
         else:
             self.file_picker.save_file(
                 dialog_title='Скачать теорию', file_type=ft.FilePickerFileType.CUSTOM,
-                allowed_extensions=['.pdf', '.docx', '.doc', '.txt'],
+                allowed_extensions=['pdf', 'docx', 'doc', 'txt'],
                 file_name=self.task_file_url
             )

@@ -1,4 +1,3 @@
-# TODO: add with uid to id column on all functions
 from typing import Type, Optional, List
 
 from sqlalchemy import create_engine, asc, func

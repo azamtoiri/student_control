@@ -4,7 +4,6 @@ from pathlib import Path
 
 import flet as ft
 import flet.fastapi as flet_fastapi
-import uvicorn
 from flet.fastapi import FletUpload
 from flet.fastapi.flet_fastapi import Request
 
@@ -175,8 +174,9 @@ app = flet_fastapi.app(main, assets_dir=assets_abs_path, upload_dir=uploads_abs_
 
 @app.put("/upload")
 async def flet_uploads(request: Request):
-    await FletUpload("/Users/feodor/Downloads/123").handle(request)
+    await FletUpload(f"{DOWNLOAD_PATH}").handle(request)
 
 
 if __name__ == '__main__':
-    uvicorn.run(app=app)
+    # uvicorn.run(app=app)
+    ft.app(target=main, upload_dir='assets/uploads', assets_dir='assets')
