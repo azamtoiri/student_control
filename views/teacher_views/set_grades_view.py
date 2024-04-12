@@ -9,7 +9,7 @@ from utils.routes_url import TeacherRoutes
 db = TeacherDatabase()
 
 
-def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     if len(page.views) > 2:
         page.views.pop()
 

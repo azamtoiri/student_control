@@ -9,7 +9,7 @@ from utils.routes_url import StudentRoutes
 theory_db = TheoryDatabase()
 
 
-def SubjectTheoryView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def SubjectTheoryView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     SUBJECT_THEORY_ID = params.get('id')
     # data = theory_db.database.get_theory(SUBJECT_THEORY_ID)
     data = theory_db.get_theory(SUBJECT_THEORY_ID)

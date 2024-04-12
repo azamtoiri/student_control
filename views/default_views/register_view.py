@@ -16,7 +16,7 @@ from utils.routes_url import BaseRoutes
 user_db = LazyDatabase(UserDatabase)
 
 
-def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     page.session.clear()
 
     # region: Functions

@@ -28,13 +28,13 @@ from views.teacher_views.set_grade_detail_view import SetGradeDetailView
 
 all_routes = [
     # region: base views
-    path(BaseRoutes.INDEX_URL, clear=True, view=IndexView),
-    path(BaseRoutes.LOGIN_URL, clear=True, view=LoginView),
-    path(BaseRoutes.REGISTER_URL, clear=True, view=RegisterView),
+    path(BaseRoutes.INDEX_URL, clear=True, view=IndexView),  # index VIEW
+    path(BaseRoutes.LOGIN_URL, clear=True, view=LoginView),  # login VIEW
+    path(BaseRoutes.REGISTER_URL, clear=True, view=RegisterView),  # register View
     # endregion
 
     # region: student views
-    path(url=StudentRoutes.MAIN_URL, clear=True, view=MainView, middleware=MiddleWareCheckAuthUser),
+    path(url=StudentRoutes.MAIN_URL, clear=True, view=MainView, middleware=MiddleWareCheckAuthUser),  # STUDENT MAIN
     path(url=StudentRoutes.HOME_URL, clear=False, view=HomeView, middleware=MiddleWareCheckAuthUser),
     path(url=StudentRoutes.SUBJECTS_URL, clear=False, view=SubjectsView, middleware=MiddleWareCheckAuthUser),
     path(url=StudentRoutes.SUBJECT_URL, clear=False, view=SubjectView, middleware=MiddleWareCheckAuthUser),
@@ -53,7 +53,8 @@ all_routes = [
     path(url=TeacherRoutes.TASKS_URL, clear=False, view=MyTasksView, middleware=MiddleWareCheckIsStaff),
     path(url=TeacherRoutes.GRADES_URL, clear=False, view=SetGradesView, middleware=MiddleWareCheckIsStaff),
     path(url=TeacherRoutes.SUBJECT_ADD_URL, clear=False, view=MySubjectView, middleware=MiddleWareCheckIsStaff),
-    path(url=TeacherRoutes.SET_GRADE_DETAIL_URL, clear=False, view=SetGradeDetailView, middleware=MiddleWareCheckIsStaff),
+    path(url=TeacherRoutes.SET_GRADE_DETAIL_URL, clear=False, view=SetGradeDetailView,
+         middleware=MiddleWareCheckIsStaff),
 
     # endregion
 

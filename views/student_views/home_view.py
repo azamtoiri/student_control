@@ -18,7 +18,7 @@ user_db = LazyDatabase(UserDatabase)
 task_db = LazyDatabase(TaskDatabase)
 
 
-def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     if len(page.views) > 1:
         page.views.pop()
     # Constants

@@ -39,7 +39,7 @@ class Containers:
 dlg = ft.AlertDialog(modal=True, adaptive=True, actions_alignment=ft.MainAxisAlignment.CENTER)
 
 
-def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     #
     # Button
     #

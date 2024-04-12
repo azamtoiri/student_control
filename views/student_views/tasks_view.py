@@ -8,7 +8,7 @@ from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
 
 
-def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     USER_ID = page.session.get('user_id')
     USERNAME = page.session.get('username')
 

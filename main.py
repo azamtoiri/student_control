@@ -1,6 +1,12 @@
 import asyncio
+import os
+from pathlib import Path
 
 import flet as ft
+import flet.fastapi as flet_fastapi
+import uvicorn
+from flet.fastapi import FletUpload
+from flet.fastapi.flet_fastapi import Request
 
 from constants import LOGO_PATH
 from database.database import UserDatabase
@@ -97,19 +103,19 @@ class Body(ft.Container):
         )
 
     @staticmethod
-    def register_click(e: ft.ControlEvent) -> None:
+    async def register_click(e: ft.ControlEvent) -> None:
         e.page.route = '/register'
-        cancel_running_tasks()  # Отменить все выполняющиеся задачи
+        await cancel_running_tasks()  # Отменить все выполняющиеся задачи
         e.page.update()
 
     @staticmethod
-    def login_click(e: ft.ControlEvent) -> None:
+    async def login_click(e: ft.ControlEvent) -> None:
         e.page.route = '/login'
-        cancel_running_tasks()  # Отменить все выполняющиеся задачи
+        await cancel_running_tasks()  # Отменить все выполняющиеся задачи
         e.page.update()
 
 
-def cancel_running_tasks():
+async def cancel_running_tasks():
     global running_tasks
     for task in running_tasks:
         task.cancel()
@@ -120,7 +126,7 @@ async def main(page: ft.Page):
     # page.theme_mode = ft.ThemeMode.LIGHT
     page.theme_mode = ft.ThemeMode.DARK
 
-    route = Routing(page=page, app_routes=all_routes, not_found_view=ViewNotFound, appbar=STAppBar(page))
+    route = Routing(page=page, app_routes=all_routes, not_found_view=ViewNotFound, appbar=STAppBar(page), async_is=True)
     page.on_route_change = route.change_route
 
     if page.theme_mode == ft.ThemeMode.LIGHT:
@@ -159,4 +165,18 @@ async def main(page: ft.Page):
     global running_tasks  # Глобальный список для хранения выполняющихся задач
     running_tasks = [asyncio.create_task(item.animate_thing()) for item in background.controls]
 
-ft.app(target=main, upload_dir="assets/uploads", assets_dir="assets")
+
+assets_abs_path = os.path.abspath('assets')
+uploads_abs_path = os.path.abspath('assets/uploads')
+DOWNLOAD_PATH = str(Path.home())
+
+app = flet_fastapi.app(main, assets_dir=assets_abs_path, upload_dir=uploads_abs_path)
+
+
+@app.put("/upload")
+async def flet_uploads(request: Request):
+    await FletUpload("/Users/feodor/Downloads/123").handle(request)
+
+
+if __name__ == '__main__':
+    uvicorn.run(app=app)

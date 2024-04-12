@@ -36,7 +36,7 @@ class TeacherContainers:
         )
 
 
-def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def TeacherMainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     #
     # Button
     #

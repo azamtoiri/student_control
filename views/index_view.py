@@ -8,7 +8,7 @@ from user_controls.bg_animation import Thing
 from utils.routes_url import BaseRoutes
 
 
-def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def IndexView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     page.session.clear()
     logo_image = ft.Image(src=LOGO_PATH)
     logo_image.width = 100

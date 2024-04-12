@@ -13,7 +13,7 @@ from utils.lazy_db import LazyDatabase
 user_db = LazyDatabase(UserDatabase)
 
 
-def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     page.session.clear()
 
     def display_login_form_error(field: str, message: str) -> None:

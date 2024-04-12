@@ -8,7 +8,7 @@ from utils.banners import display_success_banner
 from utils.routes_url import TeacherRoutes
 
 
-def SetGradeDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def SetGradeDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     """Get subject ID and show all grades of student of this subject"""
     SUBJECT_ID = params.get('subject_id')
     STUDENT_ID = params.get('student_id')

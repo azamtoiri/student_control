@@ -2,7 +2,7 @@ import flet as ft
 from flet_route import Params, Basket
 
 
-def MiddleWareCheckAuthUser(page: ft.Page, params: Params, basket: Basket) -> None:
+async def MiddleWareCheckAuthUser(page: ft.Page, params: Params, basket: Basket) -> None:
     if page.session.get('is_auth') is not True:
         page.route = '/not-registered'
 
@@ -12,7 +12,7 @@ def MiddleWareCheckAuthUser(page: ft.Page, params: Params, basket: Basket) -> No
             page.route = '/not-registered'
 
 
-def MiddleWareCheckIsStaff(page: ft.Page, params: Params, basket: Basket) -> None:
+async def MiddleWareCheckIsStaff(page: ft.Page, params: Params, basket: Basket) -> None:
     if page.session.get('is_staff') is None:
         page.route = '/not-teacher'
     if page.session.get('is_staff') is not True:

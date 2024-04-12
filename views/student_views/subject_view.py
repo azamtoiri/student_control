@@ -12,7 +12,7 @@ sub_db = LazyDatabase(StudentDatabase)
 dlg = ft.AlertDialog(adaptive=True)
 
 
-def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # course models
     course = sub_db.database.get_course_by_id(params.get('id'))
 

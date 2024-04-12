@@ -9,7 +9,7 @@ from utils.routes_url import TeacherRoutes
 db = TeacherDatabase()
 
 
-def MyTasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def MyTasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # Constants
     USER_ID = page.session.get('user_id')
     USERNAME = page.session.get('username')

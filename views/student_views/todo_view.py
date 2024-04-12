@@ -197,7 +197,7 @@ class TodoApp(ft.UserControl):
         super().update()
 
 
-def TodoView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def TodoView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     username = page.session.get('username')
     user_id = page.session.get('user_id')
     app = TodoApp(user_id)

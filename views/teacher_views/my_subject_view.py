@@ -20,7 +20,7 @@ from utils.zip_file import compress_file_to_zip
 db = StudentDatabase()
 
 
-def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # constants
     USER_ID = page.session.get('user_id')
     USERNAME = page.session.get('username')

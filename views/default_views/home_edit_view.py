@@ -16,10 +16,8 @@ from utils.routes_url import StudentRoutes, TeacherRoutes, BaseRoutes
 
 user_db = LazyDatabase(UserDatabase)
 
-user_db2 = UserDatabase()
 
-
-def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # constants
     USER_ID = page.session.get('user_id')
     USERNAME = page.session.get('username')

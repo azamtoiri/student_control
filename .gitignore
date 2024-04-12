@@ -12,6 +12,7 @@ tailwindcss/
 *.jpeg
 *.gif
 *.zip
+poetry.lock
 __pycache__/
 local_settings.py
 db.sqlite3

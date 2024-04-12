@@ -9,7 +9,7 @@ from utils.routes_url import TeacherRoutes
 st_db = LazyDatabase(StudentDatabase)
 
 
-def MySubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
+async def MySubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # delete the last view duplicated view
     USER_ID = page.session.get('user_id')
 
