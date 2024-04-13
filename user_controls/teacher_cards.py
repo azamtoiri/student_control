@@ -69,15 +69,16 @@ def create_student_task_card(
 
     save_file_dialog.on_result = save_file_result
 
+    def focus(e: ft.ControlEvent):
+        set_grade_dlg.dlg.content.error_text = None
+        set_grade_dlg.update()
+        e.page.update()
+
     set_grade_dlg = ModalAlertDialog(
         title=ft.Text('Поставить оценку'),
-        content=ft.Column(
-            controls=[
-                ft.TextField(
-                    hint_text='Оценка', input_filter=ft.NumbersOnlyInputFilter(),
-                    on_submit=lambda e: yes_click(e), expand=True, height=100
-                ),
-            ], height=80, scroll=ft.ScrollMode.AUTO, adaptive=True
+        content=ft.TextField(
+            hint_text='Оценка', input_filter=ft.NumbersOnlyInputFilter(),
+            on_submit=lambda e: yes_click(e), on_focus=lambda e: focus(e)
         ),
         yes_click=lambda e: yes_click(e)
     )
@@ -89,12 +90,12 @@ def create_student_task_card(
         set_grade_dlg.update()
 
     def yes_click(e: ft.ControlEvent) -> None:
-        set_grade_vale = int(set_grade_dlg.dlg.content.controls[0].value)
+        set_grade_vale = int(set_grade_dlg.dlg.content.value)
         try:
             if set_grade_vale > 100 or set_grade_vale < 0:
-                raise ValueError('Оценка должна быть не больше 100 и больше 0')
+                raise ValueError('Не больше 100 и больше 0')
         except ValueError as err:
-            set_grade_dlg.dlg.content.controls[0].error_text = str(err)
+            set_grade_dlg.dlg.content.error_text = str(err)
             set_grade_dlg.update()
             return
 

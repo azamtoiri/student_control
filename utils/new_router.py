@@ -216,7 +216,7 @@ class Routing:
                     )
                 # if chnge route using main midellware recall change route
                 if self.page.route != route_str(route=route):
-                    await self.page.go_async(self.page.route)
+                    self.page.go(self.page.route)
                     return
 
                 if url[3] != None:
@@ -228,7 +228,7 @@ class Routing:
 
                 # if chnge route using url midellware recall change route
                 if self.page.route != route_str(route=route):
-                    await self.page.go_async(self.page.route)
+                    self.page.go(self.page.route)
                     return
 
                 if url[1]:
@@ -266,7 +266,7 @@ class Routing:
                     basket=self.__basket
                 )
             )
-        await self.page.update_async()
+        self.page.update()
 
     async def view_pop_async(self, view):
         if len(self.page.views) == 1:
