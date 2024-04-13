@@ -37,3 +37,21 @@ class UserAlreadySubscribed(Exception):
 
 class UserDontHaveGrade(Exception):
     ...
+
+
+class PasswordLengthIsWeak(Exception):
+    def __init__(self, field: str):
+        self.field = field
+        super().__init__(f'Пароль должен иметь больше 8 символов')
+
+
+class PasswordCharacterIsWeak(Exception):
+    def __init__(self, field: str):
+        self.field = field
+        super().__init__(f'Пароль должен один специальный символ')
+
+
+class WrongEmail(Exception):
+    def __init__(self, field: str):
+        self.field = field
+        super().__init__(f'Не корректный формат email адреса')
