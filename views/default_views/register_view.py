@@ -8,10 +8,19 @@ from database.database import UserDatabase
 from user_controls.banners import SuccessBanner
 from user_controls.custom_input_field import CustomInputField
 from user_controls.input_filter import TextOnlyInputFilterRu
-from utils.exceptions import RequiredField, PasswordDontMatching, AlreadyRegistered, NotRegistered
+from utils.exceptions import (
+    RequiredField,
+    PasswordDontMatching,
+    AlreadyRegistered,
+    NotRegistered,
+    PasswordLengthIsWeak,
+    PasswordCharacterIsWeak,
+    WrongEmail
+)
 from utils.jwt_hash import hash_
 from utils.lazy_db import LazyDatabase
 from utils.routes_url import BaseRoutes
+from utils.validators import PasswordStrengthChecker, EmailValidator
 
 user_db = LazyDatabase(UserDatabase)
 
@@ -85,7 +94,14 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
 
             password2 = str(password2_field.input_box_content.value).strip() if len(
                 password2_field.input_box_content.value) else None
+
             # endregion
+            if email is not None and username is not None:
+                email_validator = EmailValidator(email)
+                if not email_validator.validate():
+                    raise WrongEmail('email')
+            if password is not None:
+                password_validator(password)
 
             if password2 is None and username and password is None:
                 raise RequiredField('password')
@@ -93,6 +109,8 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
                 raise RequiredField('password2')
             elif password != password2:
                 raise PasswordDontMatching('password2')
+            elif email is None:
+                raise RequiredField("email")
             elif password and password2:
                 # hashing password
                 password = hash_(password2)
@@ -109,18 +127,20 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             hide_banner()
         except RequiredField as error:
             display_register_form_error(error.field, str(error))
-
         except NotRegistered as error:
             display_register_form_error('username', str(error))
-
         except AlreadyRegistered as error:
-            # display_warning_banner(str(error))
             display_register_form_error('username', str(error))
         except PasswordDontMatching as error:
             display_register_form_error(error.field, str(error))
+        except PasswordLengthIsWeak as error:
+            display_register_form_error(error.field, str(error))
+        except PasswordCharacterIsWeak as error:
+            display_register_form_error(error.field, str(error))
+        except WrongEmail as error:
+            display_register_form_error(error.field, str(error))
         except Exception as error:
             print(error)
-            # display_warning_banner(str(error))
 
     # endregion
 
@@ -161,7 +181,7 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     group_field = MixedCustomInputField(False, "Группа")  # Группа
     course_field = MixedCustomInputField(False, "Курс")  # Звание
     age_field = MixedCustomInputField(False, "Возраст")  # Возраст
-    email_field = MixedCustomInputField(False, "Email")  # Email
+    email_field = MixedCustomInputField(False, "Email *")  # Email
     username_field = MixedCustomInputField(False, "Имя пользователя - Логин *")  # Имя пользователя - Логин
     password_field = MixedCustomInputField(True, "Пароль *")  # Пароль
     password2_field = MixedCustomInputField(True, "Введите пароль еще раз *")  # Пароль
@@ -172,15 +192,31 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     middle_name_field.input_box_content.input_filter = TextOnlyInputFilterRu()
     course_field.input_box_content.input_filter = ft.NumbersOnlyInputFilter()
     age_field.input_box_content.input_filter = ft.NumbersOnlyInputFilter()
+
+    # endregion
+
+    # region: password_validator
+    def password_validator(password) -> None:
+        password_strength_check = PasswordStrengthChecker(password)
+
+        password_length = password_strength_check.length_check()
+        if password_length == 0:
+            raise PasswordLengthIsWeak("password")
+        password_character = password_strength_check.character_check()
+        if password_character == 0:
+            raise PasswordCharacterIsWeak("password")
+
     # endregion
 
     # region: Buttons
-    register_button = ft.ElevatedButton(adaptive=True)
-    register_button.text = 'Создать аккаунт'
-    register_button.width = 300
-    register_button.height = 45
-    register_button.icon = ft.icons.KEY
-    register_button.on_click = lambda e: register_click(e)
+    register_button = ft.ElevatedButton(
+        adaptive=True,
+        text='Создать аккаунт',
+        width=300,
+        height=45,
+        icon=ft.icons.KEY,
+        on_click=lambda e: register_click(e),
+    )
 
     login_button = ft.Container()
     login_button.alignment = ft.alignment.center
