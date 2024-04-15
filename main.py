@@ -4,8 +4,6 @@ from pathlib import Path
 
 import flet as ft
 import flet.fastapi as flet_fastapi
-from flet.fastapi import FletUpload
-from flet.fastapi.flet_fastapi import Request
 
 from constants import LOGO_PATH
 from database.database import UserDatabase
@@ -171,12 +169,5 @@ DOWNLOAD_PATH = str(Path.home())
 
 app = flet_fastapi.app(main, assets_dir=assets_abs_path, upload_dir=uploads_abs_path)
 
-
-@app.put("/upload")
-async def flet_uploads(request: Request):
-    await FletUpload(f"{DOWNLOAD_PATH}").handle(request)
-
-
 if __name__ == '__main__':
-    # uvicorn.run(app=app)
-    ft.app(target=main, upload_dir='assets/uploads', assets_dir='assets')
+    ft.app(target=main, upload_dir=uploads_abs_path, assets_dir=assets_abs_path)
