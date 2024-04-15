@@ -1,7 +1,9 @@
+import uuid
+
 import flet as ft
 from flet_route import Params, Basket
 
-from database.database import TaskDatabase, UserDatabase
+from database.database import TaskDatabase
 from database.models import Task as TaskDB
 from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
@@ -72,20 +74,20 @@ class Task(ft.UserControl):
         self.edit_view.visible = True
         self.update()
 
-    def save_clicked(self, e):
+    async def save_clicked(self, e):
         self.display_task.label = self.edit_name.value
-        self.db.database.updated_task(self.task_id, self.edit_name.value)
+        await self.db.database.updated_task(self.task_id, self.edit_name.value)
         self.display_view.visible = True
         self.edit_view.visible = False
         self.update()
 
-    def status_changed(self, e):
+    async def status_changed(self, e):
         self.completed = self.display_task.value
-        self.db.database.set_status(task_id=self.task_id, status=self.display_task.value)
+        await self.db.database.set_status(task_id=self.task_id, status=self.display_task.value)
         self.task_status_change(self)
 
-    def delete_clicked(self, e):
-        self.task_delete(self)
+    async def delete_clicked(self, e):
+        await self.task_delete(self)
 
 
 class TodoApp(ft.UserControl):
@@ -94,7 +96,6 @@ class TodoApp(ft.UserControl):
         self.user_id = user_id
         self.db = LazyDatabase(TaskDatabase)
         self.tasks = ft.Column()
-        self.load_tasks()
 
     def build(self):
         self.new_task = ft.TextField(
@@ -147,11 +148,10 @@ class TodoApp(ft.UserControl):
             ],
         )
 
-    def add_clicked(self, e):
+    async def add_clicked(self, e):
         if self.new_task.value:
-            task_instance = TaskDB(task_name=self.new_task.value, completed=False, user_id=self.user_id)
-            added_task = self.db.database.add_task(task_instance)
-            task = Task(self.new_task.value, self.task_status_change, self.task_delete, added_task.task_id)
+            added_task = await self.db.database.add_task(task_name=self.new_task.value, completed=False, user_id=self.user_id)
+            task = Task(self.new_task.value, self.task_status_change, self.task_delete, task_id=added_task.task_id)
 
             self.tasks.controls.append(task)
             self.new_task.value = ""
@@ -161,21 +161,21 @@ class TodoApp(ft.UserControl):
     def task_status_change(self, task):
         self.update()
 
-    def task_delete(self, task):
+    async def task_delete(self, task):
         self.tasks.controls.remove(task)
-        self.db.database.delete_task(task.controls[0].controls[0].controls[0].value)
+        await self.db.database.delete_task(task.controls[0].controls[0].controls[0].value)
         self.update()
 
     def tabs_changed(self, e):
         self.update()
 
-    def clear_clicked(self, e):
+    async def clear_clicked(self, e):
         for task in self.tasks.controls[:]:
             if task.completed:
-                self.task_delete(task)
+                await self.task_delete(task)
 
-    def load_tasks(self):
-        tasks = self.db.database.get_all_user_tasks(user_id=self.user_id)
+    async def load_tasks(self):
+        tasks = await self.db.database.get_all_user_tasks(user_id=self.user_id)
         for task in tasks:
             _task = Task(task.task_name, self.task_status_change, self.task_delete, task.task_id,
                          completed=task.completed)
@@ -201,11 +201,14 @@ async def TodoView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     username = page.session.get('username')
     user_id = page.session.get('user_id')
     app = TodoApp(user_id)
+    # await app.load_tasks()
     return ft.View(
         # vertical_alignment=ft.MainAxisAlignment.CENTER,
         bgcolor=ft.colors.SURFACE_VARIANT,
         scroll=ft.ScrollMode.AUTO,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         route=StudentRoutes.TODO_URL,
-        controls=[app]
+        controls=[
+            app
+        ]
     )

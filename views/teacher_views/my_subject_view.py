@@ -50,7 +50,7 @@ async def MySubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
     subject_name = ''
     subject_description = ''
     subject_short_description = ''
-    _db_file_name = db.get_subject_theory_file(SUBJECT_ID)
+    _db_file_name = db.get_subject_theory_file(SUBJECT_ID) if db.get_subject_theory_file(SUBJECT_ID) else None
     file_name = ft.Text(value='Прикрепить файл') if _db_file_name is None else ft.Text(value=_db_file_name)
     if SUBJECT_ID is not None:
         subject = db.get_subject(SUBJECT_ID)

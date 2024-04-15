@@ -77,7 +77,7 @@ async def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         page.go(StudentRoutes.TODO_URL, skip_route_change_event=True)
         # page.views.reverse()
 
-    todo_count = task_db.database.get_count_of_tasks(USER_ID)
+    todo_count = await task_db.database.get_count_of_tasks(USER_ID)
     user_stat_info_content = ft.Column(
         [
             TodoCard(

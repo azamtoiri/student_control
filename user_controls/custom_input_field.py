@@ -42,7 +42,7 @@ class CustomInputField(UserControl):
         self.input_box_content.border_width = 1
         self.input_box_content.cursor_width = 0.5
         self.input_box_content.border_radius = 8
-        self.input_box_content.color = colors.SURFACE_TINT
+        self.input_box_content.color = colors.BLACK
         self.input_box_content.cursor_color = colors.BLACK
         self.input_box_content.text_size = 14
         self.input_box_content.border_color = colors.SURFACE_VARIANT

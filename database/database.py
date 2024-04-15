@@ -1,7 +1,7 @@
-# TODO: add with uid to id column on all functions
 from typing import Type, Optional, List
 
-from sqlalchemy import create_engine, asc, func
+from sqlalchemy import create_engine, asc, func, select
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, aliased
 
 from constants import Connection
@@ -15,6 +15,27 @@ from utils.exceptions import (
     UserDontHaveGrade
 )
 from utils.jwt_hash import verify, hash_
+
+async_engine = create_async_engine('postgresql+asyncpg://postgres:postgres@134.122.101.192:5432/postgres', echo=True,
+                                   future=True)
+async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False, future=True)
+
+
+class AsyncBaseDatabase:
+    def __init__(self):
+        self.engine = async_engine
+        self.Session = async_session
+        self.base = Base
+        self.session = None
+
+    async def create_session(self):
+        async with self.Session() as session:
+            self.session = session
+            async with session.begin():
+                yield session
+
+    async def close(self):
+        await self.Session.close()
 
 
 class BaseDataBase:
@@ -834,11 +855,15 @@ class StudentDatabase(BaseDataBase):
             return False
 
     def get_subject_theory_file(self, subject_id) -> Type[Subjects] | None:
-        subject = self.session.get(Subjects, subject_id)
-        if subject.subject_theory:
-            return subject.subject_theory.theory_data
-        else:
-            return None
+        try:
+            subject = self.session.get(Subjects, subject_id)
+            if subject:
+                if subject.subject_theory:
+                    return subject.subject_theory.theory_data
+            else:
+                return None
+        except Exception as ex:
+            print(ex)
 
 
 class TeacherDatabase(BaseDataBase):
@@ -938,61 +963,67 @@ class TheoryDatabase(BaseDataBase):
         return self.session.get(SubjectTheory, subject_id)
 
 
-class TaskDatabase(BaseDataBase):
-    def get_all_user_tasks(self, user_id) -> list[Type[Task]]:
-        return self.session.query(Task).filter(Task.user_id == user_id).all()
+class TaskDatabase(AsyncBaseDatabase):
+    async def get_all_user_tasks(self, user_id) -> list[Type[Task]]:
+        async for session in self.create_session():
+            query = await session.execute(select(Task).filter(Task.user_id == user_id))
+            return await query.scalars().all()
 
-    def add_task(self, task: Task) -> Task | bool:
-        try:
-            self.session.add(task)
-            self.session.commit()
+    async def add_task(self, task_name, completed: bool, user_id) -> Task | bool:
+        async for session in self.create_session():
+            try:
+                task = Task(
+                    task_name=task_name, completed=completed, user_id=user_id
+                )
+                await session.add(task)
+                await session.commit()
+                return task
+            except Exception as ex:
+                await session.rollback()
+                print(ex)
+                return task
 
-            return task
-        except Exception as ex:
-            self.session.rollback()
-            return False
+    async def get_task_by_id(self, _id) -> Type[Task]:
+        async for session in self.create_session():
+            query = await session.execute(select(Task).filter(Task.task_id == _id))
+            return await query.scalar()
 
-    def get_task_by_id(self, _id) -> Type[Task]:
-        return self.session.query(Task).filter(Task.task_id == _id).first()
+    async def delete_task(self, task_id) -> bool:
+        async for session in self.create_session():
+            task = await self.get_task_by_id(task_id)
+            await session.delete(task)
+            await session.commit()
+            return True
 
-    def delete_task(self, task_id) -> bool:
-        task = self.get_task_by_id(task_id)
-        self.session.delete(task)
-        self.session.commit()
-        return True
+    async def clear_all_tasks(self, user_id) -> bool:
+        async for session in self.create_session():
+            tasks = await self.get_all_user_tasks(user_id)
+            for task in tasks:
+                await session.delete(task)
+            await session.commit()
+            return True
 
-    def clear_all_tasks(self, user_id) -> bool:
-        tasks = self.get_all_user_tasks(user_id)
-        for task in tasks:
-            self.delete_task(task)
-        return True
-
-    def set_status(self, task_id, status) -> bool:
-        try:
-            task = self.get_task_by_id(task_id)
+    async def set_status(self, task_id, status) -> bool:
+        async for session in self.create_session():
+            task = await self.get_task_by_id(task_id)
             task.completed = status
-            self.session.add(task)
-            self.session.commit()
+            await session.add(task)
+            await session.commit()
             return True
-        except Exception as ex:
-            print(ex)
-            self.session.rollback()
-            return False
 
-    def updated_task(self, task_id, new_task_value) -> bool:
-        try:
-            task = self.get_task_by_id(task_id)
+    async def updated_task(self, task_id, new_task_value) -> bool:
+        async for session in self.create_session():
+            task = await self.get_task_by_id(task_id)
             task.task_name = new_task_value
-            self.session.add(task)
-            self.session.commit()
+            await session.add(task)
+            await session.commit()
             return True
-        except Exception as ex:
-            print(ex)
-            self.session.rollback()
-            return False
 
-    def get_count_of_tasks(self, user_id):
-        return len(self.session.query(Task).filter(Task.user_id == user_id).where(Task.completed == False).all())
+    async def get_count_of_tasks(self, user_id) -> int:
+        async for session in self.create_session():
+            query = await session.execute(select(Task).filter(Task.user_id == user_id, Task.completed == False))
+            tasks = await query.scalars().all()
+            return len(tasks)
 
 
 if __name__ == '__main__':

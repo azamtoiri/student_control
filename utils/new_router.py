@@ -7,7 +7,7 @@ from flet_route.not_found_view import ViewNotFound, ViewNotFound_async
 from flet_route.params import Params
 from repath import match
 
-from utils import routes_names
+from utils.routes_names import routes_names
 
 
 def route_str(route):
@@ -129,7 +129,7 @@ class Routing:
                 if self.page.session.get('is_staff') is True:
                     self.appbar.who_text.value = 'Преподаватель'
 
-                self.appbar.route_text.value = routes_names.routes_names.get(route.route)
+                self.appbar.route_text.value = routes_names.get(route.route)
 
                 view.appbar = self.appbar
                 view.navigation_bar = self.navigation_bar
@@ -198,8 +198,14 @@ class Routing:
 
     async def change_route_async(self, route):
         notfound = True
+        show_app_bar = False
+        without_app_bar_routes = [
+            '', '/', '/login', '/register', '/teacher/main', '/student/main', '/not-registered', '/not-teacher'
+        ]
         for url in self.app_routes:
             path_match = match(url[0], self.page.route)
+            if path_match and route.route == '/' or route.route == '/login' or route.route == '/register':
+                self.page.session.clear()
             if path_match:
                 self.__params = Params(path_match.groupdict())
                 if self.__middleware != None:
@@ -210,7 +216,7 @@ class Routing:
                     )
                 # if chnge route using main midellware recall change route
                 if self.page.route != route_str(route=route):
-                    await self.page.go_async(self.page.route)
+                    self.page.go(self.page.route)
                     return
 
                 if url[3] != None:
@@ -222,7 +228,7 @@ class Routing:
 
                 # if chnge route using url midellware recall change route
                 if self.page.route != route_str(route=route):
-                    await self.page.go_async(self.page.route)
+                    self.page.go(self.page.route)
                     return
 
                 if url[1]:
@@ -232,7 +238,18 @@ class Routing:
                     params=self.__params,
                     basket=self.__basket
                 )
-                view.appbar = self.appbar
+                # changing the name of who is
+                self.appbar.who_text.value = 'Студент'
+                if self.page.session.get('is_staff') is True:
+                    self.appbar.who_text.value = 'Преподаватель'
+
+                self.appbar.route_text.value = routes_names.get(route.route)
+
+                # show app bar only on routes not in the list
+                if self.page.route in without_app_bar_routes:
+                    show_app_bar = True
+                if show_app_bar is not True:
+                    view.appbar = self.appbar
                 view.navigation_bar = self.navigation_bar
 
                 self.page.views.append(
@@ -249,9 +266,11 @@ class Routing:
                     basket=self.__basket
                 )
             )
-        await self.page.update_async()
+        self.page.update()
 
     async def view_pop_async(self, view):
+        if len(self.page.views) == 1:
+            return
         self.page.views.pop()
         top_view = self.page.views[-1]
-        await self.page.go_async(top_view.route)
+        self.page.go(top_view.route)
