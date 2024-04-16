@@ -282,8 +282,9 @@ class UserDatabase(AsyncBaseDatabase):
     async def get_teacher_info(self, user_id) -> Type[TeacherInformation]:
         """Get teacher information by teacher id"""
         async with self._async_session() as session:
-            result = await session.get(TeacherInformation, user_id)
-            return result
+            query = select(TeacherInformation).filter_by(user_id=user_id)
+            result = await session.execute(query)
+            return result.scalars().first()
 
     async def update_teacher_information(self, user_id, teacher_experience, teacher_description, is_done) -> bool:
         """Добавляем дополнительную информацию об учителе"""
@@ -295,7 +296,7 @@ class UserDatabase(AsyncBaseDatabase):
         async with self._async_session() as session:
             try:
                 teacher_info = await self.get_teacher_info(user_id)
-                teacher_info.teacher_experience = teacher_experience
+                teacher_info.teacher_experience = int(teacher_experience)
                 teacher_info.teacher_description = teacher_description
                 teacher_info.is_done = is_done
                 session.add(teacher_info)
@@ -900,6 +901,7 @@ class StudentDatabase(BaseDataBase):
 
 
 class TeacherDatabase(AsyncBaseDatabase):
+
     async def get_teacher_students(self, user_id) -> list[Type[Users]]:
         """Возвращает студентов препод. Которые записались на его курс только одних"""
         try:
@@ -930,7 +932,7 @@ class TeacherDatabase(AsyncBaseDatabase):
             return students
         except Exception as ex:
             print(ex)
-            session.rollback()
+            await session.rollback()
 
     @staticmethod
     def get_teacher_students_no_async(user_id) -> list[Type[Users]]:
@@ -939,7 +941,10 @@ class TeacherDatabase(AsyncBaseDatabase):
         # Выполняем запрос для получения студентов
         no_async_session = BaseDataBase()
         students = (
-            no_async_session.session.query(Users.user_id, Users.first_name, Users.last_name)
+            no_async_session.session.query(
+                Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
+                Subjects.subject_id
+            )
             .join(Enrollments, Users.user_id == Enrollments.user_id)
             .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
             .join(user1, Subjects.user_id == user1.user_id)
@@ -1009,42 +1014,51 @@ class TeacherDatabase(AsyncBaseDatabase):
         except Exception as ex:
             print(ex)
 
-    async def get_teacher_students_with_filter(self, user_id, last_name) -> list[Type[Users]]:
+    def get_teacher_students_with_filter(self, user_id, last_name) -> list[Type[Users]]:
+        user1 = aliased(Users)
+        not_async_db = BaseDataBase()
+
+        # Выполняем запрос для получения студентов
+        students = (
+            not_async_db.session.query(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
+                                       Subjects.subject_id)
+            .join(Enrollments, Users.user_id == Enrollments.user_id)
+            .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
+            .join(user1, Subjects.user_id == user1.user_id)
+            .filter(user1.is_staff == True)
+            .distinct()
+            .filter(user1.user_id == user_id, Users.last_name.ilike(f'%{last_name}%'))
+            .all()
+        )
+
+        if len(students) <= 0:
+            raise DontHaveGrades
+
+        return students
+
+    @staticmethod
+    def get_teacher_information(user_id) -> Type[TeacherInformation]:
+        not_async_db = BaseDataBase()
         try:
-            user1 = aliased(Users)
+            information = not_async_db.session.query(TeacherInformation).filter(
+                TeacherInformation.user_id == user_id).first()
 
-            # Выполняем запрос для получения студентов
-            stmt = (
-                select(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
-                       Subjects.subject_id)
-                .join(Enrollments, Users.user_id == Enrollments.user_id)
-                .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
-                .join(user1, Subjects.user_id == user1.user_id)
-                .filter(user1.is_staff == True)
-                .distinct()
-                .filter(user1.user_id == user_id, Users.last_name.ilike(f'%{last_name}%'))
-            )
-
-            async with self._async_session() as session:
-                result = await session.execute(stmt)
-                students = result.scalars().all()
-
-            if len(students) <= 0:
+            if not information:
                 raise DontHaveGrades
-
-            return students
+            return information
         except Exception as ex:
             print(ex)
+            not_async_db.session.rollback()
 
-    async def get_teacher_subjects(self, user_id) -> list[Type[Subjects]]:
-        try:
-            async with self._async_session() as session:
-                stmt = select(Subjects).filter(Subjects.user_id == user_id)
-                result = await session.execute(stmt)
-                subjects = result.scalars().all()
-            return subjects
-        except Exception as ex:
-            print(ex)
+    @staticmethod
+    async def get_teacher_subjects(user_id) -> list[Type[Subjects]]:
+        not_async_db = BaseDataBase()
+        return not_async_db.session.query(Subjects).filter(Subjects.user_id == user_id).all()
+        # async with self._async_session() as session:
+        #     stmt = select(Subjects).filter(Subjects.user_id == user_id)
+        #     result = await session.execute(stmt)
+        # subjects = result.scalars().all()
+        # return subjects
 
 
 class TheoryDatabase(AsyncBaseDatabase):

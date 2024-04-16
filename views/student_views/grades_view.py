@@ -52,6 +52,7 @@ async def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         status = filter_tab.tabs[filter_tab.selected_index].text
         grades.controls.clear()
         if status == 'Все':
+            grades.controls.clear()
             add_tasks_grade()
         elif status == 'Итоговые оценки':
             tasks_grades.controls.clear()

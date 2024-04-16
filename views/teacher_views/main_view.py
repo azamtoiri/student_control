@@ -9,7 +9,6 @@ from utils.routes_url import TeacherRoutes, BaseRoutes
 
 class TeacherContainers:
     def __init__(self):
-        # TODO: Refactor code
         # home container
         self.home_container = STContainer(
             ft.Text('Домашняя страница', color=ft.colors.WHITE, weight=ft.FontWeight.BOLD, size=15),

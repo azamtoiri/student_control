@@ -26,8 +26,8 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     teacher_description = ''
     IS_DONE = False
     if page.session.get("is_staff") is not None:
-        user_db.database.create_teacher_information(USER_ID)
-        teacher = user_db.database.get_teacher_info(USER_ID)
+        await user_db.database.create_teacher_information(USER_ID)
+        teacher = await user_db.database.get_teacher_info(USER_ID)
         teacher_experience = teacher.teacher_experience
         teacher_description = teacher.teacher_description
         IS_DONE = bool(teacher.is_done)
@@ -94,7 +94,7 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
 
         # page.go(main_page_url)
 
-    def save_changes_teacher(e: ft.ControlEvent) -> None:
+    async def save_changes_teacher(e: ft.ControlEvent) -> None:
         try:
             teacher_experience_ = str(teacher_experience_field.get_value).strip() if len(
                 teacher_experience_field.get_value) else None
@@ -103,7 +103,7 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
                 teacher_description_field.get_value) else None
             is_done = True
 
-            user_db.database.update_teacher_information(USER_ID, teacher_experience_, teacher_description_, is_done)
+            await user_db.database.update_teacher_information(USER_ID, teacher_experience_, teacher_description_, is_done)
 
             display_success_banner(page, 'Изменения сохранены', ft.icons.SUNNY)
         except RequiredField as error:
@@ -111,12 +111,12 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         except Exception as ex:
             print(ex)
 
-    def on_dialog_result(e: ft.FilePickerResultEvent) -> None:
+    async def on_dialog_result(e: ft.FilePickerResultEvent) -> None:
         if e.files is None: return
-        upload_files(e)
+        await upload_files(e)
         page.update()
 
-    def upload_files(e: ft.FilePickerUploadFile):
+    async def upload_files(e: ft.FilePickerUploadFile):
         uf = []
         if page.web:
             f: FilePickerFile
@@ -138,7 +138,7 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
 
                 # here will be updating data in db
                 _user_image_dir = f'{x.name}'
-                user_db.database.set_new_user_image(USER_ID, _user_image_dir)
+                await user_db.database.set_new_user_image(USER_ID, _user_image_dir)
                 user_avatar.change_user_image(f'/uploads/{x.name}')
                 user_avatar.update()
                 page.update()

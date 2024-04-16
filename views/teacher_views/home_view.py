@@ -4,14 +4,17 @@ import flet as ft
 from flet_route import Basket, Params
 
 from database.database import UserDatabase
-from user_controls.teacher_controls import TeacherStudentsCard
+from user_controls.teacher_controls import TeacherStudentsCard, TeacherSubjectsCard, TeacherExperience
 from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
 from utils.create_container_home_view import create_container
 from utils.lazy_db import LazyDatabase
-from utils.routes_url import TeacherRoutes
+from utils.routes_url import TeacherRoutes, BaseRoutes
 
 user_db = LazyDatabase(UserDatabase)
+
+
+# user_db = UserDatabase()
 
 
 async def TeacherHomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -21,7 +24,7 @@ async def TeacherHomeView(page: ft.Page, params: Params, basket: Basket) -> ft.V
     USERNAME = page.session.get('username')
     DEFAULT_USER_IMAGE = '/default_user_image.png'
 
-    user = user_db.database.get_user_by_id(USER_ID)
+    user = await user_db.database.get_user_by_id(USER_ID)
 
     # region: InputFields
     first_name_field = UserChangField(True, value=user.last_name, label='Фамилия')  # Фамилия
@@ -35,7 +38,7 @@ async def TeacherHomeView(page: ft.Page, params: Params, basket: Basket) -> ft.V
 
     # endregion
 
-    user_image_dir = user_db.database.get_user_image_url(USER_ID)
+    user_image_dir = await user_db.database.get_user_image_url(USER_ID)
     if (user_image_dir is None) or (os.path.exists(f'assets/uploads/{user_image_dir}') is False):
         user_avatar = UserImage(
             DEFAULT_USER_IMAGE,
@@ -59,16 +62,33 @@ async def TeacherHomeView(page: ft.Page, params: Params, basket: Basket) -> ft.V
                   controls=[group_field, age_field, email_field, username_text]),
     ])
 
-    teachers_students_content = ft.ResponsiveRow(
+    teachers_students_content = ft.Column(
         spacing=5, alignment=ft.MainAxisAlignment.CENTER,
         controls=[
             TeacherStudentsCard(USER_ID, lambda e: page.go(page.views[-2].route)),
         ]
     )
 
+    teachers_subjects_content = ft.Column(
+        spacing=5, alignment=ft.MainAxisAlignment.CENTER,
+        controls=[
+            TeacherSubjectsCard(USER_ID, lambda e: page.go(page.views[-2].route)),
+        ]
+    )
+
+    teachers_experience_and_description_content = ft.Column(
+        controls=[
+            TeacherExperience(USER_ID, lambda e: page.go(BaseRoutes.HOME_EDIT_URL))
+        ]
+    )
+
     user_data_container = create_container(user_info_content)
 
-    my_student_data_container = create_container(teachers_students_content)
+    my_student_data_container = create_container(teachers_students_content, col={"sm": 12, "md": 6})
+
+    my_subjects_data_container = create_container(teachers_subjects_content, col={"sm": 12, "md": 6})
+
+    experience_container = create_container(teachers_experience_and_description_content)
 
     return ft.View(
         scroll=ft.ScrollMode.AUTO,
@@ -77,6 +97,12 @@ async def TeacherHomeView(page: ft.Page, params: Params, basket: Basket) -> ft.V
         controls=[
             ft.Container(),
             user_data_container,
-            my_student_data_container,
+            experience_container,
+            ft.ResponsiveRow(
+                controls=[
+                    my_student_data_container,
+                    my_subjects_data_container,
+                ]
+            ),
         ]
     )
