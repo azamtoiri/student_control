@@ -2,7 +2,6 @@ import flet as ft
 from flet_route import Params, Basket
 
 from database.database import TheoryDatabase
-from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
 
 # theory_db: LazyDatabase = LazyDatabase(TheoryDatabase)
@@ -12,7 +11,7 @@ theory_db = TheoryDatabase()
 async def SubjectTheoryView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     SUBJECT_THEORY_ID = params.get('id')
     # data = theory_db.database.get_theory(SUBJECT_THEORY_ID)
-    data = theory_db.get_theory(SUBJECT_THEORY_ID)
+    data = await theory_db.get_theory(SUBJECT_THEORY_ID)
 
     content = ft.Column()
     if data is not None:

@@ -12,8 +12,12 @@ class TeacherStudentsCard(ft.UserControl):
         self.db = TeacherDatabase()
         self.count_of_grades_text = ft.Ref[ft.Text]()
 
+        self.all_grades_count = 0
+
+    async def get_all_grades_count(self):
         try:
-            self.all_grades_count = len(self.db.get_teacher_students(self.user_id))
+            q = await self.db.get_teacher_students(self.user_id)
+            self.all_grades_count = len(q)
         except DontHaveGrades as err:
             self.all_grades_count = 0
 
@@ -53,10 +57,13 @@ class TeacherStudentsCard(ft.UserControl):
         )
 
     def create_student_controls(self) -> list[ft.Control]:
+        async def tt():
+            await self.get_all_grades_count()
+
         all_subjects = []
         count = 1
         try:
-            for i in self.db.get_teacher_students(user_id=self.user_id):
+            for i in self.db.get_teacher_students_no_async(user_id=self.user_id):
                 all_subjects.append(
                     ft.ListTile(
                         title=ft.Text(f'{count}. {i[1]} {i[2]}'),

@@ -1,6 +1,6 @@
 from typing import Type, Optional, List
 
-from sqlalchemy import create_engine, asc, func, select
+from sqlalchemy import create_engine, asc, func, select, text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, aliased
 
@@ -16,26 +16,22 @@ from utils.exceptions import (
 )
 from utils.jwt_hash import verify, hash_
 
-async_engine = create_async_engine('postgresql+asyncpg://postgres:postgres@134.122.101.192:5432/postgres', echo=True,
-                                   future=True)
-async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False, future=True)
+async_engine = create_async_engine(
+    'postgresql+asyncpg://postgres:1234@localhost:5432/test', echo=True,
+    future=True
+)
 
 
 class AsyncBaseDatabase:
     def __init__(self):
         self.engine = async_engine
-        self.Session = async_session
-        self.base = Base
+        self._async_session = sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False, future=True)
         self.session = None
 
-    async def create_session(self):
-        async with self.Session() as session:
-            self.session = session
-            async with session.begin():
-                yield session
-
-    async def close(self):
-        await self.Session.close()
+    async def create_db(self):
+        async with self.engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        await self.engine.dispose()
 
 
 class BaseDataBase:
@@ -866,14 +862,48 @@ class StudentDatabase(BaseDataBase):
             print(ex)
 
 
-class TeacherDatabase(BaseDataBase):
-    def get_teacher_students(self, user_id) -> list[Type[Users]]:
+class TeacherDatabase(AsyncBaseDatabase):
+    async def get_teacher_students(self, user_id) -> list[Type[Users]]:
+        """Возвращает студентов препод. Которые записались на его курс только одних"""
+        try:
+            user1 = aliased(Users)
+
+            # Выполняем запрос для получения студентов
+            stmt = (
+                select(
+                    Users.user_id.label('student_id'),
+                    Users.first_name.label('student_first_name'),
+                    Users.last_name.label('student_last_name')
+                )
+                .join(Enrollments, Users.user_id == Enrollments.user_id)
+                .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
+                .join(user1, Subjects.user_id == user1.user_id)
+                .filter(user1.is_staff == True)
+                .filter(user1.user_id == user_id)
+                .distinct()
+            )
+            print("\n\n\n",stmt)
+
+            async with self._async_session() as session:
+                result = await session.execute(stmt)
+                students = result.fetchall()
+
+            if len(students) <= 0:
+                raise DontHaveGrades
+
+            return students
+        except Exception as ex:
+            print(ex)
+            session.rollback()
+
+    @staticmethod
+    def get_teacher_students_no_async(user_id) -> list[Type[Users]]:
         """Возвращает студентов препод. Которые записались на его курс только одних"""
         user1 = aliased(Users)
-
         # Выполняем запрос для получения студентов
+        no_async_session = BaseDataBase()
         students = (
-            self.session.query(Users.user_id, Users.first_name, Users.last_name)
+            no_async_session.session.query(Users.user_id, Users.first_name, Users.last_name)
             .join(Enrollments, Users.user_id == Enrollments.user_id)
             .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
             .join(user1, Subjects.user_id == user1.user_id)
@@ -886,117 +916,148 @@ class TeacherDatabase(BaseDataBase):
             raise DontHaveGrades
         return students
 
-    def get_teacher_students_with_subjects(self, user_id) -> list[Type[Users]]:
-        """Возвращает студентов препод. Которые записались на его курс и имя курса"""
-        user1 = aliased(Users)
+    async def get_teacher_students_with_subjects(self, user_id) -> list[Type[Users]]:
+        try:
+            user1 = aliased(Users)
 
-        # Выполняем запрос для получения студентов
-        students = (
-            self.session.query(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
-                               Subjects.subject_id)
-            .join(Enrollments, Users.user_id == Enrollments.user_id)
-            .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
-            .join(user1, Subjects.user_id == user1.user_id)
-            .filter(user1.is_staff == True)
-            .distinct()
-            .filter(user1.user_id == user_id)
-            .all()
-        )
+            stmt = (
+                select(
+                    Users.user_id.label('student_id'),
+                    Users.first_name.label('student_first_name'),
+                    Users.last_name.label('student_last_name'),
+                    Subjects.subject_name,
+                    Subjects.subject_id
+                )
+                .join(Enrollments, Users.user_id == Enrollments.user_id)
+                .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
+                .join(user1, Subjects.user_id == user1.user_id)
+                .filter(user1.is_staff == True)
+                .filter(user1.user_id == user_id)
+            )
 
-        if len(students) <= 0:
-            raise DontHaveGrades
+            async with self._async_session() as session:
+                result = await session.execute(stmt)
+                students_with_subjects = result.fetchall()
 
-        return students
+            if len(students_with_subjects) <= 0:
+                raise DontHaveGrades
 
-    def get_teacher_students_subjects_with_filter(self, user_id, subject_name) -> list[Type[Users]]:
-        user1 = aliased(Users)
+            return students_with_subjects
+        except Exception as ex:
+            print(ex)
 
-        # Выполняем запрос для получения студентов
-        students = (
-            self.session.query(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
-                               Subjects.subject_id)
-            .join(Enrollments, Users.user_id == Enrollments.user_id)
-            .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
-            .join(user1, Subjects.user_id == user1.user_id)
-            .filter(user1.is_staff == True)
-            .distinct()
-            .filter(user1.user_id == user_id, Subjects.subject_name.ilike(f'%{subject_name}%'))
-            .all()
-        )
+    async def get_teacher_students_subjects_with_filter(self, user_id, subject_name) -> list[Type[Users]]:
+        try:
+            user1 = aliased(Users)
 
-        if len(students) <= 0:
-            raise DontHaveGrades
+            # Выполняем запрос для получения студентов
+            stmt = (
+                select(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
+                       Subjects.subject_id)
+                .join(Enrollments, Users.user_id == Enrollments.user_id)
+                .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
+                .join(user1, Subjects.user_id == user1.user_id)
+                .filter(user1.is_staff == True)
+                .distinct()
+                .filter(user1.user_id == user_id, Subjects.subject_name.ilike(f'%{subject_name}%'))
+            )
 
-        return students
+            async with self._async_session() as session:
+                result = await session.execute(stmt)
+                students = result.scalars().all()
 
-    def get_teacher_students_with_filter(self, user_id, last_name) -> list[Type[Users]]:
-        user1 = aliased(Users)
+            if len(students) <= 0:
+                raise DontHaveGrades
 
-        # Выполняем запрос для получения студентов
-        students = (
-            self.session.query(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
-                               Subjects.subject_id)
-            .join(Enrollments, Users.user_id == Enrollments.user_id)
-            .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
-            .join(user1, Subjects.user_id == user1.user_id)
-            .filter(user1.is_staff == True)
-            .distinct()
-            .filter(user1.user_id == user_id, Users.last_name.ilike(f'%{last_name}%'))
-            .all()
-        )
+            return students
+        except Exception as ex:
+            print(ex)
 
-        if len(students) <= 0:
-            raise DontHaveGrades
+    async def get_teacher_students_with_filter(self, user_id, last_name) -> list[Type[Users]]:
+        try:
+            user1 = aliased(Users)
 
-        return students
+            # Выполняем запрос для получения студентов
+            stmt = (
+                select(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
+                       Subjects.subject_id)
+                .join(Enrollments, Users.user_id == Enrollments.user_id)
+                .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
+                .join(user1, Subjects.user_id == user1.user_id)
+                .filter(user1.is_staff == True)
+                .distinct()
+                .filter(user1.user_id == user_id, Users.last_name.ilike(f'%{last_name}%'))
+            )
 
-    def get_teacher_subjects(self, user_id) -> list[Type[Subjects]]:
-        return self.session.query(Subjects).filter(Subjects.user_id == user_id).all()
+            async with self._async_session() as session:
+                result = await session.execute(stmt)
+                students = result.scalars().all()
+
+            if len(students) <= 0:
+                raise DontHaveGrades
+
+            return students
+        except Exception as ex:
+            print(ex)
+
+    async def get_teacher_subjects(self, user_id) -> list[Type[Subjects]]:
+        try:
+            async with self._async_session() as session:
+                stmt = select(Subjects).filter(Subjects.user_id == user_id)
+                result = await session.execute(stmt)
+                subjects = result.scalars().all()
+            return subjects
+        except Exception as ex:
+            print(ex)
 
 
-class TheoryDatabase(BaseDataBase):
-    def get_theory(self, subject_id) -> Type[SubjectTheory]:
+class TheoryDatabase(AsyncBaseDatabase):
+    async def get_theory(self, subject_id) -> Type[SubjectTheory]:
         """
         Возвращает теорию по предмету
         subject_id = theory_id
         """
-        return self.session.get(SubjectTheory, subject_id)
+        async with self._async_session() as session:
+            return await self.session.get(SubjectTheory, subject_id)
 
 
 class TaskDatabase(AsyncBaseDatabase):
     async def get_all_user_tasks(self, user_id) -> list[Type[Task]]:
-        async for session in self.create_session():
-            query = await session.execute(select(Task).filter(Task.user_id == user_id))
-            return await query.scalars().all()
+        try:
+            async with self._async_session() as session:
+                query = await session.execute(select(Task).filter(Task.user_id == user_id))
+                return query.scalars().all()
+        except Exception as ex:
+            print(ex)
 
     async def add_task(self, task_name, completed: bool, user_id) -> Task | bool:
-        async for session in self.create_session():
+        async with self._async_session() as session:
             try:
                 task = Task(
                     task_name=task_name, completed=completed, user_id=user_id
                 )
-                await session.add(task)
+                session.add(task)
                 await session.commit()
                 return task
             except Exception as ex:
-                await session.rollback()
                 print(ex)
-                return task
+                await session.rollback()  # Откат изменений в случае ошибки
+                return False
 
     async def get_task_by_id(self, _id) -> Type[Task]:
-        async for session in self.create_session():
+        async with self._async_session() as session:
             query = await session.execute(select(Task).filter(Task.task_id == _id))
-            return await query.scalar()
+            return query.scalar()
 
     async def delete_task(self, task_id) -> bool:
-        async for session in self.create_session():
+        async with self._async_session() as session:
             task = await self.get_task_by_id(task_id)
             await session.delete(task)
             await session.commit()
             return True
 
     async def clear_all_tasks(self, user_id) -> bool:
-        async for session in self.create_session():
+        async with self._async_session() as session:
             tasks = await self.get_all_user_tasks(user_id)
             for task in tasks:
                 await session.delete(task)
@@ -1004,7 +1065,7 @@ class TaskDatabase(AsyncBaseDatabase):
             return True
 
     async def set_status(self, task_id, status) -> bool:
-        async for session in self.create_session():
+        async with self._async_session() as session:
             task = await self.get_task_by_id(task_id)
             task.completed = status
             await session.add(task)
@@ -1012,7 +1073,7 @@ class TaskDatabase(AsyncBaseDatabase):
             return True
 
     async def updated_task(self, task_id, new_task_value) -> bool:
-        async for session in self.create_session():
+        async with self._async_session() as session:
             task = await self.get_task_by_id(task_id)
             task.task_name = new_task_value
             await session.add(task)
@@ -1020,9 +1081,9 @@ class TaskDatabase(AsyncBaseDatabase):
             return True
 
     async def get_count_of_tasks(self, user_id) -> int:
-        async for session in self.create_session():
+        async with self._async_session() as session:
             query = await session.execute(select(Task).filter(Task.user_id == user_id, Task.completed == False))
-            tasks = await query.scalars().all()
+            tasks = query.scalars().all()
             return len(tasks)
 
 

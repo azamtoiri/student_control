@@ -1,15 +1,12 @@
-import uuid
+import asyncio
 
 import flet as ft
 from flet_route import Params, Basket
 
 from database.database import TaskDatabase
-from database.models import Task as TaskDB
 from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
 
-
-# TODO: bind to DB
 
 class Task(ft.UserControl):
     def __init__(self, task_name, task_status_change, task_delete, task_id, completed: bool = False):
@@ -150,7 +147,11 @@ class TodoApp(ft.UserControl):
 
     async def add_clicked(self, e):
         if self.new_task.value:
-            added_task = await self.db.database.add_task(task_name=self.new_task.value, completed=False, user_id=self.user_id)
+            added_task = await self.db.database.add_task(
+                task_name=self.new_task.value, completed=False,
+                user_id=self.user_id
+            )
+            print(added_task)
             task = Task(self.new_task.value, self.task_status_change, self.task_delete, task_id=added_task.task_id)
 
             self.tasks.controls.append(task)
@@ -201,7 +202,7 @@ async def TodoView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     username = page.session.get('username')
     user_id = page.session.get('user_id')
     app = TodoApp(user_id)
-    # await app.load_tasks()
+    await app.load_tasks()
     return ft.View(
         # vertical_alignment=ft.MainAxisAlignment.CENTER,
         bgcolor=ft.colors.SURFACE_VARIANT,

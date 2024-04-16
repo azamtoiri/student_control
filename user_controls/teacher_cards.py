@@ -13,7 +13,7 @@ def create_student_subject_card(
     raise NotImplemented
 
 
-def create_students_subject_card(
+async def create_students_subject_card(
         subject_title: str,
         student_fio: str,
         student_row: ft.ResponsiveRow,

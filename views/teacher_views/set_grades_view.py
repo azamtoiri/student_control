@@ -18,14 +18,16 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
     USERNAME = page.session.get('username')
 
     # region: Search
-    def search(e: ft.ControlEvent) -> None:
+    async def search(e: ft.ControlEvent) -> None:
         dont_have_students.visible = False
-        subjects_row.clean()
-        students_row.controls.clear()
+        await subjects_row.clean_async()
+        await students_row.controls.clean_async()
         search_value = str(search_field.value).strip()
         try:
-            for list_subject in db.get_teacher_students_with_filter(USER_ID, search_value):
-                create_students_subject_card(
+            list_subjects = await db.get_teacher_students_with_filter(USER_ID, search_value)
+            print('list: sub', list_subjects)
+            for list_subject in list_subjects:
+                await create_students_subject_card(
                     subject_title=list_subject[3],
                     student_fio=f'{list_subject[2]} {list_subject[1]}',
                     student_row=students_row,
@@ -33,13 +35,14 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
                 )
             e.page.update()
         except DontHaveGrades:
+            print(DontHaveGrades)
             dont_have_students.value = 'Ничего не найдено'
             dont_have_students.visible = True
             e.page.update()
 
     search_field = ft.TextField(
         hint_text="Найти студента",
-        on_submit=lambda e: search(e),
+        on_submit=search,
         border_radius=8,
         expand=True,
         tooltip='Имя студента'
@@ -48,7 +51,7 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
     search_button = ft.FloatingActionButton(
         icon=ft.icons.SEARCH,
         bgcolor=ft.colors.SURFACE_TINT,
-        on_click=lambda e: search(e),
+        on_click=search,
         tooltip='Поиск'
     )
 
@@ -60,7 +63,7 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
     )
 
     # region: Tab
-    def tabs_changed(e: ft.ControlEvent) -> None:
+    async def tabs_changed(e: ft.ControlEvent) -> None:
         """Фильтруем все оценки по предметам"""
         dont_have_students.visible = False
         student_filter_tab.visible = False
@@ -68,19 +71,21 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
         subjects_row.controls.clear()
         status = subjects_filter_tab.tabs[subjects_filter_tab.selected_index].text
         try:
-            for list_subject in db.get_teacher_students_subjects_with_filter(USER_ID, status):
-                create_students_subject_card(
+            list_subjects = []
+            for list_subject in list_subjects:
+                await create_students_subject_card(
                     subject_title=list_subject[3],
                     student_fio=f'{list_subject[2]} {list_subject[1]}',
                     student_row=subjects_row,
                     subject_url=f'/set-grade/{list_subject[4]}/{list_subject[0]}'
                 )
         except DontHaveGrades:
+            print(DontHaveGrades)
             dont_have_students.visible = True
             e.page.update()
         e.page.update()
 
-    def student_tabs_changed(e: ft.ControlEvent) -> None:
+    async def student_tabs_changed(e: ft.ControlEvent) -> None:
         """Фильтруем все оценки по студентам"""
         dont_have_students.visible = False
         subjects_filter_tab.visible = False
@@ -89,19 +94,21 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
         students_row.controls.clear()
         subjects_row.clean()
         try:
-            for list_subject in db.get_teacher_students_with_filter(USER_ID, status[0]):
-                create_students_subject_card(
+            list_subjects = []
+            for list_subject in list_subjects:
+                await create_students_subject_card(
                     subject_title=list_subject[3],
                     student_fio=f'{list_subject[2]} {list_subject[1]}',
                     student_row=students_row,
                     subject_url=f'/set-grade/{list_subject[4]}/{list_subject[0]}'
                 )
         except DontHaveGrades:
+            print(DontHaveGrades)
             dont_have_students.visible = True
             e.page.update()
         e.page.update()
 
-    def filter_change(e: ft.ControlEvent) -> None:
+    async def filter_change(e: ft.ControlEvent) -> None:
         """Фильтруем фильтры которые у нас есть"""
         dont_have_students.visible = False
         filter_name = filter_for_filter.tabs[filter_for_filter.selected_index].text
@@ -110,17 +117,15 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
             subjects_filter_tab.visible = False
             subjects_row.clean()
             students_row.clean()
-            show_all_subjects_row()
+            await show_all_subjects_row()
 
         elif filter_name == 'Предметы':
             student_filter_tab.visible = False
             subjects_filter_tab.visible = True
-            students_row.clean()
 
         elif filter_name == 'Студенты':
             student_filter_tab.visible = True
             subjects_filter_tab.visible = False
-            subjects_row.clean()
         e.page.update()
 
     filter_for_filter = ft.Tabs(
@@ -130,20 +135,25 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
 
     students_tabs = []
     try:
-        students_db = db.get_teacher_students(USER_ID)
+        # students_db = []
+        students_db = await db.get_teacher_students(USER_ID)
         for _student in students_db:
             name = f'{_student[2]} {_student[1]}'
             students_tabs.append(ft.Tab(text=f'{name}'))
     except DontHaveGrades as ex:
+        print(ex)
         dont_have_students.visible = True
         page.update()
+    except Exception as err:
+        print(err)
 
     subjects_tabs = []
     try:
-        _subjects = db.get_teacher_subjects(USER_ID)
+        _subjects = await db.get_teacher_subjects(USER_ID)
         for subject in _subjects:
             subjects_tabs.append(ft.Tab(text=f'{subject.subject_name}'))
     except DontHaveGrades as ex:
+        print(ex)
         dont_have_students.visible = True
         page.update()
 
@@ -168,16 +178,20 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
 
     subjects_row = ft.ResponsiveRow()
 
-    def show_all_subjects_row():
-        for list_subject in db.get_teacher_students_with_subjects(USER_ID):
-            create_students_subject_card(
-                subject_title=list_subject[3],
-                student_fio=f'{list_subject[2]} {list_subject[1]}',
-                student_row=subjects_row,
-                subject_url=f'/set-grade/{list_subject[4]}/{list_subject[0]}'
-            )
+    async def show_all_subjects_row():
+        try:
+            list_subjects = await db.get_teacher_students_with_subjects(USER_ID)
+            for list_subject in list_subjects:
+                await create_students_subject_card(
+                    subject_title=list_subject[3],
+                    student_fio=f'{list_subject[2]} {list_subject[1]}',
+                    student_row=subjects_row,
+                    subject_url=f'/set-grade/{list_subject[4]}/{list_subject[0]}'
+                )
+        except Exception as err:
+            print(err)
 
-    show_all_subjects_row()
+    await show_all_subjects_row()
 
     content = ft.Column(
         [

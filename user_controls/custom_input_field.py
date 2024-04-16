@@ -49,6 +49,7 @@ class CustomInputField(UserControl):
         self.input_box_content.bgcolor = BG_COLOR
         self.input_box_content.password = password
         self.input_box_content.can_reveal_password = password
+        self.input_box_content.error_style = TextStyle(color=colors.RED)
         self.input_box_content.on_focus = self.focus_shadow
         self.input_box_content.on_blur = self.blur_shadow
         self.input_box_content.on_change = self.set_loader_animation

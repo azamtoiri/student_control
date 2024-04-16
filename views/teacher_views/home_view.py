@@ -14,9 +14,6 @@ from utils.routes_url import TeacherRoutes
 user_db = LazyDatabase(UserDatabase)
 
 
-# user_db = UserDatabase()
-
-
 async def TeacherHomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     if len(page.views) > 2:
         page.views.pop()
