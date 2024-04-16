@@ -89,9 +89,9 @@ def create_student_task_card(
         set_grade_dlg.update()
 
     def yes_click(e: ft.ControlEvent) -> None:
-        set_grade_vale = int(set_grade_dlg.dlg.content.controls[0].value)
+        set_grade_value = int(set_grade_dlg.dlg.content.controls[0].value)
         try:
-            if set_grade_vale > 100 or set_grade_vale < 0:
+            if set_grade_value > 100 or set_grade_value < 0:
                 raise ValueError('Оценка должна быть не больше 100 и больше 0')
         except ValueError as err:
             set_grade_dlg.dlg.content.controls[0].error_text = str(err)
@@ -100,16 +100,17 @@ def create_student_task_card(
 
         if grade_value == "Нет оценки":
             # Если оценка различается от предыдущей, то обновляем ее
-            if grade_value != set_grade_vale:
+            if grade_value != set_grade_value:
                 db_req: bool = db.set_grade_for_task(
                     enrollment_id=enrollment_id,
                     subject_task_id=subject_task_id,
                     user_id=user_id,
-                    grade_value=set_grade_vale
+                    grade_value=set_grade_value
                 )
                 _task_upload_date.value = datetime.now().strftime('%d.%m.%Y')
                 status.visible = True
                 set_grade_button.text = 'Изменить оценку'
+                _grade_value.value = f'Оценка: {set_grade_value}'
             else:
                 e.page.update()
         else:
@@ -117,11 +118,12 @@ def create_student_task_card(
                 enrollment_id=enrollment_id,
                 subject_task_id=subject_task_id,
                 user_id=user_id,
-                grade_value=set_grade_vale
+                grade_value=set_grade_value
             )
             _task_upload_date.value = datetime.now().strftime('%d.%m.%Y')
             status.visible = True
             set_grade_button.text = 'Изменить оценку'
+            _grade_value.value = f'Оценка: {set_grade_value}'
 
         set_grade_dlg.dlg.open = False
         set_grade_dlg.update()

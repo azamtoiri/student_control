@@ -1,6 +1,6 @@
 from typing import Type, Optional, List
 
-from sqlalchemy import create_engine, asc, func, select, text
+from sqlalchemy import create_engine, asc, func, select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, aliased
 
@@ -17,7 +17,7 @@ from utils.exceptions import (
 from utils.jwt_hash import verify, hash_
 
 async_engine = create_async_engine(
-    'postgresql+asyncpg://postgres:1234@localhost:5432/test', echo=True,
+    Connection.ASYNC_DATABASE_URL, echo=True,
     future=True
 )
 
@@ -25,8 +25,9 @@ async_engine = create_async_engine(
 class AsyncBaseDatabase:
     def __init__(self):
         self.engine = async_engine
-        self._async_session = sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False, future=True)
-        self.session = None
+        self._async_session = sessionmaker(
+            bind=async_engine, class_=AsyncSession, expire_on_commit=False, future=True
+        )
 
     async def create_db(self):
         async with self.engine.begin() as conn:
@@ -42,84 +43,102 @@ class BaseDataBase:
         self.session = Session()
 
 
-class UserDatabase(BaseDataBase):
-    def __init__(self) -> None:
+class UserDatabase(AsyncBaseDatabase):
+    def __init__(self):
         super().__init__()
         # self.create_default_user()
 
-    # section user creating
-    def create_default_user(self) -> None:
+    async def create_default_user(self) -> None:
         """Creating default user"""
-        username = UserDefaults.DEFAULT_USERNAME
-        password = hash_(UserDefaults.DEFAULT_PASSWORD)
-        if not self.filter_users(username=username):
-            user = Users(username=username, password=password, email='admin@admin.com')
-            self.insert_user(user)
+        try:
+            async with self._async_session() as session:
+                username = UserDefaults.DEFAULT_USERNAME
+                password = hash_(UserDefaults.DEFAULT_PASSWORD)
+                if not await self.filter_users(username=username):
+                    user = Users(username=username, password=password, email='admin@admin.com')
+                    await self.insert_user(user)
+        except Exception as err:
+            print(err)
 
-    def filter_users(self, **value) -> list[Type[Users]]:
+    async def filter_users(self, **value) -> list[Type[Users]]:
         """Filter users with added values"""
-        return self.session.query(Users).filter_by(**value).all()
+        try:
+            async with self._async_session() as session:
+                query = select(Users).filter_by(**value)
+                result = await session.execute(query)
+                return result.scalars().all()
+        except Exception as err:
+            print(err)
 
-    def get_user_id(self, username) -> Type[Users]:
-        """Get user id"""
-        return self.session.query(Users).filter(Users.username == username).first()
-
-    def get_user_by_id(self, user_id) -> Type[Users]:
-        """Get user by id"""
-        return self.session.query(Users).filter(Users.user_id == user_id).first()
-
-    def insert_user(self, user: Users) -> None:
+    async def insert_user(self, user: Users):
         """Registering user"""
-        if user.username is None:
-            raise RequiredField('username')
+        try:
+            async with self._async_session() as session:
+                if user.username is None:
+                    raise RequiredField('username')
 
-        elif user.password is None:
-            raise RequiredField('password')
+                elif user.password is None:
+                    raise RequiredField('password')
 
-        elif self.filter_users(username=user.username):
-            raise AlreadyRegistered('username')
+                elif await self.filter_users(username=user.username):
+                    raise AlreadyRegistered('username')
 
-        self.session.add(user)
-        self.session.commit()
+                session.add(user)
+                await session.commit()
+        except Exception as err:
+            print(err)
 
-    def select_users(self) -> list[Type[Users]]:
-        """Get all users"""
-        return self.session.query(Users).all()
+    async def get_user_id(self, username) -> Type[Users]:
+        """Get user id"""
+        async with self._async_session() as session:
+            query = select(Users).filter_by(username=username)
+            result = await session.execute(query)
+            return result.scalars().first()
 
-    def select_user_by_id(self, id: int) -> Optional[Users]:
-        """Select user by id"""
-        return self.session.query(Users).filter(Users.id == id).first()
+    async def get_user_by_id(self, user_id) -> Type[Users]:
+        """Get user by id"""
+        async with self._async_session() as session:
+            query = select(Users).filter_by(user_id=user_id)
+            result = await session.execute(query)
+            return result.scalars().first()
 
-    def verify_password(self, username: str, password: str) -> bool:
+    async def verify_password(self, username: str, password: str) -> bool:
         """Verify password"""
-        hashed_password = self.session.query(Users).filter_by(username=username).first()
-        if not hashed_password:
-            raise NotRegistered('username')
-        try:
-            if not verify(plain_password=password, hashed_password=hashed_password.password):
+        async with self._async_session() as session:
+            hashed_password = await self.filter_users(username=username)
+            if not hashed_password:
                 raise NotRegistered('username')
-        except ValueError as err:
-            self.session.rollback()
-            return False
-        return True
-
-    def get_user_image_url(self, user_id) -> str:
-        query = self.session.query(Users).filter(Users.user_id == user_id).first()
-        return query.user_image
-
-    def set_new_user_image(self, user_id, image_url: str) -> bool:
-        user = self.filter_users(user_id=user_id)
-        try:
-            user[0].user_image = image_url
-            self.session.add(user[0])
-            self.session.commit()
+            try:
+                if not verify(plain_password=password, hashed_password=hashed_password[0].password):
+                    raise NotRegistered('username')
+            except ValueError as err:
+                session.rollback()
+                return False
             return True
-        except Exception as ex:
-            self.session.rollback()
-            print(ex)
-            return False
 
-    def register_user(
+    async def get_user_image_url(self, user_id) -> str:
+        try:
+            async with self._async_session() as session:
+                query = select(Users).filter(Users.user_id == user_id)
+                result = await session.execute(query)
+            return result.scalars().first().user_image
+        except Exception as err:
+            print(err)
+
+    async def set_new_user_image(self, user_id, image_url: str) -> bool:
+        async with self._async_session() as session:
+            user = await self.filter_users(user_id=user_id)
+            try:
+                user[0].user_image = image_url
+                session.add(user[0])
+                await session.commit()
+                return True
+            except Exception as ex:
+                await session.rollback()
+                print(ex)
+                return False
+
+    async def register_user(
             self, first_name, last_name, middle_name, username,
             password, group: Optional[str] = None, course: Optional[str] = None,
             age: Optional[str] = None, email: Optional[str] = None
@@ -127,8 +146,6 @@ class UserDatabase(BaseDataBase):
         if first_name is None:
             raise RequiredField('first_name')
         if last_name is None:
-            raise RequiredField('last_name')
-        if middle_name is None:
             raise RequiredField('middle_name')
 
         if username is None:
@@ -137,7 +154,7 @@ class UserDatabase(BaseDataBase):
         if password is None:
             raise RequiredField('password')
 
-        if self.filter_users(username=username):
+        if await self.filter_users(username=username):
             raise AlreadyRegistered('username')
 
         user = Users(
@@ -152,31 +169,32 @@ class UserDatabase(BaseDataBase):
             email=email
         )
 
-        self.insert_user(user)
+        await self.insert_user(user)
 
         return user
 
-    def update_user(self, user_id, first_name, last_name, middle_name, group, course, age, email) -> bool:
-        if first_name is None:
-            raise RequiredField('Имя')
-        if last_name is None:
-            raise RequiredField('Фамилия')
-        if middle_name is None:
-            raise RequiredField('Отчество')
+    async def update_user(self, user_id, first_name, last_name, middle_name, group, course, age, email) -> bool:
+        async with self._async_session() as session:
+            if first_name is None:
+                raise RequiredField('Имя')
+            if last_name is None:
+                raise RequiredField('Фамилия')
+            if middle_name is None:
+                raise RequiredField('Отчество')
 
-        user = self.get_user_by_id(user_id)
-        user.first_name = first_name
-        user.last_name = last_name
-        user.middle_name = middle_name
-        user.group = group
-        user.course = course
-        user.age = age
-        user.email = email
-        self.session.add(user)
-        self.session.commit()
-        return True
+            user = await self.get_user_by_id(user_id)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.middle_name = middle_name
+            user.group = group
+            user.course = course
+            user.age = age
+            user.email = email
+            session.add(user)
+            await session.commit()
+            return True
 
-    def login_user(
+    async def login_user(
             self, username: Optional[str], password: Optional[str]
     ) -> Type[Users]:
         if username is None:
@@ -185,107 +203,120 @@ class UserDatabase(BaseDataBase):
         if password is None:
             raise RequiredField('password')
 
-        ver_pass = self.verify_password(username, password)
-        users = self.filter_users(username=username)
+        ver_pass = await self.verify_password(username, password)
+        users = await self.filter_users(username=username)
 
         if not ver_pass:
             raise NotRegistered('Invalid username or password')
         else:
             return users[0]
 
-    def is_staff(self, user_id: int) -> bool:
-        return self.session.get(Users, user_id).is_staff
+    async def is_staff(self, user_id) -> bool:
+        async with self._async_session() as session:
+            user = await self.get_user_by_id(user_id)
+            return user.is_staff
 
-    def get_user_theme(self, user_id) -> Type[UserTheme]:
-        return self.session.get(UserTheme, user_id)
+    async def get_user_theme(self, user_id) -> Type[UserTheme]:
+        async with self._async_session() as session:
+            return await session.get(UserTheme, user_id)
 
     # region: Theme mode changing
-    def add_theme_mode(self, user_id) -> bool:
-        try:
-            self.session.add(UserTheme(user_id=user_id))
-            self.session.commit()
-            return True
-        except Exception as ex:
-            print(ex)
-            self.session.rollback()
-            return False
+    async def add_theme_mode(self, user_id) -> bool:
+        async with self._async_session() as session:
+            try:
+                session.add(UserTheme(user_id=user_id))
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
 
-    def set_theme_mode(self, user_id, theme_mode) -> bool:
-        try:
-            user_theme = self.get_user_theme(user_id)
-            user_theme.theme = theme_mode
-            self.session.add(user_theme)
-            self.session.commit()
+    async def set_theme_mode(self, user_id, theme_mode) -> bool:
+        async with self._async_session() as session:
+            try:
+                user_theme = await self.get_user_theme(user_id)
+                user_theme.theme = theme_mode
+                session.add(user_theme)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
 
-            return True
-        except Exception as ex:
-            print(ex)
-            self.session.rollback()
-            return False
+    async def get_theme_mode(self, user_id) -> str:
+        async with self._async_session() as session:
+            try:
+                result = await session.get(UserTheme, user_id)
+                return result.theme
+            except AttributeError:
+                await self.add_theme_mode(user_id)
+                await session.rollback()
 
-    def get_theme_mode(self, user_id) -> str:
-        try:
-            return self.session.get(UserTheme, user_id).theme
-        except AttributeError:
-            self.add_theme_mode(user_id)
-            # self.session.rollback()
+    async def set_seed_color(self, user_id, seed_color) -> bool:
+        async with self._async_session() as session:
+            try:
+                user_theme = await self.get_user_theme(user_id)
+                user_theme.seed_color = seed_color
+                session.add(user_theme)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                session.rollback()
+                return False
 
-    def set_seed_color(self, user_id, seed_color) -> bool:
-        try:
-            user_theme = self.get_user_theme(user_id)
-            user_theme.seed_color = seed_color
-            self.session.add(user_theme)
-            self.session.commit()
-
-            return True
-        except Exception as ex:
-            print(ex)
-            self.session.rollback()
-            return False
-
-    def get_seed_color(self, user_id) -> str:
-        return self.session.get(UserTheme, user_id).seed_color
+    async def get_seed_color(self, user_id) -> str:
+        async with self._async_session() as session:
+            result = await session.get(UserTheme, user_id)
+            return result.seed_color
 
     # endregion
 
     # region: Teacher info
 
-    def get_teacher_info(self, user_id) -> Type[TeacherInformation]:
-        return self.session.query(TeacherInformation).filter(TeacherInformation.user_id == user_id).first()
+    async def get_teacher_info(self, user_id) -> Type[TeacherInformation]:
+        """Get teacher information by teacher id"""
+        async with self._async_session() as session:
+            result = await session.get(TeacherInformation, user_id)
+            return result
 
-    def update_teacher_information(self, user_id, teacher_experience, teacher_description, is_done) -> bool:
+    async def update_teacher_information(self, user_id, teacher_experience, teacher_description, is_done) -> bool:
         """Добавляем дополнительную информацию об учителе"""
         if teacher_experience is None:
             raise RequiredField('Опыт')
         if teacher_description is None:
             raise RequiredField('Описание')
 
-        try:
-            teacher_info = self.get_teacher_info(user_id)
-            teacher_info.teacher_experience = teacher_experience
-            teacher_info.teacher_description = teacher_description
-            teacher_info.is_done = is_done
-            self.session.add(teacher_info)
-            self.session.commit()
-            return True
-        except Exception as ex:
-            print(ex)
-            self.session.rollback()
-            return False
-
-    def create_teacher_information(self, user_id) -> bool:
-        """Создаем в бд поле для заполнения информации об учителе"""
-        try:
-            if self.get_teacher_info(user_id) is not None:
+        async with self._async_session() as session:
+            try:
+                teacher_info = await self.get_teacher_info(user_id)
+                teacher_info.teacher_experience = teacher_experience
+                teacher_info.teacher_description = teacher_description
+                teacher_info.is_done = is_done
+                session.add(teacher_info)
+                await session.commit()
                 return True
-            teacher_info = TeacherInformation(user_id=user_id)
-            self.session.add(teacher_info)
-            self.session.commit()
-            return True
-        except Exception as ex:
-            self.session.rollback()
-            print(ex)
-            return False
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    async def create_teacher_information(self, user_id) -> bool:
+        """Создаем в бд поле для заполнения информации об учителе"""
+        async with self._async_session() as session:
+            try:
+                if await self.get_teacher_info(user_id) is not None:
+                    return True
+                teacher_info = TeacherInformation(user_id=user_id)
+                session.add(teacher_info)
+                await session.commit()
+                return True
+            except Exception as ex:
+                await session.rollback()
+                print(ex)
+                return False
 
     # endregion
 
@@ -882,7 +913,6 @@ class TeacherDatabase(AsyncBaseDatabase):
                 .filter(user1.user_id == user_id)
                 .distinct()
             )
-            print("\n\n\n",stmt)
 
             async with self._async_session() as session:
                 result = await session.execute(stmt)
@@ -1018,7 +1048,7 @@ class TheoryDatabase(AsyncBaseDatabase):
         subject_id = theory_id
         """
         async with self._async_session() as session:
-            return await self.session.get(SubjectTheory, subject_id)
+            return await session.get(SubjectTheory, subject_id)
 
 
 class TaskDatabase(AsyncBaseDatabase):
@@ -1068,7 +1098,7 @@ class TaskDatabase(AsyncBaseDatabase):
         async with self._async_session() as session:
             task = await self.get_task_by_id(task_id)
             task.completed = status
-            await session.add(task)
+            session.add(task)
             await session.commit()
             return True
 
@@ -1076,7 +1106,7 @@ class TaskDatabase(AsyncBaseDatabase):
         async with self._async_session() as session:
             task = await self.get_task_by_id(task_id)
             task.task_name = new_task_value
-            await session.add(task)
+            session.add(task)
             await session.commit()
             return True
 
@@ -1087,7 +1117,12 @@ class TaskDatabase(AsyncBaseDatabase):
             return len(tasks)
 
 
+async def main():
+    q = await UserDatabase().get_user_theme(user_id='43335bab-43e0-40cd-b7c4-24a2ccc8228f')
+    print(q)
+
+
 if __name__ == '__main__':
-    a = StudentDatabase()
-    t = TeacherDatabase()
-    u = UserDatabase()
+    import asyncio
+
+    asyncio.run(main())

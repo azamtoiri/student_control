@@ -14,12 +14,12 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     if len(page.views) > 1:
         page.views.pop()
 
-    def add_all_subjects():
+    async def add_all_subjects():
         all_subjects = st_db.database.get_all_subjects()
 
         for subject in all_subjects:
-            is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
-            subject_add(
+            is_subscribed = await st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
+            await subject_add(
                 f'{subject.subject_name}',
                 f'{subject.short_description}',
                 f'{StudentRoutes.SIMPLE_SUBJECT_URL}/{subject.subject_id}',
@@ -29,7 +29,7 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             )
 
     # region: Functions
-    def tabs_changed(e: ft.ControlEvent) -> None:
+    async def tabs_changed(e: ft.ControlEvent) -> None:
         # get user that he is subscribed to subject
         status = filter.tabs[filter.selected_index].text
         subjects.controls.clear()
@@ -38,12 +38,12 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             dont_have_subjects.visible = False
         try:
             if status == 'Записанные':
-                values = st_db.database.get_student_subjects(e.page.session.get('username'),
-                                                             e.page.session.get('user_id'))
+                values = await st_db.database.get_student_subjects(e.page.session.get('username'),
+                                                                   e.page.session.get('user_id'))
                 for first_name, enrollment, subject_name, subject_description, subject in values:
-                    is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'),
-                                                                           subject.subject_id)
-                    subject_add(
+                    is_subscribed = await st_db.database.check_student_subscribe(page.session.get('user_id'),
+                                                                                 subject.subject_id)
+                    await subject_add(
                         f"{subject_name}",
                         f"{subject_description}",
                         f'/subject/{subject.subject_id}',
@@ -54,7 +54,7 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
                     )
                     e.page.update()
             else:
-                add_all_subjects()
+                await add_all_subjects()
             e.page.update()
         except DontHaveGrades:
             subjects.controls.clear()
@@ -62,17 +62,18 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             dont_have_subjects.visible = True
             e.page.update()
 
-    def search(e: ft.ControlEvent):
+    async def search(e: ft.ControlEvent):
         subjects.controls.clear()
         search_value = str(search_field.value).strip() if len(search_field.value) else None
         if search_value is None:
-            add_all_subjects()
+            await add_all_subjects()
             e.page.update()
             return
-        filtered_subjects = st_db.database.filter_subjects_by_name(str(search_field.value).strip())
+        filtered_subjects = await st_db.database.filter_subjects_by_name(str(search_field.value).strip())
         for subject in filtered_subjects:
-            is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
-            subject_add(
+            is_subscribed = await st_db.database.check_student_subscribe(page.session.get('user_id'),
+                                                                         subject.subject_id)
+            await subject_add(
                 f"{subject.subject_name}",
                 f'Описание: {subject.short_description}',
                 f'/course/{subject.subject_id}',
@@ -83,7 +84,7 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             )
         e.page.update()
 
-    def subject_add(
+    async def subject_add(
             subject_name: str, subject_description: str, subject_url: str, is_subscribed=False,
             teacher_name: str = None, teacher_last_name: str = None
     ) -> None:
@@ -133,7 +134,7 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         border_radius=8,
         adaptive=True
     )
-    search_field.on_submit = lambda e: search(e)
+    search_field.on_submit = search
     search_field.on_focus = lambda e: on_focus_search_field(e)
     search_field.on_blur = lambda e: un_focus_search_field(e)
 

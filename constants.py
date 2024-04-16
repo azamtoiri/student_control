@@ -62,8 +62,10 @@ class Connection:
     DEV = _get_config("DEV", bool, False)
     if DEV:
         DATABASE_URL = _get_config("DATABASE_URL")  # postgresql+psycopg2://{user}:{password}@{host}:{port}/{db_name}
+        ASYNC_DATABASE_URL = _get_config("ASYNC_DATABASE_URL")
     else:
         DATABASE_URL = _get_config("LOCAL_DB_URL")
+        ASYNC_DATABASE_URL = _get_config("ASYNC_LOCAL_DB_URL")
 
     DATABASE_USERNAME = _get_config("DATABASE_USERNAME", str, "postgres")
     DATABASE_PASSWORD = _get_config("DATABASE_PASSWORD", str, "12345678")

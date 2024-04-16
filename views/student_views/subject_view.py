@@ -26,8 +26,8 @@ async def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         dlg.open = False
         e.page.update()
 
-    def yes_click(e: ft.ControlEvent) -> None:
-        sub_db.database.subscribe_student_to_subject(USER_ID, SUBJECT_ID)
+    async def yes_click(e: ft.ControlEvent) -> None:
+        await sub_db.database.subscribe_student_to_subject(USER_ID, SUBJECT_ID)
         subscribe_button.visible = False
         unsubscribe_button.visible = True
         display_success_banner(page=e.page, message='Вы успешно зарегистрировались на курс',
@@ -35,8 +35,8 @@ async def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         e.page.update()
         close_dlg(e)
 
-    def yes_un_click(e: ft.ControlEvent) -> None:
-        sub_db.database.unsubscribe_student_from_subject(USER_ID, SUBJECT_ID)
+    async def yes_un_click(e: ft.ControlEvent) -> None:
+        await sub_db.database.unsubscribe_student_from_subject(USER_ID, SUBJECT_ID)
         subscribe_button.visible = True
         unsubscribe_button.visible = False
         display_success_banner(page=e.page, message='Вы успешно отписались от курса',
@@ -49,10 +49,10 @@ async def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     def subscribe_dialog(e: ft.ControlEvent):
         dlg.actions = [
-            ft.ElevatedButton('Да', on_click=lambda e_: yes_click(e_), bgcolor=ft.colors.SURFACE_TINT,
+            ft.ElevatedButton('Да', on_click=yes_click, bgcolor=ft.colors.SURFACE_TINT,
                               color=ft.colors.WHITE, height=40
                               ),
-            ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_), bgcolor=ft.colors.GREY, color=ft.colors.WHITE)
+            ft.ElevatedButton('Нет', on_click=no_click, bgcolor=ft.colors.GREY, color=ft.colors.WHITE)
         ]
         dlg.actions_alignment = ft.MainAxisAlignment.CENTER
         dlg.modal = True
@@ -65,9 +65,9 @@ async def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     def unsubscribe_dialog(e: ft.ControlEvent):
         dlg.actions = [
-            ft.ElevatedButton('Да', on_click=lambda e_: yes_un_click(e_), bgcolor=ft.colors.SURFACE_TINT,
+            ft.ElevatedButton('Да', on_click=yes_un_click, bgcolor=ft.colors.SURFACE_TINT,
                               color=ft.colors.WHITE),
-            ft.ElevatedButton('Нет', on_click=lambda e_: no_click(e_), bgcolor=ft.colors.GREY, color=ft.colors.WHITE,
+            ft.ElevatedButton('Нет', on_click=no_click, bgcolor=ft.colors.GREY, color=ft.colors.WHITE,
                               height=40)
         ]
         dlg.actions_alignment = ft.MainAxisAlignment.CENTER
@@ -88,7 +88,7 @@ async def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         e.page.update()
 
     # endregion
-    is_subscribed = sub_db.database.check_student_subscribe(USER_ID, SUBJECT_ID)
+    is_subscribed = await sub_db.database.check_student_subscribe(USER_ID, SUBJECT_ID)
 
     # region: Buttons
     subscribe_button = ft.ElevatedButton('Записаться на курс')

@@ -7,8 +7,8 @@ from constants import LOGO_PATH
 from database.database import UserDatabase
 from user_controls.custom_input_field import CustomInputField
 from utils.exceptions import RequiredField, NotRegistered
-from utils.routes_url import BaseRoutes
 from utils.lazy_db import LazyDatabase
+from utils.routes_url import BaseRoutes
 
 user_db = LazyDatabase(UserDatabase)
 
@@ -23,7 +23,7 @@ async def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             fields[field].set_fail(message)
 
     # region: Functions
-    def login_click(e: ft.ControlEvent) -> None:
+    async def login_click(e: ft.ControlEvent) -> None:
         """Login user to the system."""
         username = str(username_field.input_box_content.value).strip() if len(
             username_field.input_box_content.value) else None
@@ -31,24 +31,25 @@ async def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             password_field.input_box_content.value) else None
 
         try:
-            user = user_db.database.login_user(username, password)
+            user = await user_db.database.login_user(username, password)
             e.page.session.set("is_auth", True)
             e.page.session.set("username", username)
             e.page.session.set("user_id", user.user_id)
 
-            if user_db.database.is_staff(user.user_id):
+            if await user_db.database.is_staff(user.user_id):
                 # changing color cheme values from db
                 e.page.session.set("is_staff", True)
-                e.page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
-                e.page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
+                __theme_mode = await user_db.database.get_theme_mode(page.session.get('user_id'))
+                e.page.theme_mode = __theme_mode
+                e.page.theme = ft.Theme(color_scheme_seed=__theme_mode)
                 e.page.update()
                 time.sleep(0.1)
                 e.page.go(BaseRoutes.TEACHER_MAIN_URL)
 
             else:
                 # changing color cheme values from db
-                e.page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
-                e.page.theme = ft.Theme(color_scheme_seed=user_db.database.get_seed_color(page.session.get('user_id')))
+                __theme_mode = await user_db.database.get_theme_mode(page.session.get('user_id'))
+                e.page.theme_mode = __theme_mode
                 e.page.update()
                 time.sleep(0.1)
                 e.page.go(BaseRoutes.STUDENT_MAIN_URL)
@@ -58,7 +59,7 @@ async def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         except NotRegistered as error:
             display_login_form_error('username', str(error))
 
-    def register_click(e: ft.ControlEvent) -> None:
+    async def register_click(e: ft.ControlEvent) -> None:
         e.page.go(BaseRoutes.REGISTER_URL)
 
     # endregion
@@ -108,7 +109,7 @@ async def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     create_account_button.alignment = ft.alignment.center
     create_account_button.width = 150
     create_account_button.height = 45
-    create_account_button.on_click = lambda e: register_click(e)
+    create_account_button.on_click = register_click
     # endregion
 
     # region: Texts

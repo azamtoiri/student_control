@@ -1,4 +1,5 @@
 # отображения детальной информации
+import asyncio
 
 import flet as ft
 
@@ -14,7 +15,7 @@ class SubjectDescription(ft.UserControl):
 
     def build(self):
         self.database = StudentDatabase()
-        self.subject_information = self.database.get_subject(self.subject_id)
+        self.subject_information = asyncio.run(self.database.get_subject(self.subject_id))
 
         teacher_description = 'Пока нет информации о преподавателе'
         teacher_experience = 'неизвестно'

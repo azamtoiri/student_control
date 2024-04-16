@@ -34,7 +34,7 @@ async def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # endregion
 
-    user = user_db.database.get_user_by_id(USER_ID)
+    user = await user_db.database.get_user_by_id(USER_ID)
 
     # region: InputFields
     first_name_field = UserChangField(True, value=user.last_name, label='Фамилия')  # Фамилия
@@ -48,7 +48,7 @@ async def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # endregion
 
-    user_image_dir = user_db.database.get_user_image_url(USER_ID)
+    user_image_dir = await user_db.database.get_user_image_url(USER_ID)
 
     if (user_image_dir is None) or (os.path.exists(f'assets/uploads/{user_image_dir}') is False):
         user_avatar = UserImage(

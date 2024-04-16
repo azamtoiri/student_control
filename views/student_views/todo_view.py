@@ -151,7 +151,6 @@ class TodoApp(ft.UserControl):
                 task_name=self.new_task.value, completed=False,
                 user_id=self.user_id
             )
-            print(added_task)
             task = Task(self.new_task.value, self.task_status_change, self.task_delete, task_id=added_task.task_id)
 
             self.tasks.controls.append(task)

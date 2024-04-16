@@ -1,0 +1,611 @@
+No async Student Database Class for future
+
+class StudentDatabase(AsyncBaseDatabase):
+    async def get_course_by_id(self, _id) -> Type[Subjects]:
+        async with self._async_session() as session:
+            return session.query(Subjects).filter(Subjects.subject_id == _id).first()
+
+    async def get_all_subjects(self) -> list[Type[Subjects]]:
+        """Return all subjects use for subjects_view"""
+        async with self._async_session() as session:
+            return session.query(Subjects).order_by(asc(Subjects.subject_name)).all()
+
+    async def get_subject(self, subject_id) -> Type[Subjects]:
+        async with self._async_session() as session:
+            return session.query(Subjects).filter(Subjects.subject_id == subject_id).first()
+
+    async def get_student_subjects(self, username=None, user_id=None) -> list:
+        """if not giv user_id getting from db"""
+        async with self._async_session() as session:
+
+            if not user_id:
+                user_id = await UserDatabase().get_user_id(username).user_id
+            user_subject = (
+                session.query(
+                    Users.first_name, Enrollments, Subjects.subject_name, Subjects.short_description,
+                    Subjects
+                ).join(
+                    Enrollments, Users.user_id == Enrollments.user_id
+                ).join(
+                    Subjects, Subjects.subject_id == Enrollments.subject_id
+                ).where(Users.user_id == user_id).all()
+            )
+            if len(user_subject) == 0:
+                raise DontHaveGrades()
+            return user_subject
+
+    async def get_student_subjects_and_completed_tasks(
+            self, user_id=None, subject_task_id=None
+    ) -> list[UserTasksFiles] or list:
+        async with self._async_session() as session:
+            req = session.query(
+                UserTasksFiles
+            ).join(
+                SubjectTasks
+            ).filter(
+                UserTasksFiles.user_id == user_id, UserTasksFiles.subject_task_id == subject_task_id
+            ).all()
+            return req
+
+    async def count_average_subject_grades(self, subject_name=None, user_id=None) -> int or str:
+        """Возвращает среднюю оценку по предмету для пользователя"""
+        async with self._async_session() as session:
+            avg_grade = (
+                session.query(func.avg(Grades.grade_value))
+                .join(Enrollments, Grades.enrollment_id == Enrollments.enrollment_id)
+                .join(Users, Users.user_id == Enrollments.user_id)
+                .join(Subjects, Subjects.subject_id == Enrollments.subject_id)
+                .filter(Subjects.subject_name == subject_name, Users.user_id == user_id)
+                .scalar()
+            )
+
+            if avg_grade is not None:
+                return round(avg_grade)  # Округляем до целого числа
+            else:
+                return 'Нет оценок'
+
+    async def get_student_grade_for_exact_subject(self, username, sub_name) -> list:
+        """Возвращает все оценки пользователя по определенному предмету"""
+        async with self._async_session() as session:
+
+            values = session.query(
+                Users.username, Subjects.subject_name, Grades.grade_value, Grades.grade_date,
+                Enrollments.enrollment_date
+            ).join(
+                Users, Users.user_id == Enrollments.user_id,
+            ).join(
+                Subjects, Subjects.subject_id == Enrollments.subject_id
+            ).join(
+                Grades, Grades.enrollment_id == Enrollments.enrollment_id
+            ).where(
+                Users.username == username
+            ).where(
+                Subjects.subject_name == sub_name
+            ).all()
+            if not values:
+                raise UserDontHaveGrade
+            for value in values:
+                yield value
+
+    async def get_student_grades(self, username=None, user_id=None) -> list:
+        """
+        Возвращает кортеж со всеми оценками определённого пользователя
+        (username, subject_name, grade_value, grade_date, enrollment_date)
+        """
+        async with self._async_session() as session:
+
+            if not user_id:
+                user_id = UserDatabase().get_user_id(username).user_id
+            values = session.query(
+                Users.username, Subjects.subject_name, Grades.grade_value, Grades.grade_date,
+                Enrollments.enrollment_date
+            ).join(
+                Users, Users.user_id == Enrollments.user_id,
+            ).join(
+                Subjects, Subjects.subject_id == Enrollments.subject_id
+            ).join(
+                Grades, Grades.enrollment_id == Enrollments.enrollment_id
+            ).filter(
+                Users.user_id == user_id
+            ).all()
+
+            if len(values) < 1:
+                raise DontHaveGrades()
+
+            for value in values:
+                yield value
+
+    async def get_student_task_grades_with_subject_name(self, user_id, subject_name) -> list[TaskGrades]:
+        """Возвращает оценки студента по конкретному заданию."""
+
+        # Запрос оценок для заданного пользователя и задания
+        async with self._async_session() as session:
+            grades = (
+                session.query(TaskGrades)
+                .join(Enrollments)
+                .join(Subjects)
+                .join(SubjectTasks)
+                .filter(
+                    Enrollments.user_id == user_id,
+                    Subjects.subject_name == subject_name
+                )
+                # .options(joinedload(TaskGrades.enrollment_grades))
+                .all()
+            )
+            if len(grades) <= 0:
+                raise UserDontHaveGrade
+            return grades
+
+    async def get_student_tasks_grades_v2(self, user_id) -> list[Type[TaskGrades]] | list:
+        async with self._async_session() as session:
+            try:
+                return session.query(TaskGrades).filter(TaskGrades.user_id == user_id).all()
+            except Exception as ex:
+                session.rollback()
+                print(ex)
+                return []
+
+    async def count_average_tasks_subject_grade(self, subject_name, user_id) -> int or str:
+        async with self._async_session() as session:
+            avg_grade = (
+                session.query(func.avg(TaskGrades.grade_value))
+                .join(Enrollments, Enrollments.enrollment_id == TaskGrades.enrollment_id)
+                .join(Subjects, Subjects.subject_id == Enrollments.subject_id)
+                .filter(Subjects.subject_name == subject_name, Enrollments.user_id == user_id)
+                .scalar()
+            )
+            if avg_grade is not None:
+                return round(avg_grade)  # Округляем до целого числа
+            else:
+                return 'Нет оценок'
+
+    async def check_student_subscribe(self, user_id, subject_id) -> bool:
+        """Проверяет подписку студента на определенный предмет"""
+        async with self._async_session() as session:
+            subscription = session.query(Enrollments).filter(
+                Enrollments.user_id == user_id,
+                Enrollments.subject_id == subject_id
+            ).first()
+
+            return bool(subscription)
+
+    async def subscribe_student_to_subject(self, user_id, subject_id) -> bool:
+        async with self._async_session() as session:
+            try:
+                enrollment = Enrollments(user_id=user_id, subject_id=subject_id)
+                if await self.check_student_subscribe(user_id, subject_id):
+                    raise UserAlreadySubscribed
+                session.add(enrollment)
+                await session.commit()
+            except UserAlreadySubscribed:
+                return False
+            except Exception as ex:
+                print(ex)
+                session.rollback()
+                return False
+
+    async def unsubscribe_student_from_subject(self, user_id, subject_id) -> bool:
+        """Удаляет записанный курс вместе с его оценка в таблице grades"""
+        async with self._async_session() as session:
+            enrollment = session.query(Enrollments).where(
+                Enrollments.user_id == user_id
+            ).where(
+                Enrollments.subject_id == subject_id
+            ).first()
+            try:
+                session.delete(enrollment)
+                session.commit()
+            except Exception as ex:
+                print(ex)
+                session.rollback()
+                return True
+
+    async def filter_subjects_by_name(self, subject_name) -> list[Type[Subjects]]:
+        """Для поиска предмета по имени"""
+        async with self._async_session() as session:
+            return session.query(Subjects).filter(Subjects.subject_name.ilike(f'%{subject_name}%')).all()
+
+    async def get_student_subject_tasks(self, user_id) -> list:
+        """Get all subject_tasks of user"""
+        async with self._async_session() as session:
+            res = session.query(
+                SubjectTasks.subject_task_id, SubjectTasks.task_name, Users.user_id, Subjects.subject_name,
+                Enrollments.enrollment_id
+            ).join(
+                Enrollments, Users.user_id == Enrollments.user_id
+            ).join(
+                Subjects, Subjects.subject_id == Enrollments.subject_id
+            ).join(
+                SubjectTasks, SubjectTasks.subject_id == Subjects.subject_id
+            ).where(
+                Users.user_id == user_id
+            ).all()
+            return res
+
+    async def get_all_grades(self, user_id) -> int:
+        """Return quantity of user final grades"""
+        async with self._async_session() as session:
+            values = session.query(
+                Subjects.subject_name, Grades.grade_value, Grades.grade_date, Enrollments.enrollment_date
+            ).join(
+                Users, Users.user_id == Enrollments.user_id,
+            ).join(
+                Subjects, Subjects.subject_id == Enrollments.subject_id
+            ).join(
+                Grades, Grades.enrollment_id == Enrollments.enrollment_id
+            ).where(
+                Users.user_id == user_id
+            ).all()
+
+        return len(values)
+
+    async def quantity_of_subjects(self, user_id) -> int:
+        q = await self.get_student_subjects(user_id=user_id)
+        return len(q)
+
+    async def get_student_subject_tasks_by_name(self, user_id, subject_name) -> list:
+        async with self._async_session() as session:
+            res = session.query(
+                SubjectTasks.task_name, SubjectTasks.subject_task_id, Users.user_id, Subjects.subject_id,
+                Enrollments.enrollment_id
+            ).join(
+                Enrollments, Users.user_id == Enrollments.user_id
+            ).join(
+                Subjects, Subjects.subject_id == Enrollments.subject_id
+            ).join(
+                SubjectTasks, SubjectTasks.subject_id == Subjects.subject_id
+            ).filter(
+                Users.user_id == user_id, Subjects.subject_name == subject_name
+            ).all()
+        for r in res:
+            yield r
+
+    async def get_student_subject_tasks_by_subject_id(
+            self, user_id, subject_id
+    ) -> List[tuple[SubjectTasks, Users, Subjects, Enrollments, TaskGrades]]:
+        """
+        USE FOR TEACHER PAGE SET GRADES DETAIL VIEW
+        return models 0: SubjectTasks, 1: Users, 2: Subjects, 3: Enrollments
+        """
+        async with self._async_session() as session:
+            res = session.query(
+                SubjectTasks, Users, Subjects, Enrollments, TaskGrades
+            ).join(
+                Enrollments, Users.user_id == Enrollments.user_id
+            ).join(
+                Subjects, Subjects.subject_id == Enrollments.subject_id
+            ).join(
+                SubjectTasks, SubjectTasks.subject_id == Subjects.subject_id
+            ).outerjoin(
+                TaskGrades,
+                (TaskGrades.enrollment_id == Enrollments.enrollment_id) &
+                (TaskGrades.subject_task_id == SubjectTasks.subject_task_id) &
+                (TaskGrades.user_id == Users.user_id)
+            ).filter(
+                Users.user_id == user_id, Subjects.subject_id == subject_id
+            ).all()
+
+        return res
+
+    # region: subject_task_file
+    async def get_status_of_task_by_user_id(self, user_id, subject_task_id, enrollment_id):
+        """Gets status of the subject_task"""
+        if not await self.check_task_file_exist(user_id, subject_task_id):
+            await self.add_subject_task_file(user_id, subject_task_id, enrollment_id)
+        async with self._async_session() as session:
+            status = session.query(
+                UserTasksFiles.completed
+            ).join(
+                SubjectTasks
+            ).filter(
+                UserTasksFiles.user_id == user_id,
+                SubjectTasks.subject_task_id == subject_task_id
+            ).first()
+
+        return status[0] if status is not None else None
+
+    async def get_completed_task_status(self, user_id, subject_task_id) -> Type[UserTasksFiles]:
+        async with self._async_session() as session:
+            return session.query(UserTasksFiles).filter(
+                UserTasksFiles.user_id == user_id,
+                UserTasksFiles.subject_task_id == subject_task_id
+            ).first()
+
+    async def delete_task_file(self, task_file) -> bool:
+        async with self._async_session() as session:
+            try:
+                session.delete(task_file)
+                await session.commit()
+
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    async def check_task_file_exist(self, user_id, subject_task_id) -> bool:
+        """Проверяет есть ли такая запись в таблице"""
+        # Используем метод query.exists() для проверки существования записи в запросе
+        async with self._async_session() as session:
+            exists = session.query(
+                session.query(UserTasksFiles)
+                .join(SubjectTasks)
+                .filter(UserTasksFiles.user_id == user_id, SubjectTasks.subject_task_id == subject_task_id)
+                .exists()
+            ).scalar()
+
+        return exists
+
+    async def add_subject_task_file(self, user_id, subject_task_id, enrollment_id, file_name) -> bool:
+        async with self._async_session() as session:
+            try:
+                # checking status exist before adding
+                sub_status = UserTasksFiles(user_id=user_id, subject_task_id=subject_task_id,
+                                            enrollment_id=enrollment_id,
+                                            task_file=file_name)
+                session.add(sub_status)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    async def delete_subject_theory_file(self, subject_id):
+        async with self._async_session() as session:
+
+            try:
+                theory = session.query(SubjectTheory).filter(SubjectTheory.theory_id == subject_id).first()
+                session.delete(theory)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+            return False
+
+    async def change_task_file(self, user_id, subject_task_id, file_name: bool) -> bool:
+        async with self._async_session() as session:
+            try:
+                completed_task_status = self.get_completed_task_status(user_id, subject_task_id)
+                completed_task_status.task_file = file_name
+                session.add(completed_task_status)
+                await session.commit()
+
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    # endregion
+
+    # region: Teacher subjects
+    async def get_teacher_subjects(self, user_id) -> list[Type[Subjects]]:
+        async with self._async_session() as session:
+            return session.query(Subjects).filter(Subjects.user_id == user_id).all()
+
+    async def update_subject(
+            self, subject_id, subject_name, subject_short_description, subject_description,
+    ) -> bool:
+        if subject_name is None:
+            raise RequiredField('Имя предмета')
+        if subject_short_description is None:
+            raise RequiredField('Краткое описание предмета')
+        if subject_description is None:
+            raise RequiredField('Описание предмета')
+
+        async with self._async_session() as session:
+            try:
+                subject = await self.get_subject(subject_id)
+                subject.subject_name = subject_name
+                subject.short_description = subject_short_description
+                subject.description = subject_description
+                session.add(subject)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    async def create_subject(self, user_id, subject_name, subject_short_description, subject_description) -> bool:
+        if subject_name is None:
+            raise RequiredField('Имя предмета')
+        if subject_short_description is None:
+            raise RequiredField('Краткое описание предмета')
+        if subject_description is None:
+            raise RequiredField('Описание предмета')
+
+        async with self._async_session() as session:
+            try:
+                subject = Subjects(
+                    user_id=user_id,
+                    subject_name=subject_name,
+                    short_description=subject_short_description,
+                    description=subject_description
+                )
+                session.add(subject)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()  # Откатываем транзакцию в случае ошибки
+                return False
+
+    async def delete_subject(self, subject_id) -> bool:
+        async with self._async_session() as session:
+            try:
+                subject = await self.get_subject(subject_id)
+                session.delete(subject)
+                await session.commit()
+                return True
+            except Exception as ex:
+                await session.rollback()
+                print(ex)
+                return False
+
+    # endregion
+
+    # region: Teacher tasks
+
+    async def get_teacher_subject_tasks(self, user_id, subject_id) -> list[Type[SubjectTasks]]:
+        async with self._async_session() as session:
+            return session.query(
+                Users.user_id, Users.username, Subjects.subject_id, Subjects.subject_name, SubjectTasks.task_name,
+                SubjectTasks.subject_task_id
+            ).join(
+                Subjects, Users.user_id == Subjects.user_id
+            ).join(
+                SubjectTasks, Subjects.subject_id == SubjectTasks.subject_id
+            ).filter(
+                Users.user_id == user_id, Subjects.subject_id == subject_id
+            ).all()
+
+    async def add_teacher_subject_task(self, subject_id, task_name) -> bool:
+        if task_name is None:
+            raise RequiredField('task_name')
+        async with self._async_session() as session:
+            try:
+                task = SubjectTasks(subject_id=subject_id, task_name=task_name)
+                session.add(task)
+                await session.commit()
+                return True
+            except Exception as ex:
+                await session.rollback()
+                print(ex)
+                return False
+
+    async def get_task_by_id(self, task_id) -> Type[SubjectTasks]:
+        async with self._async_session() as session:
+            return await session.get_one(SubjectTasks, task_id)
+
+    async def delete_teacher_subject_task(self, subject_task_id) -> bool:
+        async with self._async_session() as session:
+            try:
+                task = await self.get_task_by_id(subject_task_id)
+                session.delete(task)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    # endregion
+
+    # region: SET Grade student
+    async def set_grade_for_task(self, user_id, subject_task_id, enrollment_id, grade_value) -> bool:
+        async with self._async_session() as session:
+
+            try:
+                grade = TaskGrades(
+                    user_id=user_id,
+                    subject_task_id=subject_task_id,
+                    enrollment_id=enrollment_id,
+                    grade_value=grade_value
+                )
+                session.add(grade)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    async def set_final_grade_for_subject(self, user_id, subject_id, grade_value) -> bool:
+        async with self._async_session() as session:
+            try:
+                enrollment = session.query(Enrollments).filter(
+                    Enrollments.user_id == user_id,
+                    Enrollments.subject_id == subject_id
+                ).first()
+
+                grade = Grades(
+                    enrollment_id=enrollment.enrollment_id,
+                    grade_value=grade_value
+                )
+
+                session.add(grade)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    async def get_final_grade_for_subject(self, user_id, subject_id) -> int:
+        async with self._async_session() as session:
+
+            grade = session.query(Grades).join(
+                Enrollments
+            ).filter(
+                Enrollments.user_id == user_id,
+                Enrollments.subject_id == subject_id
+            ).first()
+
+            if grade:
+                return grade.grade_value
+            else:
+                return None
+
+    async def have_final_grade_for_subject(self, user_id, subject_id) -> bool:
+        async with self._async_session() as session:
+            grade = session.query(Grades).join(
+                Enrollments
+            ).filter(
+                Enrollments.user_id == user_id,
+                Enrollments.subject_id == subject_id
+            ).first()
+
+            return bool(grade)
+
+    async def update_grade_for_task(self, enrollment_id, subject_task_id, user_id, grade_value) -> bool:
+        async with self._async_session() as session:
+
+            try:
+                task_grade = session.query(TaskGrades).filter(
+                    TaskGrades.enrollment_id == enrollment_id,
+                    TaskGrades.subject_task_id == subject_task_id,
+                    TaskGrades.user_id == user_id
+                ).first()
+
+                task_grade.grade_value = grade_value
+
+                await session.add(task_grade)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    # endregion
+
+    # region: Theory files
+    async def add_subject_theory_file(self, theory_id, theory_data) -> bool:
+        # theory_id = subject_id
+        async with self._async_session() as session:
+
+            try:
+                theory = SubjectTheory(theory_id=theory_id, theory_data=theory_data)
+                session.add(theory)
+                await session.commit()
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    async def get_subject_theory_file(self, subject_id) -> Type[Subjects] | None:
+        async with self._async_session() as session:
+
+            try:
+                subject = session.get(Subjects, subject_id)
+                if subject:
+                    if subject.subject_theory:
+                        return subject.subject_theory.theory_data
+                else:
+                    return None
+            except Exception as ex:
+                print(ex)
