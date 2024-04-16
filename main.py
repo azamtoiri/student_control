@@ -156,6 +156,10 @@ async def main(page: ft.Page):
 
     page.add(stack)
     page.update()
+    # page.session.set('user_id', '43335bab-43e0-40cd-b7c4-25a2ccc8228f')
+    # page.session.set('username', 'anton')
+    # page.session.set('is_auth', True)
+    # page.session.set('is_staff', True)
 
     if page.session.get('user_id'):
         page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
@@ -164,6 +168,7 @@ async def main(page: ft.Page):
 
     global running_tasks  # Глобальный список для хранения выполняющихся задач
     running_tasks = [asyncio.create_task(item.animate_thing()) for item in background.controls]
+    # page.go('/teacher/set-grades')
 
 
 assets_abs_path = os.path.abspath('assets')
@@ -179,4 +184,5 @@ async def flet_uploads(request: Request):
 
 
 if __name__ == '__main__':
-    uvicorn.run(app=app)
+    # uvicorn.run(app=app)
+    ft.app(main, assets_dir=assets_abs_path, upload_dir=uploads_abs_path)

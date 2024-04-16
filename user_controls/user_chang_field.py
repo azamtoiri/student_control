@@ -64,13 +64,13 @@ class UserChangField(ft.UserControl):
         )
         return ft.Column(col={"sm": 6}, controls=[self.display_view, self.edit_view])
 
-    def save_clicked(self, e):
+    async def save_clicked(self, e):
         self.display_value.value = self.edit_value.value
         self.display_value.error_text = None
         # self.db.updated_task(self.task_id, self.edit_name.value)
         self.display_view.visible = True
         self.edit_view.visible = False
-        self.save_changes(e)
+        await self.save_changes(e)
         self.update()
 
     def edit_clicked(self, e):

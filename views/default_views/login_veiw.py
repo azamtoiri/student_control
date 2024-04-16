@@ -39,7 +39,7 @@ async def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             if await user_db.database.is_staff(user.user_id):
                 # changing color cheme values from db
                 e.page.session.set("is_staff", True)
-                __theme_mode = await user_db.database.get_theme_mode(page.session.get('user_id'))
+                __theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
                 e.page.theme_mode = __theme_mode
                 e.page.theme = ft.Theme(color_scheme_seed=__theme_mode)
                 e.page.update()
@@ -48,7 +48,7 @@ async def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
             else:
                 # changing color cheme values from db
-                __theme_mode = await user_db.database.get_theme_mode(page.session.get('user_id'))
+                __theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))
                 e.page.theme_mode = __theme_mode
                 e.page.update()
                 time.sleep(0.1)

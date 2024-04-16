@@ -15,34 +15,44 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         page.views.pop()
 
     async def add_all_subjects():
-        all_subjects = st_db.database.get_all_subjects()
+        try:
+            all_subjects = st_db.database.get_all_subjects()
 
-        for subject in all_subjects:
-            is_subscribed = await st_db.database.check_student_subscribe(page.session.get('user_id'), subject.subject_id)
-            await subject_add(
-                f'{subject.subject_name}',
-                f'{subject.short_description}',
-                f'{StudentRoutes.SIMPLE_SUBJECT_URL}/{subject.subject_id}',
-                is_subscribed,
-                subject.users.first_name,
-                subject.users.middle_name,
-            )
+            for subject in all_subjects:
+                is_subscribed = st_db.database.check_student_subscribe(
+                    page.session.get('user_id'),
+                    subject.subject_id
+                )
+                await subject_add(
+                    f'{subject.subject_name}',
+                    f'{subject.short_description}',
+                    f'{StudentRoutes.SIMPLE_SUBJECT_URL}/{subject.subject_id}',
+                    is_subscribed,
+                    subject.users.first_name,
+                    subject.users.middle_name,
+                )
+        except Exception as err:
+            print(err)
 
     # region: Functions
     async def tabs_changed(e: ft.ControlEvent) -> None:
         # get user that he is subscribed to subject
-        status = filter.tabs[filter.selected_index].text
+        status = _filter.tabs[_filter.selected_index].text
         subjects.controls.clear()
         # set visible false to text
         if dont_have_subjects:
             dont_have_subjects.visible = False
         try:
             if status == 'Записанные':
-                values = await st_db.database.get_student_subjects(e.page.session.get('username'),
-                                                                   e.page.session.get('user_id'))
+                values = st_db.database.get_student_subjects(
+                    e.page.session.get('username'),
+                    e.page.session.get('user_id')
+                )
                 for first_name, enrollment, subject_name, subject_description, subject in values:
-                    is_subscribed = await st_db.database.check_student_subscribe(page.session.get('user_id'),
-                                                                                 subject.subject_id)
+                    is_subscribed = st_db.database.check_student_subscribe(
+                        page.session.get('user_id'),
+                        subject.subject_id
+                    )
                     await subject_add(
                         f"{subject_name}",
                         f"{subject_description}",
@@ -69,10 +79,10 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             await add_all_subjects()
             e.page.update()
             return
-        filtered_subjects = await st_db.database.filter_subjects_by_name(str(search_field.value).strip())
+        filtered_subjects = st_db.database.filter_subjects_by_name(str(search_field.value).strip())
         for subject in filtered_subjects:
-            is_subscribed = await st_db.database.check_student_subscribe(page.session.get('user_id'),
-                                                                         subject.subject_id)
+            is_subscribed = st_db.database.check_student_subscribe(page.session.get('user_id'),
+                                                                   subject.subject_id)
             await subject_add(
                 f"{subject.subject_name}",
                 f'Описание: {subject.short_description}',
@@ -145,7 +155,7 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         visible=False, weight=ft.FontWeight.BOLD, opacity=0.5
     )
 
-    filter = ft.Tabs(
+    _filter = ft.Tabs(
         scrollable=True,
         selected_index=0,
         on_change=tabs_changed,
@@ -158,7 +168,7 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             ft.Row([search_field, ft.FloatingActionButton(icon=ft.icons.SEARCH, on_click=lambda e: search(e),
                                                           bgcolor=ft.colors.SURFACE_VARIANT)]),
             ft.Column([
-                filter,
+                _filter,
                 subjects,
                 dont_have_subjects
             ], spacing=25)
@@ -174,7 +184,7 @@ async def SubjectsView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     main_container.expand = True
 
     # add all subjects
-    add_all_subjects()
+    await add_all_subjects()
     return ft.View(
         bgcolor=ft.colors.SURFACE_VARIANT,
         vertical_alignment=ft.MainAxisAlignment.CENTER,

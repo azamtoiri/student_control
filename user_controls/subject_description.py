@@ -1,5 +1,4 @@
 # отображения детальной информации
-import asyncio
 
 import flet as ft
 
@@ -15,7 +14,7 @@ class SubjectDescription(ft.UserControl):
 
     def build(self):
         self.database = StudentDatabase()
-        self.subject_information = asyncio.run(self.database.get_subject(self.subject_id))
+        self.subject_information = self.database.get_subject(self.subject_id)
 
         teacher_description = 'Пока нет информации о преподавателе'
         teacher_experience = 'неизвестно'
@@ -29,7 +28,7 @@ class SubjectDescription(ft.UserControl):
 
         styled_title_container = ft.Container(
             expand=True, border_radius=8, ink=True, bgcolor=ft.colors.SURFACE_TINT, opacity=0.8,
-            content=ft.Text(self.subject_information.subject_name, size=20, weight=ft.FontWeight.BOLD,
+            content=ft.Text(f'{self.subject_information.subject_name}', size=20, weight=ft.FontWeight.BOLD,
                             color=ft.colors.ON_INVERSE_SURFACE),
             alignment=ft.alignment.center, height=90
         )  # styled container for the title

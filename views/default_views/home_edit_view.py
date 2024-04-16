@@ -37,7 +37,7 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     ft_image = ft.Ref[ft.Image]()
 
     # route
-    main_page_url = TeacherRoutes.MAIN_URL if user_db.database.is_staff(USER_ID) else StudentRoutes.MAIN_URL
+    main_page_url = TeacherRoutes.MAIN_URL if await user_db.database.is_staff(USER_ID) else StudentRoutes.MAIN_URL
 
     # region: Functions
     def display_form_error(field: str, message: str) -> None:
@@ -53,7 +53,7 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             fields[field].set_error_text(message)
         page.update()
 
-    def save_changes(e: ft.ControlEvent) -> None:
+    async def save_changes(e: ft.ControlEvent) -> None:
         try:
             first_name = str(first_name_field.get_value).strip() if len(
                 first_name_field.get_value) else None
@@ -76,7 +76,7 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             email = str(email_field.get_value).strip() if len(
                 email_field.get_value) else None
 
-            user_db.database.update_user(
+            await user_db.database.update_user(
                 user_id=USER_ID,
                 last_name=last_name,
                 first_name=first_name,
@@ -145,7 +145,7 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
 
     # endregion
 
-    user = user_db.database.get_user_by_id(USER_ID)
+    user = await user_db.database.get_user_by_id(USER_ID)
 
     # region: InputFields
     first_name_field = UserChangField(True, label="Фамилия *",
@@ -181,7 +181,7 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     page.overlay.append(pick_files)
     page.update()
 
-    user_image_dir = user_db.database.get_user_image_url(USER_ID)
+    user_image_dir = await user_db.database.get_user_image_url(USER_ID)
 
     if (user_image_dir is None) or (os.path.exists(f'assets/uploads/{user_image_dir}') is False):
         user_avatar = UserImage(

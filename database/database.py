@@ -17,7 +17,7 @@ from utils.exceptions import (
 from utils.jwt_hash import verify, hash_
 
 async_engine = create_async_engine(
-    Connection.ASYNC_DATABASE_URL, echo=True,
+    Connection.ASYNC_DATABASE_URL,
     future=True
 )
 
@@ -188,7 +188,7 @@ class UserDatabase(AsyncBaseDatabase):
             user.middle_name = middle_name
             user.group = group
             user.course = course
-            user.age = age
+            user.age = int(age)
             user.email = email
             session.add(user)
             await session.commit()
@@ -216,61 +216,64 @@ class UserDatabase(AsyncBaseDatabase):
             user = await self.get_user_by_id(user_id)
             return user.is_staff
 
-    async def get_user_theme(self, user_id) -> Type[UserTheme]:
-        async with self._async_session() as session:
-            return await session.get(UserTheme, user_id)
-
     # region: Theme mode changing
-    async def add_theme_mode(self, user_id) -> bool:
-        async with self._async_session() as session:
-            try:
-                session.add(UserTheme(user_id=user_id))
-                await session.commit()
-                return True
-            except Exception as ex:
-                print(ex)
-                await session.rollback()
-                return False
+    @staticmethod
+    def get_user_theme(user_id) -> Type[UserTheme]:
+        not_async_db = BaseDataBase()
+        return not_async_db.session.get(UserTheme, user_id)
 
-    async def set_theme_mode(self, user_id, theme_mode) -> bool:
-        async with self._async_session() as session:
-            try:
-                user_theme = await self.get_user_theme(user_id)
-                user_theme.theme = theme_mode
-                session.add(user_theme)
-                await session.commit()
-                return True
-            except Exception as ex:
-                print(ex)
-                await session.rollback()
-                return False
+    @staticmethod
+    def add_theme_mode(user_id) -> bool:
+        not_async_db = BaseDataBase()
+        try:
+            not_async_db.session.add(UserTheme(user_id=user_id))
+            not_async_db.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            not_async_db.session.rollback()
+            return False
 
-    async def get_theme_mode(self, user_id) -> str:
-        async with self._async_session() as session:
-            try:
-                result = await session.get(UserTheme, user_id)
-                return result.theme
-            except AttributeError:
-                await self.add_theme_mode(user_id)
-                await session.rollback()
+    def set_theme_mode(self, user_id, theme_mode) -> bool:
+        not_async_db = BaseDataBase()
+        try:
+            user_theme = self.get_user_theme(user_id)
+            user_theme.theme = theme_mode
+            not_async_db.session.add(user_theme)
+            not_async_db.session.commit()
 
-    async def set_seed_color(self, user_id, seed_color) -> bool:
-        async with self._async_session() as session:
-            try:
-                user_theme = await self.get_user_theme(user_id)
-                user_theme.seed_color = seed_color
-                session.add(user_theme)
-                await session.commit()
-                return True
-            except Exception as ex:
-                print(ex)
-                session.rollback()
-                return False
+            return True
+        except Exception as ex:
+            print(ex)
+            not_async_db.session.rollback()
+            return False
 
-    async def get_seed_color(self, user_id) -> str:
-        async with self._async_session() as session:
-            result = await session.get(UserTheme, user_id)
-            return result.seed_color
+    def get_theme_mode(self, user_id) -> str:
+        not_async_db = BaseDataBase()
+        try:
+            return not_async_db.session.get(UserTheme, user_id).theme
+        except AttributeError:
+            self.add_theme_mode(user_id)
+            not_async_db.session.rollback()
+
+    def set_seed_color(self, user_id, seed_color) -> bool:
+        not_async_db = BaseDataBase()
+        try:
+            user_theme = self.get_user_theme(user_id)
+            user_theme.seed_color = seed_color
+            not_async_db.session.add(user_theme)
+            not_async_db.session.commit()
+
+            return True
+        except Exception as ex:
+            print(ex)
+            not_async_db.session.rollback()
+            return False
+
+    @staticmethod
+    def get_seed_color(user_id) -> str:
+        not_async_db = BaseDataBase()
+        return not_async_db.session.get(UserTheme, user_id).seed_color
 
     # endregion
 
@@ -327,7 +330,10 @@ class StudentDatabase(BaseDataBase):
 
     def get_all_subjects(self) -> list[Type[Subjects]]:
         """Return all subjects use for subjects_view"""
-        return self.session.query(Subjects).order_by(asc(Subjects.subject_name)).all()
+        try:
+            return self.session.query(Subjects).order_by(asc(Subjects.subject_name)).all()
+        except Exception as err:
+            print(err)
 
     def get_subject(self, subject_id) -> Type[Subjects]:
         return self.session.query(Subjects).filter(Subjects.subject_id == subject_id).first()
@@ -1118,7 +1124,7 @@ class TaskDatabase(AsyncBaseDatabase):
 
 
 async def main():
-    q = await UserDatabase().get_user_theme(user_id='43335bab-43e0-40cd-b7c4-24a2ccc8228f')
+    q = UserDatabase().get_user_theme(user_id='43335bab-43e0-40cd-b7c4-24a2ccc8228f')
     print(q)
 
 
