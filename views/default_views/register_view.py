@@ -62,7 +62,7 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         e.page.route = BaseRoutes.LOGIN_URL
         e.page.update()
 
-    def register_click(e: ft.Container) -> None:
+    async def register_click(e: ft.Container) -> None:
         try:
 
             # region: Form fields
@@ -115,7 +115,7 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
                 # hashing password
                 password = hash_(password2)
 
-            user_db.database.register_user(
+            await user_db.database.register_user(
                 first_name=first_name, last_name=last_name, middle_name=middle_name,
                 username=username, password=password, group=group, course=course, age=age, email=email
             )
@@ -215,7 +215,7 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         width=300,
         height=45,
         icon=ft.icons.KEY,
-        on_click=lambda e: register_click(e),
+        on_click=register_click,
     )
 
     login_button = ft.Container()
