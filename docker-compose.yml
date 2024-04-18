@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    command: [ "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000" ]
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:1234@postgres:5432/test
+      ASYNC_DATABASE_URL: postgresql+asyncpg://postgres:1234@postgres:5432/test
+      LOCAL_DB_URL: postgresql+psycopg2://postgres:1234@postgres:5432/test
+      ASYNC_LOCAL_DB_URL: postgresql+asyncpg://postgres:1234@postgres:5432/test
+
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=test
+    ports:
+      - '5432:5432'
+
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+volumes:
+  postgres-db:

@@ -1,6 +1,11 @@
 import asyncio
+import os
+from pathlib import Path
 
 import flet as ft
+import flet.fastapi as flet_fastapi
+from flet.fastapi import FletUpload
+from flet.fastapi.flet_fastapi import Request
 
 from constants import LOGO_PATH
 from database.database import UserDatabase
@@ -160,5 +165,18 @@ async def main(page: ft.Page):
     running_tasks = [asyncio.create_task(item.animate_thing()) for item in background.controls]
 
 
+assets_abs_path = os.path.abspath('assets')
+uploads_abs_path = os.path.abspath('assets/uploads')
+DOWNLOAD_PATH = str(Path.home())
+
+app = flet_fastapi.app(main, assets_dir=assets_abs_path, upload_dir=uploads_abs_path)
+
+
+@app.put("/upload")
+async def flet_uploads(request: Request):
+    await FletUpload("/Users/feodor/Downloads/123").handle(request)
+
+
 if __name__ == '__main__':
-    ft.app(main, assets_dir="assets", upload_dir="assets/uploads")
+    # uvicorn.run(app=app)
+    ft.app(main, assets_dir="assets", upload_dir="assets/upda")

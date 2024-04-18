@@ -24,3 +24,12 @@ FLET_SECRET_KEY='a;lskdfj;lasdkjf;lsdajfw-oeirj089j02=3984jh320iji'
 # Последняя стабильная версия
 
 [Стабильная версия](https://github.com/azamtoiri/student_control/releases)
+
+
+# Дать права пользователю
+```shell
+python manage.py -u useranme --is-staff --is-superuser
+```
+    -u --username - имя пользователя
+
+Указав один из [--is-staff --is-superuser]будет выдаваться права пользователю

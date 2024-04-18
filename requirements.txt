@@ -1,0 +1,11 @@
+alembic
+flet
+sqlalchemy
+psycopg2-binary
+python-decouple
+uvicorn
+passlib
+flet-material
+bcrypt
+flet-route
+asyncpg

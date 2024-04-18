@@ -4,7 +4,7 @@ import flet as ft
 from flet import *
 
 from constants import LOGO_PATH
-from database.database import UserDatabase
+from database.database import UserThemeDatabase
 from utils.routes_url import BaseRoutes
 
 
@@ -19,7 +19,7 @@ class STAppBar(AppBar):
         self._who_text = Text(size=10, color=ft.colors.INVERSE_SURFACE, weight=ft.FontWeight.BOLD)
         self._route_text = Text(size=25, color=colors.INVERSE_SURFACE, text_align=ft.TextAlign.CENTER)
 
-        self.db = UserDatabase()
+        self.db = UserThemeDatabase()
 
         self.leading_width = 100
         self.toolbar_height = 80

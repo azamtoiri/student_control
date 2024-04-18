@@ -1,0 +1,31 @@
+# .dockerignore
+node_modules
+bar
+.idea
+build
+dist
+test
+test.py
+test2.py
+sql scripts
+*.spec
+# Ignore all markdown files
+*.md
+
+# Ignore all log files
+*.log
+
+# Ignore all .pyc files
+*.pyc
+
+# poetry
+poetry.lock
+
+# Ignore all .pyo files
+*.pyo
+
+# Ignore all .pyd files
+*.pyd
+
+# Ignore __pycache__ directories
+__pycache__

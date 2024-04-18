@@ -216,69 +216,7 @@ class UserDatabase(AsyncBaseDatabase):
             user = await self.get_user_by_id(user_id)
             return user.is_staff
 
-    # region: Theme mode changing
-    @staticmethod
-    def get_user_theme(user_id) -> Type[UserTheme]:
-        not_async_db = BaseDataBase()
-        return not_async_db.session.get(UserTheme, user_id)
-
-    @staticmethod
-    def add_theme_mode(user_id) -> bool:
-        not_async_db = BaseDataBase()
-        try:
-            not_async_db.session.add(UserTheme(user_id=user_id))
-            not_async_db.session.commit()
-            return True
-        except Exception as ex:
-            print(ex)
-            not_async_db.session.rollback()
-            return False
-
-    def set_theme_mode(self, user_id, theme_mode) -> bool:
-        not_async_db = BaseDataBase()
-        try:
-            user_theme = self.get_user_theme(user_id)
-            user_theme.theme = theme_mode
-            not_async_db.session.add(user_theme)
-            not_async_db.session.commit()
-
-            return True
-        except Exception as ex:
-            print(ex)
-            not_async_db.session.rollback()
-            return False
-
-    def get_theme_mode(self, user_id) -> str:
-        not_async_db = BaseDataBase()
-        try:
-            return not_async_db.session.get(UserTheme, user_id).theme
-        except AttributeError:
-            self.add_theme_mode(user_id)
-            not_async_db.session.rollback()
-
-    def set_seed_color(self, user_id, seed_color) -> bool:
-        not_async_db = BaseDataBase()
-        try:
-            user_theme = self.get_user_theme(user_id)
-            user_theme.seed_color = seed_color
-            not_async_db.session.add(user_theme)
-            not_async_db.session.commit()
-
-            return True
-        except Exception as ex:
-            print(ex)
-            not_async_db.session.rollback()
-            return False
-
-    @staticmethod
-    def get_seed_color(user_id) -> str:
-        not_async_db = BaseDataBase()
-        return not_async_db.session.get(UserTheme, user_id).seed_color
-
-    # endregion
-
     # region: Teacher info
-
     async def get_teacher_info(self, user_id) -> Type[TeacherInformation]:
         """Get teacher information by teacher id"""
         async with self._async_session() as session:
@@ -323,6 +261,66 @@ class UserDatabase(AsyncBaseDatabase):
                 return False
 
     # endregion
+
+    @staticmethod
+    def get_theme_mode(user_id) -> str:
+        not_async_db = UserThemeDatabase()
+        try:
+            return not_async_db.session.get(UserTheme, user_id).theme
+        except AttributeError:
+            not_async_db.add_theme_mode(user_id)
+            not_async_db.session.rollback()
+
+
+class UserThemeDatabase(BaseDataBase):
+    def get_user_theme(self, user_id) -> Type[UserTheme]:
+        return self.session.get(UserTheme, user_id)
+
+    def add_theme_mode(self, user_id) -> bool:
+        try:
+            self.session.add(UserTheme(user_id=user_id))
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()
+            return False
+
+    def set_theme_mode(self, user_id, theme_mode) -> bool:
+        try:
+            user_theme = self.get_user_theme(user_id)
+            user_theme.theme = theme_mode
+            self.session.add(user_theme)
+            self.session.commit()
+
+            return True
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()
+            return False
+
+    def get_theme_mode(self, user_id) -> str:
+        try:
+            return self.session.get(UserTheme, user_id).theme
+        except AttributeError:
+            self.add_theme_mode(user_id)
+            self.session.rollback()
+
+    def set_seed_color(self, user_id, seed_color) -> bool:
+        try:
+            user_theme = self.get_user_theme(user_id)
+            user_theme.seed_color = seed_color
+            self.session.add(user_theme)
+            self.session.commit()
+
+            return True
+        except Exception as ex:
+            print(ex)
+            self.session.rollback()
+            return False
+
+    def get_seed_color(self, user_id) -> str:
+        return self.session.get(UserTheme, user_id).seed_color
 
 
 class StudentDatabase(BaseDataBase):
