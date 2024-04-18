@@ -121,8 +121,8 @@ session.commit()
 
 # Добавление данных в таблицу SubjectTheory
 subject_theory_data = [
-    {'theory_data': 'test_theory.pdf', 'subject_id': subjects_data[0]['subject_id']},
-    {'theory_data': 'test_theory.pdf', 'subject_id': subjects_data[1]['subject_id']}
+    {'theory_data': 'test_theory.pdf', 'theory_id': subjects_data[0]['subject_id']},
+    {'theory_data': 'test_theory.pdf', 'theory_id': subjects_data[1]['subject_id']}
 ]
 
 for theory_data in subject_theory_data:

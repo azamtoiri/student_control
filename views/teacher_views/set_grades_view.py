@@ -21,7 +21,7 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
     async def search(e: ft.ControlEvent) -> None:
         dont_have_students.visible = False
         await subjects_row.clean_async()
-        await students_row.controls.clean_async()
+        await students_row.clean_async()
         search_value = str(search_field.value).strip()
         try:
             list_subjects = await db.get_teacher_students_with_filter(USER_ID, search_value)
@@ -68,10 +68,11 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
         dont_have_students.visible = False
         student_filter_tab.visible = False
         e.page.update()
-        subjects_row.controls.clear()
+        await subjects_row.clean_async()
+        await students_row.clean_async()
         status = subjects_filter_tab.tabs[subjects_filter_tab.selected_index].text
         try:
-            list_subjects = []
+            list_subjects = await db.get_teacher_students_subjects_with_filter(USER_ID, status)
             for list_subject in list_subjects:
                 await create_students_subject_card(
                     subject_title=list_subject[3],
@@ -90,11 +91,11 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
         dont_have_students.visible = False
         subjects_filter_tab.visible = False
         e.page.update()
-        status = student_filter_tab.tabs[student_filter_tab.selected_index].text
-        students_row.controls.clear()
-        subjects_row.clean()
+        status = str(student_filter_tab.tabs[student_filter_tab.selected_index].text).split()
+        await students_row.clean_async()
+        await subjects_row.clean_async()
         try:
-            list_subjects = []
+            list_subjects = await db.get_teacher_students_with_filter(USER_ID, status[0])
             for list_subject in list_subjects:
                 await create_students_subject_card(
                     subject_title=list_subject[3],
@@ -115,8 +116,8 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
         if filter_name == 'Все':
             student_filter_tab.visible = False
             subjects_filter_tab.visible = False
-            subjects_row.clean()
-            students_row.clean()
+            await subjects_row.clean_async()
+            await students_row.clean_async()
             await show_all_subjects_row()
 
         elif filter_name == 'Предметы':
@@ -135,7 +136,6 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
 
     students_tabs = []
     try:
-        # students_db = []
         students_db = await db.get_teacher_students(USER_ID)
         for _student in students_db:
             name = f'{_student[2]} {_student[1]}'

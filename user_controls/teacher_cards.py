@@ -7,13 +7,7 @@ from database.database import StudentDatabase
 from user_controls.modal_alert_dialog import ModalAlertDialog
 
 
-def create_student_subject_card(
-        subject_name, student_fio: str
-):
-    raise NotImplemented
-
-
-def create_students_subject_card(
+async def create_students_subject_card(
         subject_title: str,
         student_fio: str,
         student_row: ft.ResponsiveRow,

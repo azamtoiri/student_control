@@ -1,7 +1,7 @@
 from typing import Type, Optional, List
 
 from sqlalchemy import create_engine, asc, func, select
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker, aliased
 
 from constants import Connection
@@ -25,7 +25,7 @@ async_engine = create_async_engine(
 class AsyncBaseDatabase:
     def __init__(self):
         self.engine = async_engine
-        self._async_session = sessionmaker(
+        self._async_session = async_sessionmaker(
             bind=async_engine, class_=AsyncSession, expire_on_commit=False, future=True
         )
 
@@ -37,7 +37,7 @@ class AsyncBaseDatabase:
 
 class BaseDataBase:
     def __init__(self):
-        engine = create_engine(url=Connection.DATABASE_URL)
+        engine = create_engine(url=Connection.DATABASE_URL, echo=True)
         Base.metadata.create_all(engine)
         Session = sessionmaker(engine)
         self.session = Session()
@@ -88,19 +88,11 @@ class UserDatabase(AsyncBaseDatabase):
         except Exception as err:
             print(err)
 
-    async def get_user_id(self, username) -> Type[Users]:
-        """Get user id"""
-        async with self._async_session() as session:
-            query = select(Users).filter_by(username=username)
-            result = await session.execute(query)
-            return result.scalars().first()
-
     async def get_user_by_id(self, user_id) -> Type[Users]:
         """Get user by id"""
         async with self._async_session() as session:
-            query = select(Users).filter_by(user_id=user_id)
-            result = await session.execute(query)
-            return result.scalars().first()
+            result = await session.get(Users, user_id, populate_existing=True)
+            return result
 
     async def verify_password(self, username: str, password: str) -> bool:
         """Verify password"""
@@ -262,14 +254,73 @@ class UserDatabase(AsyncBaseDatabase):
 
     # endregion
 
+    # region: Theme mode changing
+
+    async def get_theme_settings(self, user_id) -> Type[UserTheme]:
+        async with self._async_session() as session:
+            user_theme = await session.get(UserTheme, user_id)
+            return user_theme
+
+    async def get_user_theme(self, user_id) -> Type[UserTheme]:
+        async with self._async_session() as session:
+            result = await session.get(UserTheme, user_id)
+            return result
+
     @staticmethod
-    def get_theme_mode(user_id) -> str:
+    def add_theme_mode(user_id) -> bool:
         not_async_db = UserThemeDatabase()
         try:
-            return not_async_db.session.get(UserTheme, user_id).theme
-        except AttributeError:
-            not_async_db.add_theme_mode(user_id)
+            not_async_db.session.add(UserTheme(user_id=user_id))
+            not_async_db.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
             not_async_db.session.rollback()
+            return False
+
+    @staticmethod
+    def set_theme_mode(user_id, theme_mode) -> bool:
+        not_async_db = UserThemeDatabase()
+        try:
+            user_theme = not_async_db.get_user_theme(user_id)
+            user_theme.theme = theme_mode
+            not_async_db.session.add(user_theme)
+            not_async_db.session.commit()
+
+            return True
+        except Exception as ex:
+            print(ex)
+            not_async_db.session.rollback()
+            return False
+
+    async def get_theme_mode(self, user_id) -> str:
+        async with self._async_session() as session:
+            try:
+                result = await session.get(UserTheme, user_id)
+                return result.theme
+            except AttributeError:
+                self.add_theme_mode(user_id)
+
+    async def set_seed_color(self, user_id, seed_color) -> bool:
+        async with self._async_session() as session:
+            try:
+                user_theme = await self.get_user_theme(user_id)
+                user_theme.seed_color = seed_color
+                session.add(user_theme)
+                await session.commit()
+
+                return True
+            except Exception as ex:
+                print(ex)
+                await session.rollback()
+                return False
+
+    async def get_seed_color(self, user_id) -> str:
+        async with self._async_session() as session:
+            result = await session.get(UserTheme, user_id)
+            return result.seed_color
+
+    # endregion
 
 
 class UserThemeDatabase(BaseDataBase):
@@ -1003,7 +1054,7 @@ class TeacherDatabase(AsyncBaseDatabase):
 
             async with self._async_session() as session:
                 result = await session.execute(stmt)
-                students = result.scalars().all()
+                students = result.fetchall()
 
             if len(students) <= 0:
                 raise DontHaveGrades
@@ -1012,27 +1063,32 @@ class TeacherDatabase(AsyncBaseDatabase):
         except Exception as ex:
             print(ex)
 
-    def get_teacher_students_with_filter(self, user_id, last_name) -> list[Type[Users]]:
+    async def get_teacher_students_with_filter(self, user_id, last_name) -> list[Type[Users]]:
         user1 = aliased(Users)
-        not_async_db = BaseDataBase()
+        async with self._async_session() as session:
+            # Выполняем запрос для получения студентов
+            query = (
+                select(
+                    Users.user_id,
+                    Users.first_name,
+                    Users.last_name,
+                    Subjects.subject_name,
+                    Subjects.subject_id
+                )
+                .join(Enrollments, Users.user_id == Enrollments.user_id)
+                .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
+                .join(user1, Subjects.user_id == user1.user_id)
+                .filter(user1.is_staff == True)
+                .distinct()
+                .filter(user1.user_id == user_id, Users.last_name.ilike(f'%{last_name}%'))
+            )
+            result = await session.execute(query)
+            students = result.fetchall()
 
-        # Выполняем запрос для получения студентов
-        students = (
-            not_async_db.session.query(Users.user_id, Users.first_name, Users.last_name, Subjects.subject_name,
-                                       Subjects.subject_id)
-            .join(Enrollments, Users.user_id == Enrollments.user_id)
-            .join(Subjects, Enrollments.subject_id == Subjects.subject_id)
-            .join(user1, Subjects.user_id == user1.user_id)
-            .filter(user1.is_staff == True)
-            .distinct()
-            .filter(user1.user_id == user_id, Users.last_name.ilike(f'%{last_name}%'))
-            .all()
-        )
+            if len(students) <= 0:
+                raise DontHaveGrades
 
-        if len(students) <= 0:
-            raise DontHaveGrades
-
-        return students
+            return students
 
     @staticmethod
     def get_teacher_information(user_id) -> Type[TeacherInformation]:
