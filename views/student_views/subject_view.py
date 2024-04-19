@@ -30,8 +30,10 @@ async def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         sub_db.database.subscribe_student_to_subject(USER_ID, SUBJECT_ID)
         subscribe_button.visible = False
         unsubscribe_button.visible = True
-        display_success_banner(page=e.page, message='Вы успешно зарегистрировались на курс',
-                               icons=ft.icons.CHECK_CIRCLE)
+        display_success_banner(
+            page=e.page, message='Вы успешно зарегистрировались на курс',
+            icons=ft.icons.CHECK_CIRCLE
+        )
         e.page.update()
         close_dlg(e)
 

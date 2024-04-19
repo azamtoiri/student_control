@@ -2,7 +2,7 @@ from typing import Type, Optional, List
 
 from sqlalchemy import create_engine, asc, func, select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import sessionmaker, aliased
+from sqlalchemy.orm import sessionmaker, aliased, lazyload
 
 from constants import Connection
 from constants import UserDefaults
@@ -37,7 +37,7 @@ class AsyncBaseDatabase:
 
 class BaseDataBase:
     def __init__(self):
-        engine = create_engine(url=Connection.DATABASE_URL, echo=True)
+        engine = create_engine(url=Connection.DATABASE_URL)
         Base.metadata.create_all(engine)
         Session = sessionmaker(engine)
         self.session = Session()
@@ -372,6 +372,31 @@ class UserThemeDatabase(BaseDataBase):
 
     def get_seed_color(self, user_id) -> str:
         return self.session.get(UserTheme, user_id).seed_color
+
+
+class StudentAsyncDatabase(AsyncBaseDatabase):
+    @staticmethod
+    async def get_student_subjects(session: AsyncSession, user_id) -> list[UserTasksFiles]:
+        async with (session.begin()):
+            # Создаем асинхронный запрос с использованием функции select из sqlalchemy.future
+            stmt = select(
+                Users.first_name, Enrollments, Subjects.subject_name, Subjects.short_description,
+                Subjects
+            ).join(
+                Enrollments, Users.user_id == Enrollments.user_id
+            ).join(
+                Subjects, Subjects.subject_id == Enrollments.subject_id
+            ).where(
+                Users.user_id == user_id
+            )
+            # Выполняем запрос и получаем результаты
+            result = await session.execute(stmt)
+            user_subjects = result.fetchall()
+
+            # Проверяем наличие результатов и возвращаем их
+            if len(user_subjects) == 0:
+                raise DontHaveGrades()
+            return user_subjects
 
 
 class StudentDatabase(BaseDataBase):

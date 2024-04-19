@@ -4,8 +4,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from constants import Connection
-from database.models import Users, Subjects, Enrollments, Grades, SubjectTasks, SubjectTheory, TeacherInformation, \
-    UserTasksFiles
+from database.models import (
+    Users, Subjects,
+    Enrollments, Grades,
+    SubjectTasks, SubjectTheory,
+    TeacherInformation, UserTasksFiles
+)
 
 # Подключение к базе данных
 engine = create_engine(Connection.DATABASE_URL)  # Подставьте свою строку подключения
@@ -126,7 +130,6 @@ subject_theory_data = [
 ]
 
 for theory_data in subject_theory_data:
-    theory_data['theory_id'] = uuid.uuid4()
     subject_theory = SubjectTheory(**theory_data)
     session.add(subject_theory)
 session.commit()

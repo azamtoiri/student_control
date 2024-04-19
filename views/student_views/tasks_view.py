@@ -1,11 +1,17 @@
 import flet as ft
 from flet_route import Params, Basket
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from database.database import StudentDatabase
+from database.database import StudentDatabase, StudentAsyncDatabase
+from database.database import async_engine
 from user_controls.student_subject_tasks_card import StudentSubjectTasksCard
 from utils.exceptions import DontHaveGrades
 from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
+
+async_session = async_sessionmaker(
+    bind=async_engine, class_=AsyncSession, expire_on_commit=False, future=True
+)
 
 
 async def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -16,6 +22,7 @@ async def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         page.views.pop()
 
     db = LazyDatabase(StudentDatabase)
+    async_db = StudentAsyncDatabase()
 
     content = ft.Column()
 
@@ -34,7 +41,6 @@ async def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     try:
         subjects = db.database.get_student_subjects(user_id=USER_ID)
-
         for subject in subjects:
             content.controls.append(
                 StudentSubjectTasksCard(
@@ -42,12 +48,14 @@ async def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                     subject[4].subject_id,
                     page=page,
                     file_picker=file_piker,
-                    theory_url=subject[4].subject_theory.theory_data if subject[4].subject_theory else None
+                    theory_url=await subject[4].subject_theory.theory_data if subject[4].subject_theory else None
                 )
             )
     except DontHaveGrades as error:
         dont_have_tasks.visible = True
         page.update()
+    except Exception as err:
+        print(err)
 
     return ft.View(
         scroll=ft.ScrollMode.AUTO,

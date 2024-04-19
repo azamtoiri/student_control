@@ -25,7 +25,6 @@ async def SetGradesView(page: ft.Page, params: Params, basket: Basket) -> ft.Vie
         search_value = str(search_field.value).strip()
         try:
             list_subjects = await db.get_teacher_students_with_filter(USER_ID, search_value)
-            print('list: sub', list_subjects)
             for list_subject in list_subjects:
                 await create_students_subject_card(
                     subject_title=list_subject[3],

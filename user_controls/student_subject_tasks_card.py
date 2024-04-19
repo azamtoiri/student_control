@@ -7,7 +7,7 @@ from datetime import datetime
 import flet as ft
 from flet_core.file_picker import FilePickerFile
 
-from database.database import StudentDatabase
+from database.database import StudentDatabase, StudentAsyncDatabase
 from utils.banners import display_success_banner
 from utils.routes_url import StudentRoutes
 from utils.zip_file import compress_file_to_zip
