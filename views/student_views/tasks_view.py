@@ -1,10 +1,12 @@
+import uuid
+
 import flet as ft
 from flet_route import Params, Basket
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from database.database import StudentDatabase, StudentAsyncDatabase
 from database.database import async_engine
-from user_controls.student_subject_tasks_card import StudentSubjectTasksCard
+from user_controls.student_subject_tasks_card import create_student_subject_tasks_card
 from utils.exceptions import DontHaveGrades
 from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
@@ -40,15 +42,14 @@ async def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     try:
-        subjects = db.database.get_student_subjects(user_id=USER_ID)
+        subjects = await async_db.get_student_subjects(user_id=USER_ID)
         for subject in subjects:
             content.controls.append(
-                StudentSubjectTasksCard(
+                await create_student_subject_tasks_card(
                     USER_ID, subject[2],
-                    subject[4].subject_id,
                     page=page,
                     file_picker=file_piker,
-                    theory_url=await subject[4].subject_theory.theory_data if subject[4].subject_theory else None
+                    theory_url=subject[4].subject_theory.theory_data if subject[4].subject_theory else None
                 )
             )
     except DontHaveGrades as error:
@@ -65,5 +66,4 @@ async def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             content,
             dont_have_tasks
         ]
-        # controls=content
     )

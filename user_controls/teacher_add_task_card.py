@@ -1,6 +1,6 @@
 import flet as ft
 
-from database.database import StudentDatabase
+from database.database import StudentDatabase, StudentAsyncDatabase
 from user_controls.modal_alert_dialog import ModalAlertDialog
 from utils.banners import display_success_banner
 from utils.display_error import display_form_error
@@ -180,3 +180,114 @@ class TeacherAddTaskCard(ft.UserControl):
             count += 1
         self.expansion_tile.update()
         e.page.update()
+
+
+async def create_teacher_add_task_card(user_id, subject_name, subject_id, page):
+    async_db = StudentAsyncDatabase()
+
+    async def yes_add_task(e):
+        task_name = str(task_name_field.value).strip() if len(task_name_field.value) else None
+        fields = {
+            'task_name': task_name_field,
+        }
+        try:
+            await async_db.add_teacher_subject_task(subject_id, task_name)
+            add_task_dlg.dlg.open = False
+            add_task_dlg.update()
+            display_success_banner(page, 'Задание успешно добавлено', ft.icons.CHECK)
+            e.page.update()
+        except RequiredField as error:
+            display_form_error(page, str(error), fields)
+            e.page.update()
+
+        page.update()
+
+    async def add_task_button_click(e):
+        page.dialog = add_task_dlg
+        if task_name_field.value:
+            task_name_field.value = None
+        add_task_dlg.dlg.open = True
+        page.update()
+        add_task_dlg.dlg.update()
+
+    async def get_subject_tasks():
+        res = []
+        count = 1
+
+        values = await async_db.get_teacher_subject_tasks(user_id, subject_id)
+        for value in values:
+            task_ = SubjectTile(
+                count=count, task_name=value[4],
+                subject_task_id=value[5], page=page
+            )
+            count += 1
+            res.append(task_)
+        return res
+
+    async def update_expansion_tile(e):
+        teacher_tasks_len = len(await async_db.get_teacher_subject_tasks(user_id, subject_id))
+        current_subject_len = len(subject_tasks)
+        if e.data == 'false':
+            return
+        if teacher_tasks_len <= current_subject_len <= teacher_tasks_len:
+            return
+        count = 1
+        expansion_tile.controls.clear()
+        values = await async_db.get_teacher_subject_tasks(user_id, subject_id=subject_id)
+        for value in values:
+            task_ = SubjectTile(
+                count=count, task_name=value[4],
+                subject_task_id=value[5], page=page
+            )
+            expansion_tile.controls.append(task_)
+            count += 1
+        expansion_tile.update()
+        e.page.update()
+
+    task_name_field = ft.TextField(label='Название задания')
+    add_task_button = ft.ElevatedButton('Добавить задание', on_click=add_task_button_click)
+
+    dlg_add_text = ft.Text('Введите название задания')
+    add_task_dlg = ModalAlertDialog(
+        title=ft.Text(f'{subject_name}', expand=1, text_align=ft.TextAlign.CENTER),
+        content=ft.Column(
+            height=100,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                dlg_add_text,
+                task_name_field,
+            ]
+        ),
+        yes_click=yes_add_task
+    )
+
+    task_icon = ft.Icon(ft.icons.TASK_OUTLINED, color=ft.colors.SURFACE_TINT)
+    subject_tasks = await get_subject_tasks(user_id, subject_id, page)
+
+    expansion_tile = ft.ExpansionTile(
+        controls=subject_tasks,
+        title=ft.Text('Задания'),
+        on_change=update_expansion_tile
+    )
+
+    return ft.Card(
+        content=ft.Container(
+            padding=ft.padding.symmetric(vertical=10),
+            content=ft.Column(
+                horizontal_alignment=ft.CrossAxisAlignment.END,
+                controls=[
+                    ft.ListTile(
+                        leading=task_icon,
+                        title=ft.Row(
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                            controls=[
+                                ft.Text(subject_name),
+                                ft.ElevatedButton('Добавить задание', on_click=add_task_button_click)
+                            ]
+                        ),
+                    ),
+                    expansion_tile,
+                ]
+            )
+        )
+    )

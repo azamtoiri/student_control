@@ -156,12 +156,6 @@ async def main(page: ft.Page):
 
     page.add(stack)
     page.update()
-    # teacher
-    # page.session.set('user_id', uuid.UUID('26bcd012-6f6a-4b67-89f7-38e0c6ab1718'))
-    # page.session.set('user_id', uuid.UUID('ebd3b87e-3e13-4e8e-8d94-d8482bee2dcc'))
-    # page.session.set('is_auth', True)
-    # page.session.set('is_true', True)
-    # page.go('/student/tasks')
 
     if page.session.get('user_id'):
         page.theme_mode = user_db.database.get_theme_mode(page.session.get('user_id'))

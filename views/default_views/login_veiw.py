@@ -24,7 +24,6 @@ async def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # region: Functions
     async def login_click(e: ft.ControlEvent) -> None:
-        """Login user to the system."""
         username = str(username_field.input_box_content.value).strip() if len(
             username_field.input_box_content.value) else None
         password = str(password_field.input_box_content.value).strip() if len(

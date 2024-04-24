@@ -9,7 +9,6 @@ from flet_core.file_picker import FilePickerFile
 
 from database.database import StudentDatabase, StudentAsyncDatabase
 from utils.banners import display_success_banner
-from utils.routes_url import StudentRoutes
 from utils.zip_file import compress_file_to_zip
 
 
@@ -126,7 +125,6 @@ class StudentSubjectTasksCard(ft.UserControl):
         self.user_id = user_id
         self.db = StudentDatabase()
         self.subject_name = subject_name
-        self.subject_id = subject_id
         self.file_picker = file_picker
         self.task_file_url = theory_url
 
@@ -190,6 +188,78 @@ class StudentSubjectTasksCard(ft.UserControl):
         else:
             self.file_picker.save_file(
                 dialog_title='Скачать теорию', file_type=ft.FilePickerFileType.CUSTOM,
-                allowed_extensions=['.pdf', '.docx', '.doc', '.txt'],
+                allowed_extensions=['pdf', 'docx', 'doc', 'txt'],
                 file_name=self.task_file_url
             )
+
+
+async def create_student_subject_tasks_card(user_id, subject_name, page, file_picker, theory_url):
+    async_db = StudentAsyncDatabase()
+
+    async def get_subject_tasks():
+        res = []
+        count = 1
+        values = await async_db.get_student_subject_tasks_by_name(user_id, subject_name)
+        print(values)
+        for value in values:
+            task_ = SubjectTile(
+                count, value[0], value[1], user_id, page=page, enrollment_id=value[4]
+            )
+            res.append(task_)
+            count += 1
+        return res
+
+    async def save_file_result(e):
+        if e.path:
+            shutil.copy2(f'assets/uploads/{task_file_url}', e.path)
+
+    async def save_file_click(e):
+        if task_file_url is None:
+            display_success_banner(page, 'Пока теории нет', ft.icons.ERROR)
+            return
+        else:
+            file_picker.save_file(
+                dialog_title='Скачать теорию', file_type=ft.FilePickerFileType.CUSTOM,
+                allowed_extensions=['pdf', 'docx', 'doc', 'txt'],
+                file_name=task_file_url
+            )
+
+    page = page
+
+    task_file_url = theory_url
+
+    task_icon = ft.Icon(ft.icons.TASK_OUTLINED, color=ft.colors.SURFACE_TINT)
+    subject_tasks = await get_subject_tasks()
+
+    file_picker.on_result = save_file_result
+
+    theory_button = ft.ElevatedButton(
+        'Теория',
+        on_click=save_file_click,
+        icon=ft.icons.DOWNLOAD
+    )
+
+    return ft.Card(
+        content=ft.Container(
+            padding=ft.padding.symmetric(vertical=10),
+            content=ft.Column(
+                horizontal_alignment=ft.CrossAxisAlignment.END,
+                controls=[
+                    ft.ListTile(
+                        leading=task_icon,
+                        title=ft.Row(
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                            controls=[
+                                ft.Text(subject_name),
+                                theory_button,
+                            ]
+                        ),
+                    ),
+                    ft.ExpansionTile(
+                        title=ft.Text('Задания'),
+                        controls=subject_tasks
+                    ),
+                ]
+            )
+        )
+    )

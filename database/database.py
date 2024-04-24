@@ -2,7 +2,7 @@ from typing import Type, Optional, List
 
 from sqlalchemy import create_engine, asc, func, select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import sessionmaker, aliased, lazyload
+from sqlalchemy.orm import sessionmaker, aliased, joinedload
 
 from constants import Connection
 from constants import UserDefaults
@@ -375,28 +375,78 @@ class UserThemeDatabase(BaseDataBase):
 
 
 class StudentAsyncDatabase(AsyncBaseDatabase):
-    @staticmethod
-    async def get_student_subjects(session: AsyncSession, user_id) -> list[UserTasksFiles]:
-        async with (session.begin()):
-            # Создаем асинхронный запрос с использованием функции select из sqlalchemy.future
-            stmt = select(
+    async def get_student_subjects(self, user_id) -> list:
+        async with self._async_session() as session:
+            query = select(
                 Users.first_name, Enrollments, Subjects.subject_name, Subjects.short_description,
                 Subjects
             ).join(
                 Enrollments, Users.user_id == Enrollments.user_id
             ).join(
                 Subjects, Subjects.subject_id == Enrollments.subject_id
-            ).where(
-                Users.user_id == user_id
-            )
-            # Выполняем запрос и получаем результаты
-            result = await session.execute(stmt)
-            user_subjects = result.fetchall()
+            ).where(Users.user_id == user_id).options(joinedload(Subjects.subject_theory))
 
-            # Проверяем наличие результатов и возвращаем их
-            if len(user_subjects) == 0:
-                raise DontHaveGrades()
-            return user_subjects
+            req = await session.execute(query)
+            result = req.fetchall()
+            return result
+
+    async def get_student_subject_tasks_by_name(self, user_id, subject_name) -> list:
+        query = select(
+            SubjectTasks.task_name, SubjectTasks.subject_task_id, Users.user_id, Subjects.subject_id,
+            Enrollments.enrollment_id
+        ).join(
+            Enrollments, Users.user_id == Enrollments.user_id
+        ).join(
+            Subjects, Subjects.subject_id == Enrollments.subject_id
+        ).join(
+            SubjectTasks, SubjectTasks.subject_id == Subjects.subject_id
+        ).filter(
+            Users.user_id == user_id, Subjects.subject_name == subject_name
+        )
+        async with self._async_session() as session:
+            req = await session.execute(query)
+            res = req.unique().scalars().all()
+            return res
+
+    async def add_teacher_subject_task(self, subject_id, task_name) -> bool:
+        async with self._async_session() as session:
+            if task_name is None:
+                raise RequiredField('task_name')
+
+            try:
+                task = SubjectTasks(subject_id=subject_id, task_name=task_name)
+                session.add(task)
+                await session.commit()
+                return True
+            except Exception as ex:
+                await session.rollback()
+                print(ex)
+                return False
+
+    async def get_teacher_subject_tasks(self, user_id, subject_id) -> list[Type[SubjectTasks]]:
+        async with self._async_session() as session:
+            query = select(
+                Users.user_id, Users.username, Subjects.subject_id, Subjects.subject_name, SubjectTasks.task_name,
+                SubjectTasks.subject_task_id
+            ).join(
+                Subjects, Users.user_id == Subjects.user_id
+            ).join(
+                SubjectTasks, Subjects.subject_id == SubjectTasks.subject_id
+            ).filter(
+                Users.user_id == user_id, Subjects.subject_id == subject_id
+            )
+            req = await session.execute(query)
+            result = req.fetchall()
+            return result
+
+    async def get_teacher_subjects(self, user_id) -> Type[Subjects]:
+        async with self._async_session() as session:
+            query = select(
+                Subjects
+            ).filter(Subjects.user_id == user_id)
+            req = await session.execute(query)
+            result = req.scalars().all()
+            return result
 
 
 class StudentDatabase(BaseDataBase):
@@ -1133,11 +1183,6 @@ class TeacherDatabase(AsyncBaseDatabase):
     async def get_teacher_subjects(user_id) -> list[Type[Subjects]]:
         not_async_db = BaseDataBase()
         return not_async_db.session.query(Subjects).filter(Subjects.user_id == user_id).all()
-        # async with self._async_session() as session:
-        #     stmt = select(Subjects).filter(Subjects.user_id == user_id)
-        #     result = await session.execute(stmt)
-        # subjects = result.scalars().all()
-        # return subjects
 
 
 class TheoryDatabase(AsyncBaseDatabase):

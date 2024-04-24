@@ -1,12 +1,12 @@
 import flet as ft
 from flet_route import Basket, Params
 
-from database.database import StudentDatabase as TeacherDatabase
-from user_controls.student_subject_tasks_card import StudentSubjectTasksCard
+from database.database import StudentDatabase as TeacherDatabase, StudentAsyncDatabase
 from user_controls.teacher_add_task_card import TeacherAddTaskCard
 from utils.routes_url import TeacherRoutes
 
 db = TeacherDatabase()
+async_db = StudentAsyncDatabase()
 
 
 async def MyTasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -21,10 +21,11 @@ async def MyTasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     content = ft.Column()
 
     try:
-        subjects = db.get_teacher_subjects(user_id=USER_ID)
+        subjects = await async_db.get_teacher_subjects(user_id=USER_ID)
 
         for subject in subjects:
-            content.controls.append(TeacherAddTaskCard(USER_ID, subject.subject_name, subject.subject_id, page=page))
+            content.controls.append(
+                TeacherAddTaskCard(USER_ID, subject.subject_name, subject.subject_id, page=page))
     except Exception as error:
         print(error)
         page.update()
