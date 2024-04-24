@@ -73,6 +73,11 @@ class Connection:
     DATABASE_HOSTNAME = _get_config("DATABASE_HOSTNAME", str, "postgres")
     DATABASE_NAME = _get_config("DATABASE_NAME", str, default="postgres")
 
+    TEST_DATABASE = _get_config(
+        "TEST_DATABASE", str,
+        default='postgresql+psycopg2://postgres:postgres@localhost:5432/test_db'
+    )
+
 
 class UserDefaults:
     """User default setting"""
