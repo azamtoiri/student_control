@@ -180,4 +180,4 @@ async def flet_uploads(request: Request):
 
 if __name__ == '__main__':
     # uvicorn.run(app=app)
-    ft.app(main, assets_dir="assets", upload_dir="assets/uploads", view=ft.AppView.WEB_BROWSER)
+    ft.app(main, assets_dir="assets", upload_dir="assets/uploads")
