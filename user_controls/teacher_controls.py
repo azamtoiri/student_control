@@ -153,7 +153,7 @@ class TeacherExperience(ft.UserControl):
         except Exception as ex:
             self.count_of_experience = 0
             teacher_description = ''
-            self.have_information = True
+            self.have_information = False
 
         return ft.Card(
             content=ft.Container(

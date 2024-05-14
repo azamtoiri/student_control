@@ -588,7 +588,8 @@ class StudentDatabase(BaseDataBase):
 
     def get_student_tasks_grades_v2(self, user_id) -> list[Type[TaskGrades]] | list:
         try:
-            return self.session.query(TaskGrades).filter(TaskGrades.user_id == user_id).all()
+            query = self.session.query(TaskGrades).filter(TaskGrades.user_id == user_id).all()
+            return query
         except Exception as ex:
             self.session.rollback()
             print(ex)

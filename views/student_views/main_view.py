@@ -98,9 +98,6 @@ async def MainView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # endregion
 
     logo_image = ft.Image(src=LOGO_PATH, width=200, height=200)
-    # logo_image.top = 0
-    # logo_image.left = 500
-    # logo_image.expand = True
     student_title = ft.Column(
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[

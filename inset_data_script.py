@@ -8,7 +8,7 @@ from database.models import (
     Users, Subjects,
     Enrollments, Grades,
     SubjectTasks, SubjectTheory,
-    TeacherInformation, UserTasksFiles
+    TeacherInformation, UserTasksFiles, TaskGrades
 )
 
 # Подключение к базе данных
@@ -39,12 +39,15 @@ users_data = [
      'password': '$2b$12$vPWDJZG7l2DgjBMn.NOjhuG9MPNtxZTTu/OT/6YgVSSu4nclJptjm',
      'is_staff': False}
 ]
+try:
+    for user_data in users_data:
+        user_data['user_id'] = uuid.uuid4()  # Генерация UUID для идентификатора пользователя
+        user = Users(**user_data)
+        session.add(user)
 
-for user_data in users_data:
-    user_data['user_id'] = uuid.uuid4()  # Генерация UUID для идентификатора пользователя
-    user = Users(**user_data)
-    session.add(user)
-session.commit()
+    session.commit()
+except Exception as err:
+    print(err)
 
 # Создание записей в таблице Subjects
 subjects_data = [
@@ -65,11 +68,14 @@ subjects_data = [
      "user_id": users_data[1]['user_id']}
 ]
 
-for subject_data in subjects_data:
-    subject_data['subject_id'] = uuid.uuid4()  # Генерация UUID для идентификатора предмета
-    subject = Subjects(**subject_data)
-    session.add(subject)
-session.commit()
+try:
+    for subject_data in subjects_data:
+        subject_data['subject_id'] = uuid.uuid4()  # Генерация UUID для идентификатора предмета
+        subject = Subjects(**subject_data)
+        session.add(subject)
+    session.commit()
+except Exception as err:
+    print(err)
 
 # Вставка тестовых данных в таблицу Enrollments
 enrollments_data = [
@@ -80,11 +86,15 @@ enrollments_data = [
     {'user_id': users_data[4]['user_id'], 'subject_id': subjects_data[1]['subject_id']}
 ]
 
-for enrollment_data in enrollments_data:
-    enrollment_data['enrollment_id'] = uuid.uuid4()  # Генерация UUID для идентификатора записи о подписке
-    enrollment = Enrollments(**enrollment_data)
-    session.add(enrollment)
-session.commit()
+try:
+    for enrollment_data in enrollments_data:
+        enrollment_data['enrollment_id'] = uuid.uuid4()  # Генерация UUID для идентификатора записи о подписке
+        enrollment = Enrollments(**enrollment_data)
+        session.add(enrollment)
+
+    session.commit()
+except Exception as err:
+    print(err)
 
 # Вставка тестовых данных в таблицу Grades
 grades_data = [
@@ -94,14 +104,16 @@ grades_data = [
     {'enrollment_id': enrollments_data[3]['enrollment_id'], 'grade_value': 95},
     {'enrollment_id': enrollments_data[4]['enrollment_id'], 'grade_value': 88}
 ]
+try:
+    for grade_data in grades_data:
+        grade_data['grade_id'] = uuid.uuid4()  # Генерация UUID для идентификатора оценки
+        grade = Grades(**grade_data)
+        session.add(grade)
 
-for grade_data in grades_data:
-    grade_data['grade_id'] = uuid.uuid4()  # Генерация UUID для идентификатора оценки
-    grade = Grades(**grade_data)
-    session.add(grade)
-
-# Сохранение изменений в таблице Grades
-session.commit()
+    # Сохранение изменений в таблице Grades
+    session.commit()
+except Exception as err:
+    print(err)
 
 # Вставка тестовых данных в таблицу SubjectTasks
 subject_tasks_data = [
@@ -115,13 +127,16 @@ subject_tasks_data = [
     {'task_name': 'Узнать сколько звезд есть в галактике', 'subject_id': subjects_data[1]['subject_id']}
 ]
 
-for task_data in subject_tasks_data:
-    task_data['subject_task_id'] = uuid.uuid4()  # Генерация UUID для идентификатора задания
-    task = SubjectTasks(**task_data)
-    session.add(task)
+try:
+    for task_data in subject_tasks_data:
+        task_data['subject_task_id'] = uuid.uuid4()  # Генерация UUID для идентификатора задания
+        task = SubjectTasks(**task_data)
+        session.add(task)
 
-# Сохранение изменений в таблице SubjectTasks
-session.commit()
+    # Сохранение изменений в таблице SubjectTasks
+    session.commit()
+except Exception as err:
+    print(err)
 
 # Добавление данных в таблицу SubjectTheory
 subject_theory_data = [
@@ -129,19 +144,25 @@ subject_theory_data = [
     {'theory_data': 'test_theory.pdf', 'theory_id': subjects_data[1]['subject_id']}
 ]
 
-for theory_data in subject_theory_data:
-    subject_theory = SubjectTheory(**theory_data)
-    session.add(subject_theory)
-session.commit()
+try:
+    for theory_data in subject_theory_data:
+        subject_theory = SubjectTheory(**theory_data)
+        session.add(subject_theory)
+    session.commit()
+except Exception as err:
+    print(err)
 
 teacher_info_data = [
     {'teacher_experience': 5, 'teacher_description': 'Опытный преподаватель', 'user_id': users_data[2]['user_id']}
 ]
 
-for info_data in teacher_info_data:
-    teacher_info = TeacherInformation(**info_data)
-    session.add(teacher_info)
-session.commit()
+try:
+    for info_data in teacher_info_data:
+        teacher_info = TeacherInformation(**info_data)
+        session.add(teacher_info)
+    session.commit()
+except Exception as err:
+    print(err)
 
 # Добавление данных в таблицу UserTasksFiles
 user_tasks_files_data = [
@@ -158,9 +179,30 @@ user_tasks_files_data = [
     }
 ]
 
-for file_data in user_tasks_files_data:
-    user_tasks_file = UserTasksFiles(**file_data)
-    session.add(user_tasks_file)
-session.commit()
+try:
+    for file_data in user_tasks_files_data:
+        user_tasks_file = UserTasksFiles(**file_data)
+        session.add(user_tasks_file)
+    session.commit()
+except Exception as err:
+    print(err)
+
+task_grades_data = [
+    {'user_id': users_data[2]['user_id'], 'subject_task_id': subject_tasks_data[0]['subject_task_id'],
+     'grade_value': 85, 'enrollment_id': enrollments_data[0]['enrollment_id']},
+    {'user_id': users_data[3]['user_id'], 'subject_task_id': subject_tasks_data[1]['subject_task_id'],
+     'grade_value': 90, 'enrollment_id': enrollments_data[1]['enrollment_id']}
+]
+
+try:
+    for grade_data in task_grades_data:
+        grade_data['task_grade_id'] = uuid.uuid4()  # Генерация UUID для идентификатора оценки за задание
+        grade = TaskGrades(**grade_data)
+        session.add(grade)
+
+    # Сохранение изменений в таблице TaskGrades
+    session.commit()
+except Exception as err:
+    print(err)
 
 print("Данные успешно добавлены во все таблицы.")
