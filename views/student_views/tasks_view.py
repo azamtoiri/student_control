@@ -1,17 +1,11 @@
 import flet as ft
 from flet_route import Params, Basket
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from database.database import StudentDatabase, StudentAsyncDatabase
-from database.database import async_engine
 from user_controls.student_subject_tasks_card import StudentSubjectTasksCard
 from utils.exceptions import DontHaveGrades
 from utils.lazy_db import LazyDatabase
 from utils.routes_url import StudentRoutes
-
-async_session = async_sessionmaker(
-    bind=async_engine, class_=AsyncSession, expire_on_commit=False, future=True
-)
 
 
 async def TasksView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
