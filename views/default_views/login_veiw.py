@@ -1,4 +1,4 @@
-import time
+import asyncio
 
 import flet as ft
 from flet_route import Params, Basket
@@ -16,18 +16,16 @@ user_db = LazyDatabase(UserDatabase)
 async def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     page.session.clear()
 
-    def display_login_form_error(field: str, message: str) -> None:
+    async def display_login_form_error(field: str, message: str) -> None:
         fields = {'username': username_field, 'password': password_field}
-        if field in fields.keys():
-            # fields[field].input_box_content.error_text = message
+        if field in fields:
             fields[field].set_fail(message)
 
-    # region: Functions
     async def login_click(e: ft.ControlEvent) -> None:
-        username = str(username_field.input_box_content.value).strip() if len(
-            username_field.input_box_content.value) else None
-        password = str(password_field.input_box_content.value).strip() if len(
-            password_field.input_box_content.value) else None
+        username = str(
+            username_field.input_box_content.value).strip() if username_field.input_box_content.value else None
+        password = str(
+            password_field.input_box_content.value).strip() if password_field.input_box_content.value else None
 
         try:
             user = await user_db.database.login_user(username, password)
@@ -35,30 +33,22 @@ async def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             e.page.session.set("username", username)
             e.page.session.set("user_id", user.user_id)
 
-            __theme_mode = await user_db.database.get_theme_mode(page.session.get("user_id"))
-            __seed_color = await user_db.database.get_seed_color(page.session.get("user_id"))
+            theme_mode = await user_db.database.get_theme_mode(page.session.get("user_id"))
+            seed_color = await user_db.database.get_seed_color(page.session.get("user_id"))
 
             if await user_db.database.is_staff(user.user_id):
-                # changing color cheme values from db
                 e.page.session.set("is_staff", True)
-                e.page.theme_mode = __theme_mode
-                e.page.theme = ft.Theme(color_scheme_seed=__seed_color)
-                e.page.update()
-                time.sleep(0.1)
-                e.page.go(BaseRoutes.TEACHER_MAIN_URL)
 
-            else:
-                # changing color cheme values from db
-                e.page.theme_mode = __theme_mode
-                e.page.theme = ft.Theme(color_scheme_seed=__seed_color)
-                e.page.update()
-                time.sleep(0.1)
-                e.page.go(BaseRoutes.STUDENT_MAIN_URL)
+            e.page.theme_mode = theme_mode
+            e.page.theme = ft.Theme(color_scheme_seed=seed_color)
+            e.page.update()
+            await asyncio.sleep(0.1)
+            e.page.go(BaseRoutes.TEACHER_MAIN_URL if e.page.session.get("is_staff") else BaseRoutes.STUDENT_MAIN_URL)
 
         except RequiredField as error:
-            display_login_form_error(error.field, str(error))
+            await display_login_form_error(error.field, str(error))
         except NotRegistered as error:
-            display_login_form_error('username', str(error))
+            await display_login_form_error('username', str(error))
 
     async def register_click(e: ft.ControlEvent) -> None:
         e.page.go(BaseRoutes.REGISTER_URL)
