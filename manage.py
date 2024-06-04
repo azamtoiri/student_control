@@ -6,10 +6,11 @@ import asyncio
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from database.database import async_engine
+from database.engine.base_async import AsyncBaseDatabase
 from database.models import Users
 
-async_session = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+async_engine = AsyncBaseDatabase()
+async_session = async_sessionmaker(async_engine.async_engine, class_=AsyncSession, expire_on_commit=False)
 
 
 async def update_user(username, **kwargs):
@@ -26,13 +27,15 @@ async def update_user(username, **kwargs):
 
 
 async def main(username, is_staff=None, is_superuser=None):
-    update_data = {}
-    if is_staff is not None:
-        update_data['is_staff'] = is_staff
-    if is_superuser is not None:
-        update_data['is_superuser'] = is_superuser
-
-    await update_user(username, **update_data)
+    try:
+        update_data = {}
+        if is_staff is not None:
+            update_data['is_staff'] = is_staff
+        if is_superuser is not None:
+            update_data['is_superuser'] = is_superuser
+        await update_user(username, **update_data)
+    except Exception as ex:
+        print(ex)
 
 
 if __name__ == '__main__':
