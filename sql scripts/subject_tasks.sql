@@ -1,9 +1,22 @@
-insert into public.subject_tasks (subject_task_id, task_name, completed, subject_id)
-values  (1, 'Решить уравнение', null, 1),
-        (2, 'Изучить законы Ньютона', null, 2),
-        (3, 'Написать эссе о Первой мировой войне', null, 3),
-        (4, 'Прочитать роман "Преступление и наказание"', null, 4),
-        (5, 'Написать программу для сортировки данных', null, 5),
-        (6, 'Решить дискриминантное уравнение', null, 1),
-        (7, 'Изучить экватор, что это такое', null, 2),
-        (8, 'узнать сколько звезд есть в галактике', null, 2);
+create table subject_tasks
+(
+    subject_task_id uuid    not null
+        primary key,
+    task_name       varchar not null,
+    completed       boolean default false,
+    subject_id      uuid
+        references subjects
+            on delete cascade
+);
+
+comment on table subject_tasks is 'Задания для предмета. У каждого предмета может быть несколько заданий';
+
+comment on column subject_tasks.subject_task_id is 'Идентификатор задания';
+
+comment on column subject_tasks.task_name is 'Название задания';
+
+comment on column subject_tasks.completed is 'Статус задания';
+
+comment on column subject_tasks.subject_id is 'Идентификатор предмета';
+
+null, 2);

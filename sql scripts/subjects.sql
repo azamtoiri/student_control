@@ -1,6 +1,27 @@
-insert into public.subjects (subject_id, subject_name, description, short_description, user_id)
-values  (1, 'Математика', 'Математика — это наука о числах, количестве и пространстве.', 'Изучение чисел и форм', 1),
-        (2, 'Естествознание', 'Естествознание — систематическое изучение природы и её законов.', 'Исследование природы', 2),
-        (3, 'История', 'История — наука о прошлом.', 'Изучение прошлых событий', 1),
-        (4, 'Литература', 'Литература — письменные произведения, особенно те, которые считаются выдающимися или имеющими долговечное художественное значение.', 'Изучение письменных произведений', 2),
-        (5, 'Информатика', 'Информатика — наука о методах и процессах сбора, хранения, обработки, передачи информации.', 'Изучение алгоритмов и вычислительных процессов', 1);
+create table subjects
+(
+    subject_id        uuid                                                   not null
+        primary key,
+    user_id           uuid                                                   not null
+        references users
+            on delete cascade,
+    subject_name      varchar                                                not null,
+    short_description varchar                                                not null,
+    description       varchar                                                not null,
+    subject_image     varchar default 'subject_image.png'::character varying not null
+);
+
+comment on table subjects is 'Предметы, на которые подписаны пользователи. У каждого пользователя может быть несколько предметов';
+
+comment on column subjects.subject_id is 'Идентификатор предмета';
+
+comment on column subjects.user_id is 'Идентификатор пользователя';
+
+comment on column subjects.subject_name is 'Название предмета';
+
+comment on column subjects.short_description is 'Краткое описание предмета';
+
+comment on column subjects.description is 'Полное описание предмета';
+
+comment on column subjects.subject_image is 'Изображения для предмета';
+

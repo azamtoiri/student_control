@@ -1,314 +1,241 @@
-CREATE TABLE IF NOT EXISTS ALEMBIC_VERSION
+CREATE TABLE users
 (
-    VERSION_NUM VARCHAR(32) NOT NULL
-        CONSTRAINT ALEMBIC_VERSION_PKC
-            PRIMARY KEY
+    user_id      UUID    NOT NULL PRIMARY KEY,
+    last_name    varchar,
+    first_name   varchar,
+    middle_name  varchar,
+    age          integer,
+    "group"      varchar,
+    course       integer,
+    email        varchar NOT NULL,
+    username     varchar NOT NULL UNIQUE,
+    password     varchar NOT NULL,
+    is_staff     boolean                  DEFAULT FALSE,
+    is_superuser boolean                  DEFAULT FALSE,
+    created_at   timestamp WITH TIME ZONE DEFAULT now(),
+    user_image   varchar                  DEFAULT 'default_user_image.png'::CHARACTER varying
 );
 
-ALTER TABLE ALEMBIC_VERSION
-    OWNER TO POSTGRES;
+COMMENT ON TABLE users IS 'Таблица пользователей';
 
-CREATE TABLE IF NOT EXISTS users
+COMMENT ON COLUMN users.user_id IS 'User id column';
+
+COMMENT ON COLUMN users.last_name IS 'Фамилия';
+
+COMMENT ON COLUMN users.first_name IS 'Имя';
+
+COMMENT ON COLUMN users.middle_name IS 'Отчество';
+
+COMMENT ON COLUMN users.course IS 'Курс обучения';
+
+COMMENT ON COLUMN users.username IS 'уникальное Имя пользователя';
+
+COMMENT ON COLUMN users.is_staff IS 'является ли пользователь частью персонала (преподаватель)';
+
+COMMENT ON COLUMN users.is_superuser IS 'является ли пользователь суперпользователем';
+
+COMMENT ON COLUMN users.created_at IS 'Дата создания пользователя';
+
+COMMENT ON COLUMN users.user_image IS 'Изображение пользователя';
+
+
+CREATE TABLE subjects
 (
-    user_id      UUID    NOT NULL
-        PRIMARY KEY,
-    last_name    VARCHAR,
-    first_name   VARCHAR,
-    middle_name  VARCHAR,
-    age          INTEGER,
-    "group"      VARCHAR,
-    course       INTEGER,
-    email        VARCHAR NOT NULL,
-    username     VARCHAR NOT NULL
-        UNIQUE,
-    password     VARCHAR NOT NULL,
-    is_staff     BOOLEAN                  DEFAULT FALSE,
-    is_superuser BOOLEAN                  DEFAULT FALSE,
-    created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    user_image   VARCHAR                  DEFAULT 'default_user_image.PNG'::CHARACTER VARYING
+    subject_id        UUID                                                   NOT NULL PRIMARY KEY,
+    user_id           UUID                                                   NOT NULL REFERENCES users ON DELETE CASCADE,
+    subject_name      varchar                                                NOT NULL,
+    short_description varchar                                                NOT NULL,
+    description       varchar                                                NOT NULL,
+    subject_image     varchar DEFAULT 'subject_image.png'::CHARACTER varying NOT NULL
 );
 
-COMMENT ON TABLE users IS 'таблица пользователей';
+COMMENT ON TABLE subjects IS 'Предметы, на которые подписаны пользователи. У каждого пользователя может быть несколько предметов';
 
-COMMENT ON COLUMN users.user_id IS 'USER ID COLUMN';
+COMMENT ON COLUMN subjects.subject_id IS 'Идентификатор предмета';
 
-COMMENT ON COLUMN users.last_name IS 'ФАМИЛИЯ';
+COMMENT ON COLUMN subjects.user_id IS 'Идентификатор пользователя';
 
-COMMENT ON COLUMN users.first_name IS 'ИМЯ';
+COMMENT ON COLUMN subjects.subject_name IS 'Название предмета';
 
-COMMENT ON COLUMN users.middle_name IS 'ОТЧЕСТВО';
+COMMENT ON COLUMN subjects.short_description IS 'Краткое описание предмета';
 
-COMMENT ON COLUMN users.course IS 'КУРС ОБУЧЕНИЯ';
+COMMENT ON COLUMN subjects.description IS 'Полное описание предмета';
 
-COMMENT ON COLUMN users.username IS 'УНИКАЛЬНОЕ ИМЯ ПОЛЬЗОВАТЕЛЯ';
+COMMENT ON COLUMN subjects.subject_image IS 'Изображения для предмета';
 
-COMMENT ON COLUMN users.is_staff IS 'ЯВЛЯЕТСЯ ЛИ ПОЛЬЗОВАТЕЛЬ ЧАСТЬЮ ПЕРСОНАЛА (ПРЕПОДАВАТЕЛЬ)';
 
-COMMENT ON COLUMN users.IS_SUPERUSER IS 'ЯВЛЯЕТСЯ ЛИ ПОЛЬЗОВАТЕЛЬ СУПЕРПОЛЬЗОВАТЕЛЕМ';
-
-COMMENT ON COLUMN users.created_at IS 'ДАТА СОЗДАНИЯ ПОЛЬЗОВАТЕЛЯ';
-
-COMMENT ON COLUMN users.user_image IS 'ИЗОБРАЖЕНИЕ ПОЛЬЗОВАТЕЛЯ';
-
-ALTER TABLE users
-    OWNER TO postgres;
-
-CREATE TABLE IF NOT EXISTS subjects
+CREATE TABLE task
 (
-    subject_id        UUID                                                   NOT NULL
-        PRIMARY KEY,
-    user_id           UUID                                                   NOT NULL
-        REFERENCES USERS
-            ON DELETE CASCADE,
-    subject_name      VARCHAR                                                NOT NULL,
-    short_description VARCHAR                                                NOT NULL,
-    description       VARCHAR                                                NOT NULL,
-    subject_image     VARCHAR DEFAULT 'subject_image.png'::CHARACTER VARYING NOT NULL
+    task_id   UUID    NOT NULL PRIMARY KEY,
+    task_name varchar NOT NULL,
+    completed boolean DEFAULT FALSE,
+    user_id   UUID    NOT NULL REFERENCES users
 );
 
-COMMENT ON TABLE SUBJECTS IS 'ПРЕДМЕТЫ, НА КОТОРЫЕ ПОДПИСАНЫ ПОЛЬЗОВАТЕЛИ. У КАЖДОГО ПОЛЬЗОВАТЕЛЯ МОЖЕТ БЫТЬ НЕСКОЛЬКО ПРЕДМЕТОВ';
+COMMENT ON TABLE task IS 'Todo list. Задания пользователей которые они должны выполнить (цели). ';
 
-COMMENT ON COLUMN SUBJECTS.SUBJECT_ID IS 'ИДЕНТИФИКАТОР ПРЕДМЕТА';
+COMMENT ON COLUMN task.task_id IS 'Идентификатор задания';
 
-COMMENT ON COLUMN SUBJECTS.USER_ID IS 'ИДЕНТИФИКАТОР ПОЛЬЗОВАТЕЛЯ';
+COMMENT ON COLUMN task.task_name IS 'Название задания';
 
-COMMENT ON COLUMN SUBJECTS.SUBJECT_NAME IS 'НАЗВАНИЕ ПРЕДМЕТА';
+COMMENT ON COLUMN task.completed IS 'Статус задания';
 
-COMMENT ON COLUMN SUBJECTS.SHORT_DESCRIPTION IS 'КРАТКОЕ ОПИСАНИЕ ПРЕДМЕТА';
+COMMENT ON COLUMN task.user_id IS 'Пользователь которому принадлежит задание';
 
-COMMENT ON COLUMN SUBJECTS.DESCRIPTION IS 'ПОЛНОЕ ОПИСАНИЕ ПРЕДМЕТА';
 
-COMMENT ON COLUMN SUBJECTS.SUBJECT_IMAGE IS 'ИЗОБРАЖЕНИЯ ДЛЯ ПРЕДМЕТА';
-
-ALTER TABLE SUBJECTS
-    OWNER TO POSTGRES;
-
-CREATE TABLE IF NOT EXISTS task
+CREATE TABLE teacher_information
 (
-    task_id   UUID    NOT NULL
-        PRIMARY KEY,
-    task_name VARCHAR NOT NULL,
-    completed BOOLEAN DEFAULT FALSE,
-    user_id   UUID    NOT NULL
-        REFERENCES users
+    teacher_information_id UUID                  NOT NULL PRIMARY KEY,
+    user_id                UUID                  NOT NULL REFERENCES users ON DELETE CASCADE,
+    teacher_experience     integer,
+    teacher_description    varchar,
+    is_done                boolean DEFAULT FALSE NOT NULL
 );
 
-COMMENT ON TABLE TASK IS 'TODO LIST. ЗАДАНИЯ ПОЛЬЗОВАТЕЛЕЙ КОТОРЫЕ ОНИ ДОЛЖНЫ ВЫПОЛНИТЬ (ЦЕЛИ). ';
+COMMENT ON TABLE teacher_information IS 'Дополнительная информация о преподавателе';
 
-COMMENT ON COLUMN TASK.TASK_ID IS 'ИДЕНТИФИКАТОР ЗАДАНИЯ';
+COMMENT ON COLUMN teacher_information.teacher_information_id IS 'идентификатор информации';
 
-COMMENT ON COLUMN TASK.TASK_NAME IS 'НАЗВАНИЕ ЗАДАНИЯ';
+COMMENT ON COLUMN teacher_information.user_id IS 'id пользователя';
 
-COMMENT ON COLUMN TASK.COMPLETED IS 'СТАТУС ЗАДАНИЯ';
+COMMENT ON COLUMN teacher_information.teacher_experience IS 'опыт преподавателя';
 
-COMMENT ON COLUMN TASK.USER_ID IS 'ПОЛЬЗОВАТЕЛЬ КОТОРОМУ ПРИНАДЛЕЖИТ ЗАДАНИЕ';
+COMMENT ON COLUMN teacher_information.teacher_description IS 'Информация о преподавателе';
 
-ALTER TABLE TASK
-    OWNER TO POSTGRES;
 
-CREATE TABLE IF NOT EXISTS TEACHER_INFORMATION
+CREATE TABLE user_theme
 (
-    teacher_information_id UUID                  NOT NULL
-        PRIMARY KEY,
-    user_id                UUID                  NOT NULL
-        REFERENCES USERS
-            ON DELETE CASCADE,
-    teacher_experience     INTEGER,
-    teacher_description    VARCHAR,
-    is_done                BOOLEAN DEFAULT FALSE NOT NULL
+    user_id    UUID                                       NOT NULL PRIMARY KEY REFERENCES users ON DELETE CASCADE,
+    theme      varchar DEFAULT 'light'::CHARACTER varying NOT NULL,
+    seed_color varchar DEFAULT 'green'::CHARACTER varying NOT NULL
 );
 
-COMMENT ON TABLE TEACHER_INFORMATION IS 'ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ О ПРЕПОДАВАТЕЛЕ';
+COMMENT ON TABLE user_theme IS 'Цветовая схема пользователя (тема). Уникальная для каждого пользователя';
 
-COMMENT ON COLUMN TEACHER_INFORMATION.TEACHER_INFORMATION_ID IS 'ИДЕНТИФИКАТОР ИНФОРМАЦИИ';
+COMMENT ON COLUMN user_theme.user_id IS 'Идентификатор пользователя';
 
-COMMENT ON COLUMN TEACHER_INFORMATION.USER_ID IS 'ID ПОЛЬЗОВАТЕЛЯ';
+COMMENT ON COLUMN user_theme.theme IS 'Тема пользователя (светлая/темная)';
 
-COMMENT ON COLUMN TEACHER_INFORMATION.TEACHER_EXPERIENCE IS 'ОПЫТ ПРЕПОДАВАТЕЛЯ';
+COMMENT ON COLUMN user_theme.seed_color IS 'Цвет цветовой схемы приложения';
 
-COMMENT ON COLUMN TEACHER_INFORMATION.TEACHER_DESCRIPTION IS 'ИНФОРМАЦИЯ О ПРЕПОДАВАТЕЛЕ';
 
-ALTER TABLE TEACHER_INFORMATION
-    OWNER TO POSTGRES;
-
-CREATE TABLE IF NOT EXISTS USER_THEME
+CREATE TABLE enrollments
 (
-    user_id    UUID                                       NOT NULL
-        PRIMARY KEY
-        REFERENCES USERS
-            ON DELETE CASCADE,
-    theme      VARCHAR DEFAULT 'LIGHT'::CHARACTER VARYING NOT NULL,
-    seed_color VARCHAR DEFAULT 'GREEN'::CHARACTER VARYING NOT NULL
+    enrollment_id   UUID NOT NULL PRIMARY KEY,
+    user_id         UUID NOT NULL REFERENCES users ON DELETE CASCADE,
+    subject_id      UUID NOT NULL REFERENCES subjects ON DELETE CASCADE,
+    enrollment_date timestamp WITH TIME ZONE DEFAULT now(),
+    completed       boolean                  DEFAULT FALSE
 );
 
-COMMENT ON TABLE USER_THEME IS 'ЦВЕТОВАЯ СХЕМА ПОЛЬЗОВАТЕЛЯ (ТЕМА). УНИКАЛЬНАЯ ДЛЯ КАЖДОГО ПОЛЬЗОВАТЕЛЯ';
+COMMENT ON TABLE enrollments IS 'Записи о подписках пользователей на предметы';
 
-COMMENT ON COLUMN USER_THEME.USER_ID IS 'ИДЕНТИФИКАТОР ПОЛЬЗОВАТЕЛЯ';
+COMMENT ON COLUMN enrollments.enrollment_id IS 'Идентификатор записи о подписке';
 
-COMMENT ON COLUMN USER_THEME.THEME IS 'ТЕМА ПОЛЬЗОВАТЕЛЯ (СВЕТЛАЯ/ТЕМНАЯ)';
+COMMENT ON COLUMN enrollments.user_id IS 'Пользователь, подписавшийся на предмет';
 
-COMMENT ON COLUMN USER_THEME.SEED_COLOR IS 'ЦВЕТ ЦВЕТОВОЙ СХЕМЫ ПРИЛОЖЕНИЯ';
+COMMENT ON COLUMN enrollments.subject_id IS 'Предмет, на который подписался пользователь. Сам предмет';
 
-ALTER TABLE USER_THEME
-    OWNER TO POSTGRES;
+COMMENT ON COLUMN enrollments.enrollment_date IS 'Дата подписки';
 
-CREATE TABLE IF NOT EXISTS ENROLLMENTS
+COMMENT ON COLUMN enrollments.completed IS 'Статус завершения предмета';
+
+
+CREATE TABLE subject_tasks
 (
-    enrollment_id   UUID NOT NULL
-        PRIMARY KEY,
-    user_id         UUID NOT NULL
-        REFERENCES users
-            ON DELETE CASCADE,
-    subject_id      UUID NOT NULL
-        REFERENCES subjects
-            ON DELETE CASCADE,
-    enrollment_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    completed       BOOLEAN                  DEFAULT FALSE
+    subject_task_id UUID    NOT NULL PRIMARY KEY,
+    task_name       varchar NOT NULL,
+    completed       boolean DEFAULT FALSE,
+    subject_id      UUID REFERENCES subjects ON DELETE CASCADE
 );
 
-COMMENT ON TABLE ENROLLMENTS IS 'ЗАПИСИ О ПОДПИСКАХ ПОЛЬЗОВАТЕЛЕЙ НА ПРЕДМЕТЫ';
+COMMENT ON TABLE subject_tasks IS 'Задания для предмета. У каждого предмета может быть несколько заданий';
 
-COMMENT ON COLUMN ENROLLMENTS.ENROLLMENT_ID IS 'ИДЕНТИФИКАТОР ЗАПИСИ О ПОДПИСКЕ';
+COMMENT ON COLUMN subject_tasks.subject_task_id IS 'Идентификатор задания';
 
-COMMENT ON COLUMN ENROLLMENTS.USER_ID IS 'ПОЛЬЗОВАТЕЛЬ, ПОДПИСАВШИЙСЯ НА ПРЕДМЕТ';
+COMMENT ON COLUMN subject_tasks.task_name IS 'Название задания';
 
-COMMENT ON COLUMN ENROLLMENTS.SUBJECT_ID IS 'ПРЕДМЕТ, НА КОТОРЫЙ ПОДПИСАЛСЯ ПОЛЬЗОВАТЕЛЬ. САМ ПРЕДМЕТ';
+COMMENT ON COLUMN subject_tasks.completed IS 'Статус задания';
 
-COMMENT ON COLUMN ENROLLMENTS.ENROLLMENT_DATE IS 'ДАТА ПОДПИСКИ';
+COMMENT ON COLUMN subject_tasks.subject_id IS 'Идентификатор предмета';
 
-COMMENT ON COLUMN ENROLLMENTS.COMPLETED IS 'СТАТУС ЗАВЕРШЕНИЯ ПРЕДМЕТА';
 
-ALTER TABLE ENROLLMENTS
-    OWNER TO POSTGRES;
-
-CREATE TABLE IF NOT EXISTS subject_tasks
+CREATE TABLE subject_theory
 (
-    subject_task_id UUID    NOT NULL
-        PRIMARY KEY,
-    task_name       VARCHAR NOT NULL,
-    completed       BOOLEAN DEFAULT FALSE,
-    subject_id      UUID
-        REFERENCES subjects
-            ON DELETE CASCADE
+    theory_id   UUID NOT NULL PRIMARY KEY REFERENCES subjects ON DELETE CASCADE,
+    theory_data varchar
 );
 
-COMMENT ON TABLE SUBJECT_TASKS IS 'ЗАДАНИЯ ДЛЯ ПРЕДМЕТА. У КАЖДОГО ПРЕДМЕТА МОЖЕТ БЫТЬ НЕСКОЛЬКО ЗАДАНИЙ';
+COMMENT ON TABLE subject_theory IS 'Теория для предмета. У каждого предмета может быть только одна теория в виде файла';
 
-COMMENT ON COLUMN SUBJECT_TASKS.SUBJECT_TASK_ID IS 'ИДЕНТИФИКАТОР ЗАДАНИЯ';
+COMMENT ON COLUMN subject_theory.theory_id IS 'Идентификатор теории';
 
-COMMENT ON COLUMN SUBJECT_TASKS.TASK_NAME IS 'НАЗВАНИЕ ЗАДАНИЯ';
+COMMENT ON COLUMN subject_theory.theory_data IS 'Данные теории (файл, текст, ссылка)';
 
-COMMENT ON COLUMN SUBJECT_TASKS.COMPLETED IS 'СТАТУС ЗАДАНИЯ';
 
-COMMENT ON COLUMN SUBJECT_TASKS.SUBJECT_ID IS 'ИДЕНТИФИКАТОР ПРЕДМЕТА';
-
-ALTER TABLE SUBJECT_TASKS
-    OWNER TO POSTGRES;
-
-CREATE TABLE IF NOT EXISTS subject_theory
+CREATE TABLE grades
 (
-    theory_id   UUID NOT NULL
-        PRIMARY KEY
-        REFERENCES subjects
-            ON DELETE CASCADE,
-    theory_data VARCHAR
+    grade_id      UUID    NOT NULL PRIMARY KEY,
+    enrollment_id UUID    NOT NULL REFERENCES enrollments ON DELETE CASCADE,
+    grade_value   integer NOT NULL,
+    grade_date    timestamp WITH TIME ZONE DEFAULT now()
 );
 
-COMMENT ON TABLE SUBJECT_THEORY IS 'ТЕОРИЯ ДЛЯ ПРЕДМЕТА. У КАЖДОГО ПРЕДМЕТА МОЖЕТ БЫТЬ ТОЛЬКО ОДНА ТЕОРИЯ В ВИДЕ ФАЙЛА';
+COMMENT ON TABLE grades IS 'Итоговая оценка студентов по предметам';
 
-COMMENT ON COLUMN SUBJECT_THEORY.THEORY_ID IS 'ИДЕНТИФИКАТОР ТЕОРИИ';
+COMMENT ON COLUMN grades.grade_id IS 'Идентификатор оценки';
 
-COMMENT ON COLUMN SUBJECT_THEORY.THEORY_DATA IS 'ДАННЫЕ ТЕОРИИ (ФАЙЛ, ТЕКСТ, ССЫЛКА)';
+COMMENT ON COLUMN grades.enrollment_id IS 'Идентификатор записи о подписке';
 
-ALTER TABLE SUBJECT_THEORY
-    OWNER TO POSTGRES;
+COMMENT ON COLUMN grades.grade_value IS 'Сама оценка';
 
-CREATE TABLE IF NOT EXISTS grades
+COMMENT ON COLUMN grades.grade_date IS 'Дата выставления оценки';
+
+
+CREATE TABLE task_grades
 (
-    grade_id      UUID    NOT NULL
-        PRIMARY KEY,
-    enrollment_id UUID    NOT NULL
-        REFERENCES enrollments
-            ON DELETE CASCADE,
-    grade_value   INTEGER NOT NULL,
-    grade_date    TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    task_grade_id   UUID                                   NOT NULL PRIMARY KEY,
+    enrollment_id   UUID REFERENCES enrollments ON DELETE CASCADE,
+    subject_task_id UUID                                   NOT NULL REFERENCES subject_tasks ON DELETE CASCADE,
+    user_id         UUID                                   NOT NULL REFERENCES users ON DELETE CASCADE,
+    grade_value     integer                                NOT NULL,
+    grade_date      timestamp WITH TIME ZONE DEFAULT now() NOT NULL
 );
 
-COMMENT ON TABLE GRADES IS 'ИТОГОВАЯ ОЦЕНКА СТУДЕНТОВ ПО ПРЕДМЕТАМ';
+COMMENT ON TABLE task_grades IS 'Оценки за задания по предметам';
 
-COMMENT ON COLUMN GRADES.GRADE_ID IS 'ИДЕНТИФИКАТОР ОЦЕНКИ';
+COMMENT ON COLUMN task_grades.task_grade_id IS 'Идентификатор оценки за задание';
 
-COMMENT ON COLUMN GRADES.ENROLLMENT_ID IS 'ИДЕНТИФИКАТОР ЗАПИСИ О ПОДПИСКЕ';
+COMMENT ON COLUMN task_grades.enrollment_id IS 'Идентификатор записи о подписке';
 
-COMMENT ON COLUMN GRADES.GRADE_VALUE IS 'САМА ОЦЕНКА';
+COMMENT ON COLUMN task_grades.subject_task_id IS 'Идентификатор задания';
 
-COMMENT ON COLUMN GRADES.GRADE_DATE IS 'ДАТА ВЫСТАВЛЕНИЯ ОЦЕНКИ';
+COMMENT ON COLUMN task_grades.user_id IS 'Идентификатор пользователя, который выполнил задание';
 
-ALTER TABLE GRADES
-    OWNER TO POSTGRES;
+COMMENT ON COLUMN task_grades.grade_value IS 'Оценка за задание';
 
-CREATE TABLE IF NOT EXISTS task_grades
+COMMENT ON COLUMN task_grades.grade_date IS 'Дата постановки оценки';
+
+
+CREATE TABLE user_task_files
 (
-    task_grade_id   UUID                                   NOT NULL
-        PRIMARY KEY,
-    enrollment_id   UUID
-        REFERENCES enrollments
-            ON DELETE CASCADE,
-    subject_task_id UUID                                   NOT NULL
-        REFERENCES subject_tasks
-            ON DELETE CASCADE,
-    user_id         UUID                                   NOT NULL
-        REFERENCES users
-            ON DELETE CASCADE,
-    grade_value     INTEGER                                NOT NULL,
-    grade_date      TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+    subject_task_id UUID                 NOT NULL REFERENCES subject_tasks ON DELETE CASCADE,
+    user_id         UUID                 NOT NULL REFERENCES users ON DELETE CASCADE,
+    enrollment_id   UUID                 NOT NULL REFERENCES enrollments ON DELETE CASCADE,
+    task_file       varchar              NOT NULL,
+    completed       boolean DEFAULT TRUE NOT NULL,
+    PRIMARY KEY (subject_task_id,
+                 user_id)
 );
 
-COMMENT ON TABLE TASK_GRADES IS 'ОЦЕНКИ ЗА ЗАДАНИЯ ПО ПРЕДМЕТАМ';
+COMMENT ON TABLE user_task_files IS 'Файлы для заданий пользователей. К каждому заданию может быть прикреплено несколько файлов';
 
-COMMENT ON COLUMN TASK_GRADES.TASK_GRADE_ID IS 'ИДЕНТИФИКАТОР ОЦЕНКИ ЗА ЗАДАНИЕ';
+COMMENT ON COLUMN user_task_files.subject_task_id IS 'Идентификатор задания';
 
-COMMENT ON COLUMN TASK_GRADES.ENROLLMENT_ID IS 'ИДЕНТИФИКАТОР ЗАПИСИ О ПОДПИСКЕ';
+COMMENT ON COLUMN user_task_files.user_id IS 'пользователь';
 
-COMMENT ON COLUMN TASK_GRADES.SUBJECT_TASK_ID IS 'ИДЕНТИФИКАТОР ЗАДАНИЯ';
+COMMENT ON COLUMN user_task_files.enrollment_id IS 'предмет на который записан пользователй';
 
-COMMENT ON COLUMN TASK_GRADES.USER_ID IS 'ИДЕНТИФИКАТОР ПОЛЬЗОВАТЕЛЯ, КОТОРЫЙ ВЫПОЛНИЛ ЗАДАНИЕ';
+COMMENT ON COLUMN user_task_files.task_file IS 'файл прикрепленный к заданию';
 
-COMMENT ON COLUMN TASK_GRADES.GRADE_VALUE IS 'ОЦЕНКА ЗА ЗАДАНИЕ';
-
-COMMENT ON COLUMN TASK_GRADES.GRADE_DATE IS 'ДАТА ПОСТАНОВКИ ОЦЕНКИ';
-
-ALTER TABLE TASK_GRADES
-    OWNER TO POSTGRES;
-
-CREATE TABLE IF NOT EXISTS USER_TASK_FILES
-(
-    subject_task_id UUID                 NOT NULL
-        REFERENCES subject_tasks
-            ON DELETE CASCADE,
-    user_id         UUID                 NOT NULL
-        REFERENCES users
-            ON DELETE CASCADE,
-    enrollment_id   UUID                 NOT NULL
-        REFERENCES enrollments
-            ON DELETE CASCADE,
-    task_file       VARCHAR              NOT NULL,
-    completed       BOOLEAN DEFAULT TRUE NOT NULL,
-    PRIMARY KEY (subject_task_id, user_id)
-);
-
-COMMENT ON TABLE USER_TASK_FILES IS 'ФАЙЛЫ ДЛЯ ЗАДАНИЙ ПОЛЬЗОВАТЕЛЕЙ. К КАЖДОМУ ЗАДАНИЮ МОЖЕТ БЫТЬ ПРИКРЕПЛЕНО НЕСКОЛЬКО ФАЙЛОВ';
-
-COMMENT ON COLUMN USER_TASK_FILES.SUBJECT_TASK_ID IS 'ИДЕНТИФИКАТОР ЗАДАНИЯ';
-
-COMMENT ON COLUMN USER_TASK_FILES.USER_ID IS 'ПОЛЬЗОВАТЕЛЬ';
-
-COMMENT ON COLUMN USER_TASK_FILES.ENROLLMENT_ID IS 'ПРЕДМЕТ НА КОТОРЫЙ ЗАПИСАН ПОЛЬЗОВАТЕЛЙ';
-
-COMMENT ON COLUMN USER_TASK_FILES.TASK_FILE IS 'ФАЙЛ ПРИКРЕПЛЕННЫЙ К ЗАДАНИЮ';
-
-COMMENT ON COLUMN USER_TASK_FILES.COMPLETED IS 'ОТПРАВИЛ ЛИ УЧЕНИК ЗАДАНИЕ';
-
-ALTER TABLE USER_TASK_FILES
-    OWNER TO POSTGRES;
-
+COMMENT ON COLUMN user_task_files.completed IS 'Отправил ли ученик задание';

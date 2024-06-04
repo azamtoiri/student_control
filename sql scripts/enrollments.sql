@@ -1,7 +1,26 @@
-insert into public.enrollments (enrollment_id, user_id, subject_id, enrollment_date, completed)
-values  (1, 4, 1, '2024-03-21 22:21:07.424744 +00:00', null),
-        (2, 4, 4, '2024-03-21 22:21:07.424744 +00:00', null),
-        (3, 5, 2, '2024-03-21 22:21:07.424744 +00:00', null),
-        (4, 6, 5, '2024-03-21 22:21:07.424744 +00:00', null),
-        (5, 6, 2, '2024-03-21 22:21:07.424744 +00:00', null),
-        (6, 5, 5, '2024-03-21 22:21:33.962726 +00:00', false);
+create table enrollments
+(
+    enrollment_id   uuid not null
+        primary key,
+    user_id         uuid not null
+        references users
+            on delete cascade,
+    subject_id      uuid not null
+        references subjects
+            on delete cascade,
+    enrollment_date timestamp with time zone default now(),
+    completed       boolean                  default false
+);
+
+comment on table enrollments is 'Записи о подписках пользователей на предметы';
+
+comment on column enrollments.enrollment_id is 'Идентификатор записи о подписке';
+
+comment on column enrollments.user_id is 'Пользователь, подписавшийся на предмет';
+
+comment on column enrollments.subject_id is 'Предмет, на который подписался пользователь. Сам предмет';
+
+comment on column enrollments.enrollment_date is 'Дата подписки';
+
+comment on column enrollments.completed is 'Статус завершения предмета';
+

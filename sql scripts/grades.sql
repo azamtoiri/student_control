@@ -1,6 +1,21 @@
-insert into public.grades (grade_id, enrollment_id, grade_value, grade_date)
-values  (1, 1, 90, '2024-03-21 22:21:09.433120 +00:00'),
-        (2, 2, 85, '2024-03-21 22:21:09.433120 +00:00'),
-        (3, 5, 69, '2024-03-21 22:21:09.433120 +00:00'),
-        (4, 3, 95, '2024-03-21 22:21:09.433120 +00:00'),
-        (5, 4, 88, '2024-03-21 22:21:09.433120 +00:00');
+create table grades
+(
+    grade_id      uuid    not null
+        primary key,
+    enrollment_id uuid    not null
+        references enrollments
+            on delete cascade,
+    grade_value   integer not null,
+    grade_date    timestamp with time zone default now()
+);
+
+comment on table grades is 'Итоговая оценка студентов по предметам';
+
+comment on column grades.grade_id is 'Идентификатор оценки';
+
+comment on column grades.enrollment_id is 'Идентификатор записи о подписке';
+
+comment on column grades.grade_value is 'Сама оценка';
+
+comment on column grades.grade_date is 'Дата выставления оценки';
+
