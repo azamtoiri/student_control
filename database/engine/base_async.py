@@ -6,12 +6,12 @@ from database.model_base import Base
 
 class AsyncBaseDatabase:
     def __init__(self):
-        async_engine = create_async_engine(
+        self.async_engine = create_async_engine(
             Connection.ASYNC_DATABASE_URL
         )
-        self.engine = async_engine
+        self.engine = self.async_engine
         self._async_session = async_sessionmaker(
-            bind=async_engine, class_=AsyncSession, expire_on_commit=False, future=True
+            bind=self.async_engine, class_=AsyncSession, expire_on_commit=False, future=True
         )
 
     async def create_db(self):
