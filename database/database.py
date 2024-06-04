@@ -1,3 +1,4 @@
+import logging
 from typing import Type, Optional, List
 
 from sqlalchemy import create_engine, asc, func, select
@@ -6,8 +7,9 @@ from sqlalchemy.orm import sessionmaker, aliased, joinedload
 
 from constants import Connection
 from constants import UserDefaults
+from database.model_base import Base
 from database.models import (
-    Base, Users, Subjects, Task, Enrollments, Grades, SubjectTasks, UserTasksFiles,
+    Users, Subjects, Task, Enrollments, Grades, SubjectTasks, UserTasksFiles,
     UserTheme, SubjectTheory, TeacherInformation, TaskGrades
 )
 from utils.exceptions import (
@@ -16,14 +18,38 @@ from utils.exceptions import (
 )
 from utils.jwt_hash import verify, hash_
 
-async_engine = create_async_engine(
-    Connection.ASYNC_DATABASE_URL,
-    future=True
-)
+# Set up logging
+logging.basicConfig()
+logger = logging.getLogger('sqlalchemy.engine')
+logger.setLevel(logging.INFO)
+
+query_count = 0
+
+
+# Function to count queries
+def count_queries(log_record):
+    global query_count
+    if log_record.getMessage().startswith(('SELECT', 'INSERT', 'UPDATE', 'DELETE')):
+        query_count += 1
+    return True  # The filter function must return True to let the log record through
+
+
+# Create log handler and add the counting filter
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+handler.setFormatter(logging.Formatter('%(message)s'))
+handler.addFilter(count_queries)
+logger.addHandler(handler)
+
+with open('query_count.txt', 'w') as f:
+    f.write(f'Total queries: {query_count}\n')
 
 
 class AsyncBaseDatabase:
     def __init__(self):
+        async_engine = create_async_engine(
+            Connection.ASYNC_DATABASE_URL
+        )
         self.engine = async_engine
         self._async_session = async_sessionmaker(
             bind=async_engine, class_=AsyncSession, expire_on_commit=False, future=True
@@ -104,7 +130,7 @@ class UserDatabase(AsyncBaseDatabase):
                 if not verify(plain_password=password, hashed_password=hashed_password[0].password):
                     raise NotRegistered('username')
             except ValueError as err:
-                session.rollback()
+                await session.rollback()
                 return False
             return True
 
@@ -562,8 +588,9 @@ class StudentDatabase(BaseDataBase):
         if len(values) < 1:
             raise DontHaveGrades()
 
-        for value in values:
-            yield value
+        return values
+        # for value in values:
+        #     yield value
 
     def get_student_task_grades_with_subject_name(self, user_id, subject_name) -> list[TaskGrades]:
         """Возвращает оценки студента по конкретному заданию."""

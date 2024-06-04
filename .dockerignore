@@ -1,4 +1,6 @@
 # .dockerignore
+dist
+build
 node_modules
 bar
 .idea

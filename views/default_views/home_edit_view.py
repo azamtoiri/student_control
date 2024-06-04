@@ -8,7 +8,7 @@ from flet_route import Params, Basket
 from database.database import UserDatabase
 from user_controls.user_chang_field import UserChangField
 from user_controls.user_image_picker import UserImage
-from utils.banners import display_success_banner
+from utils.banners import display_success_banner_async
 from utils.create_container_home_view import create_container
 from utils.exceptions import RequiredField
 from utils.lazy_db import LazyDatabase
@@ -26,7 +26,6 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     teacher_description = ''
     IS_DONE = False
     if page.session.get("is_staff") is not None:
-        await user_db.database.create_teacher_information(USER_ID)
         teacher = await user_db.database.get_teacher_info(USER_ID)
         teacher_experience = teacher.teacher_experience
         teacher_description = teacher.teacher_description
@@ -40,7 +39,7 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     main_page_url = TeacherRoutes.MAIN_URL if await user_db.database.is_staff(USER_ID) else StudentRoutes.MAIN_URL
 
     # region: Functions
-    def display_form_error(field: str, message: str) -> None:
+    async def display_form_error(field: str, message: str) -> None:
         fields = {
             'Имя': first_name_field,
             'Фамилия': last_name_field,
@@ -49,7 +48,6 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             'Описание': teacher_description_field
         }
         if field in fields.keys():
-            # fields[field].input_box_content.error_text = message
             fields[field].set_error_text(message)
         page.update()
 
@@ -86,9 +84,9 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
                 age=age,
                 email=email,
             )
-            display_success_banner(page, 'Изменения сохранены', ft.icons.SUNNY)
+            await display_success_banner_async(page, 'Изменения сохранены', ft.icons.SUNNY)
         except RequiredField as error:
-            display_form_error(error.field, str(error))
+            await display_form_error(error.field, str(error))
         except Exception as ex:
             print(ex)
 
@@ -103,11 +101,12 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
                 teacher_description_field.get_value) else None
             is_done = True
 
-            await user_db.database.update_teacher_information(USER_ID, teacher_experience_, teacher_description_, is_done)
+            await user_db.database.update_teacher_information(USER_ID, teacher_experience_, teacher_description_,
+                                                              is_done)
 
-            display_success_banner(page, 'Изменения сохранены', ft.icons.SUNNY)
+            await display_success_banner_async(page, 'Изменения сохранены', ft.icons.SUNNY)
         except RequiredField as error:
-            display_form_error(error.field, str(error))
+            await display_form_error(error.field, str(error))
         except Exception as ex:
             print(ex)
 
@@ -139,7 +138,7 @@ async def HomeEditView(page: ft.Page, params: Params, basket: Basket) -> ft.View
                 # here will be updating data in db
                 _user_image_dir = f'{x.name}'
                 await user_db.database.set_new_user_image(USER_ID, _user_image_dir)
-                user_avatar.change_user_image(f'/uploads/{x.name}')
+                await user_avatar.change_user_image(f'/uploads/{x.name}')
                 user_avatar.update()
                 page.update()
 

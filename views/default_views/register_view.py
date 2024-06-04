@@ -29,7 +29,7 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     page.session.clear()
 
     # region: Functions
-    def display_register_form_error(field: str, message: str) -> None:
+    async def display_register_form_error(field: str, message: str) -> None:
         password_field2 = password2_field
 
         fields = {
@@ -45,15 +45,14 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
             'password2': password_field2
         }
         if field in fields.keys():
-            # fields[field].input_box_content.error_text = message
             fields[field].set_fail(message)
 
-    def display_success_banner(message: str) -> None:
+    async def display_success_banner(message: str) -> None:
         banner = SuccessBanner(page, message)
-        page.show_banner(banner)
+        await page.show_banner_async(banner)
         page.update()
 
-    def hide_banner() -> None:
+    async def hide_banner() -> None:
         if page.banner is not None:
             page.banner.open = False
             page.update()
@@ -66,22 +65,23 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
         try:
 
             # region: Form fields
-            first_name = str(first_name_field.input_box_content.value).strip() if len(
+            first_name: str = str(first_name_field.input_box_content.value).strip() if len(
                 first_name_field.input_box_content.value) else None
 
-            last_name = str(last_name_field.input_box_content.value).strip() if len(
+            last_name: str = str(last_name_field.input_box_content.value).strip() if len(
                 last_name_field.input_box_content.value) else None
 
-            middle_name = str(middle_name_field.input_box_content.value).strip() if len(
+            middle_name: str = str(middle_name_field.input_box_content.value).strip() if len(
                 middle_name_field.input_box_content.value) else None
 
-            group = str(group_field.input_box_content.value).strip() if len(
+            group: str = str(group_field.input_box_content.value).strip() if len(
                 group_field.input_box_content.value) else None
 
-            course = str(course_field.input_box_content.value).strip() if len(
+            course: int = int(str(course_field.input_box_content.value).strip()) if len(
                 course_field.input_box_content.value) else None
 
-            age = str(age_field.input_box_content.value).strip() if len(age_field.input_box_content.value) else None
+            age: int = int(str(age_field.input_box_content.value).strip()) if len(
+                age_field.input_box_content.value) else None
 
             email = str(email_field.input_box_content.value).strip() if len(
                 email_field.input_box_content.value) else None
@@ -101,7 +101,7 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
                 if not email_validator.validate():
                     raise WrongEmail('email')
             if password is not None:
-                password_validator(password)
+                await password_validator(password)
 
             if password2 is None and username and password is None:
                 raise RequiredField('password')
@@ -122,23 +122,23 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
 
             page.route = BaseRoutes.LOGIN_URL
             page.update()
-            display_success_banner('Вы были успешно зарегистрированы')
+            await display_success_banner('Вы были успешно зарегистрированы')
             time.sleep(2)
-            hide_banner()
+            await hide_banner()
         except RequiredField as error:
-            display_register_form_error(error.field, str(error))
+            await display_register_form_error(error.field, str(error))
         except NotRegistered as error:
-            display_register_form_error('username', str(error))
+            await display_register_form_error('username', str(error))
         except AlreadyRegistered as error:
-            display_register_form_error('username', str(error))
+            await display_register_form_error('username', str(error))
         except PasswordDontMatching as error:
-            display_register_form_error(error.field, str(error))
+            await display_register_form_error(error.field, str(error))
         except PasswordLengthIsWeak as error:
-            display_register_form_error(error.field, str(error))
+            await display_register_form_error(error.field, str(error))
         except PasswordCharacterIsWeak as error:
-            display_register_form_error(error.field, str(error))
+            await display_register_form_error(error.field, str(error))
         except WrongEmail as error:
-            display_register_form_error(error.field, str(error))
+            await display_register_form_error(error.field, str(error))
         except Exception as error:
             print(error)
 
@@ -196,7 +196,7 @@ async def RegisterView(page: ft.Page, params: Params, basket: Basket) -> ft.View
     # endregion
 
     # region: password_validator
-    def password_validator(password) -> None:
+    async def password_validator(password) -> None:
         password_strength_check = PasswordStrengthChecker(password)
 
         password_length = password_strength_check.length_check()

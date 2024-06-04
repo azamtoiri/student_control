@@ -34,6 +34,6 @@ class UserImage(ft.UserControl):
         )
         return self.display_view
 
-    def change_user_image(self, image_dir):
+    async def change_user_image(self, image_dir):
         self.ft_image.current.src = image_dir
         self.update()
