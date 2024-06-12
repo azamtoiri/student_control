@@ -1,8 +1,8 @@
 import flet as ft
 from flet_route import Params, Basket
 
+from database.database import AsyncBaseDatabase
 from database.database import StudentDatabase
-from database.DatabaseClient.StudentDatabase import AsyncBaseDatabase
 from user_controls.grades_card import create_subject_grade_card, create_task_grade_card
 from utils.exceptions import DontHaveGrades
 from utils.lazy_db import LazyDatabase
