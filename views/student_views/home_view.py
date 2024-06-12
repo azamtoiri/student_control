@@ -4,6 +4,7 @@ import flet as ft
 from flet_route import Params, Basket
 
 from database.database import UserDatabase, TaskDatabase
+from database.repositories import user_repository, task_repository
 from user_controls.average_grades_card import AverageGradesCard
 from user_controls.todo_card import TodoCard
 from user_controls.user_chang_field import UserChangField
@@ -33,8 +34,7 @@ async def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # region: Functions
 
     # endregion
-
-    user = await user_db.database.get_user_by_id(USER_ID)
+    user = await user_repository.get_user_by_id(USER_ID)
 
     # region: InputFields
     first_name_field = UserChangField(True, value=user.last_name, label='Фамилия')  # Фамилия
@@ -48,7 +48,7 @@ async def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # endregion
 
-    user_image_dir = await user_db.database.get_user_image_url(USER_ID)
+    user_image_dir = await user_repository.get_user_image_url(USER_ID)
 
     if (user_image_dir is None) or (os.path.exists(f'assets/uploads/{user_image_dir}') is False):
         user_avatar = UserImage(
@@ -77,7 +77,7 @@ async def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
         page.go(StudentRoutes.TODO_URL, skip_route_change_event=True)
         # page.views.reverse()
 
-    todo_count = await task_db.database.get_count_of_tasks(USER_ID)
+    todo_count = await task_repository.get_count_of_tasks(USER_ID)
     user_stat_info_content = ft.Column(
         [
             TodoCard(
@@ -92,6 +92,7 @@ async def HomeView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             UserSubjectsCard(USER_ID, lambda e: page.go(StudentRoutes.SUBJECTS_URL))
         ]
     )
+    await page.update_async()
 
     # endregion
 

@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from constants import Connection
@@ -18,3 +20,21 @@ class AsyncBaseDatabase:
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         await self.engine.dispose()
+
+    @asynccontextmanager
+    async def session_scope(self):
+        """
+                Асинхронный контекстный менеджер для сессий SQLAlchemy.
+        Управляет транзакциями: автоматически коммитит или откатывает транзакции в случае ошибки.
+
+        :return:
+        """
+        async with self._async_session() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception as e:
+                await session.rollback()
+                raise e
+            finally:
+                await session.close()

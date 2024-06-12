@@ -14,7 +14,7 @@ dlg = ft.AlertDialog(adaptive=True)
 
 async def SubjectView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     # course models
-    course = sub_db.database.get_course_by_id(params.get('id'))
+    course = sub_db.database.get_subject(params.get('id'))
 
     # CONSTANTS
     USERNAME = page.session.get('username')

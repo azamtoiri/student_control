@@ -1,8 +1,8 @@
-#  Для отображения средней оценки по предметам
+import asyncio
 
 import flet as ft
 
-from database.database import StudentDatabase
+from database.repositories import StudentRepository
 from utils.exceptions import DontHaveGrades
 
 
@@ -11,13 +11,26 @@ class AverageGradesCard(ft.UserControl):
         super().__init__()
         self.user_id = user_id
         self.button_clicked = button_clicked
-        self.db = StudentDatabase()
+        self.db = StudentRepository()
+        self.all_grades_count = 'Загрузка...'
+        self.subjects_and_values = ft.Ref[ft.ListTile]()
+        self.average_subject_grades = ft.Ref[ft.ListTile]()
+        asyncio.create_task(self.load_data())  # Начинаем загрузку данных в фоне
+
+    async def load_data(self):
+        print("LOADING")
+        self.all_grades_count = await self.db.get_all_grades(self.user_id)
+        self.subjects_and_values = await self.create_average_subject_tasks_grades()
+        self.average_subject_grades = await self.create_average_subject_grades()
+
+        print("LOADED", self.all_grades_count, self.subjects_and_values, self.average_subject_grades)
+        self.update()
+        await self.update_async()  # Обновляем интерфейс
+
+    async def on_refresh_click(self, e):
+        await self.load_data()
 
     def build(self):
-        all_grades_count = self.db.get_all_grades(self.user_id)
-        subjects_and_values = self.create_average_subject_tasks_grades()
-        average_subject_grades = self.create_average_subject_grades()
-
         return ft.Card(
             content=ft.Container(
                 padding=ft.padding.symmetric(vertical=10),
@@ -26,15 +39,15 @@ class AverageGradesCard(ft.UserControl):
                     controls=[
                         ft.ListTile(
                             leading=ft.Icon(ft.icons.STARS),
-                            title=ft.Text(f'Всего оценок итоговых оценок: {all_grades_count}')
+                            title=ft.Text(f'Всего оценок итоговых оценок: {self.all_grades_count}')
                         ),
                         ft.ExpansionTile(
                             title=ft.Text('Итоговые оценки по предметам'),
-                            controls=average_subject_grades
+                            controls=self.average_subject_grades
                         ),
                         ft.ExpansionTile(
                             title=ft.Text('Средние оценки за задания по предметам'),
-                            controls=subjects_and_values
+                            controls=self.subjects_and_values
                         ),
                         ft.ListTile(
                             title=ft.Row(
@@ -47,16 +60,22 @@ class AverageGradesCard(ft.UserControl):
                                     )
                                 ]
                             ),
+                        ),
+                        ft.ElevatedButton(
+                            text="Обновить данные",
+                            on_click=self.on_refresh_click
                         )
                     ]
                 )
             )
         )
 
-    def create_average_subject_tasks_grades(self) -> list[ft.Control]:
+    async def create_average_subject_tasks_grades(self) -> list[ft.Control]:
         all = []
         try:
-            for i in self.db.get_student_subjects(user_id=self.user_id):
+            student_subjects = await self.db.get_student_subjects(user_id=self.user_id)
+            for i in student_subjects:
+                average_grade = await self.db.count_average_tasks_subject_grade(subject_name=i[2], user_id=self.user_id)
                 all.append(
                     ft.ListTile(
                         title=ft.Text(i[2]),
@@ -67,7 +86,7 @@ class AverageGradesCard(ft.UserControl):
                                     text_align=ft.TextAlign.END
                                 ),
                                 ft.Text(
-                                    f'{self.db.count_average_tasks_subject_grade(subject_name=i[2], user_id=self.user_id)}',
+                                    f'{average_grade}',
                                     text_align=ft.TextAlign.END, weight=ft.FontWeight.BOLD, color=ft.colors.SURFACE_TINT
                                 ),
                             ], alignment=ft.MainAxisAlignment.END
@@ -78,11 +97,13 @@ class AverageGradesCard(ft.UserControl):
         except DontHaveGrades as ex:
             return []
 
-    def create_average_subject_grades(self) -> list[ft.Control]:
-        """Creating average of final subjects grades"""
+    async def create_average_subject_grades(self) -> list[ft.Control]:
+        """Создание средней итоговой оценки по предметам"""
         all = []
         try:
-            for i in self.db.get_student_subjects(user_id=self.user_id):
+            student_subjects = await self.db.get_student_subjects(user_id=self.user_id)
+            for i in student_subjects:
+                average_grades = await self.db.count_average_subject_grades(subject_name=i[2], user_id=self.user_id)
                 all.append(
                     ft.ListTile(
                         title=ft.Text(i[2]),
@@ -93,7 +114,7 @@ class AverageGradesCard(ft.UserControl):
                                     text_align=ft.TextAlign.END
                                 ),
                                 ft.Text(
-                                    f'{self.db.count_average_subject_grades(subject_name=i[2], user_id=self.user_id)}',
+                                    f'{average_grades}',
                                     text_align=ft.TextAlign.END, weight=ft.FontWeight.BOLD, color=ft.colors.SURFACE_TINT
                                 ),
                             ], alignment=ft.MainAxisAlignment.END

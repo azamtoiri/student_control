@@ -1,72 +1,46 @@
-import logging
 from typing import Type, Optional, List
 
-from sqlalchemy import create_engine, asc, func, select
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import sessionmaker, aliased, joinedload
+from sqlalchemy import asc, func, select
+from sqlalchemy.orm import aliased, joinedload
 
-from constants import Connection
 from constants import UserDefaults
-from database.model_base import Base
+from database.engine.base_async import AsyncBaseDatabase
+from database.engine.base_sync import BaseDataBase
 from database.models import (
     Users, Subjects, Task, Enrollments, Grades, SubjectTasks, UserTasksFiles,
     UserTheme, SubjectTheory, TeacherInformation, TaskGrades
 )
 from utils.exceptions import (
-    RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed,
-    UserDontHaveGrade
+    RequiredField, AlreadyRegistered, NotRegistered, DontHaveGrades, UserAlreadySubscribed
 )
 from utils.jwt_hash import verify, hash_
 
+
 # Set up logging
-logging.basicConfig()
-logger = logging.getLogger('sqlalchemy.engine')
-logger.setLevel(logging.INFO)
-
-query_count = 0
-
-
-# Function to count queries
-def count_queries(log_record):
-    global query_count
-    if log_record.getMessage().startswith(('SELECT', 'INSERT', 'UPDATE', 'DELETE')):
-        query_count += 1
-    return True  # The filter function must return True to let the log record through
-
-
-# Create log handler and add the counting filter
-handler = logging.StreamHandler()
-handler.setLevel(logging.INFO)
-handler.setFormatter(logging.Formatter('%(message)s'))
-handler.addFilter(count_queries)
-logger.addHandler(handler)
-
-with open('query_count.txt', 'w') as f:
-    f.write(f'Total queries: {query_count}\n')
-
-
-class AsyncBaseDatabase:
-    def __init__(self):
-        async_engine = create_async_engine(
-            Connection.ASYNC_DATABASE_URL
-        )
-        self.engine = async_engine
-        self._async_session = async_sessionmaker(
-            bind=async_engine, class_=AsyncSession, expire_on_commit=False, future=True
-        )
-
-    async def create_db(self):
-        async with self.engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        await self.engine.dispose()
-
-
-class BaseDataBase:
-    def __init__(self):
-        engine = create_engine(url=Connection.DATABASE_URL)
-        Base.metadata.create_all(engine)
-        Session = sessionmaker(engine)
-        self.session = Session()
+# logging.basicConfig()
+# logger = logging.getLogger('sqlalchemy.engine')
+# logger.setLevel(logging.INFO)
+#
+# query_count = 0
+#
+#
+# # Function to count queries
+# def count_queries(log_record):
+#     global query_count
+#     if log_record.getMessage().startswith(('SELECT', 'INSERT', 'UPDATE', 'DELETE')):
+#         query_count += 1
+#     return True  # The filter function must return True to let the log record through
+#
+#
+# # Create log handler and add the counting filter
+# handler = logging.StreamHandler()
+# handler.setLevel(logging.INFO)
+# handler.setFormatter(logging.Formatter('%(message)s'))
+# handler.addFilter(count_queries)
+# logger.addHandler(handler)
+#
+# with open('query_count.txt', 'w') as f:
+#     f.write(f'Total queries: {query_count}\n')
 
 
 class UserDatabase(AsyncBaseDatabase):
@@ -476,9 +450,6 @@ class StudentAsyncDatabase(AsyncBaseDatabase):
 
 
 class StudentDatabase(BaseDataBase):
-    def get_course_by_id(self, _id) -> Type[Subjects]:
-        return self.session.query(Subjects).filter(Subjects.subject_id == _id).first()
-
     def get_all_subjects(self) -> list[Type[Subjects]]:
         """Return all subjects use for subjects_view"""
         try:
@@ -507,29 +478,6 @@ class StudentDatabase(BaseDataBase):
             raise DontHaveGrades()
         return user_subject
 
-    def get_student_subjects_and_completed_tasks(
-            self, user_id=None, subject_task_id=None
-    ) -> list[UserTasksFiles] or list:
-        req = self.session.query(
-            UserTasksFiles
-        ).join(
-            SubjectTasks
-        ).filter(
-            UserTasksFiles.user_id == user_id, UserTasksFiles.subject_task_id == subject_task_id
-        ).all()
-        return req
-
-    def get_user_subjects(self, user_id):
-        """Возвращает предмет пользователя который у него есть *(для учителя)*"""
-        user = self.session.query(Users).filter_by(user_id=user_id).first()
-        if user is None:
-            raise ValueError(f"User with ID {user_id} not found")
-
-        # Получаем предметы (Subjects) для данного пользователя
-        user_subjects = user.subjects
-
-        return user_subjects
-
     def count_average_subject_grades(self, subject_name=None, user_id=None) -> int or str:
         """Возвращает среднюю оценку по предмету для пользователя"""
         avg_grade = (
@@ -545,26 +493,6 @@ class StudentDatabase(BaseDataBase):
             return round(avg_grade)  # Округляем до целого числа
         else:
             return 'Нет оценок'
-
-    def get_student_grade_for_exact_subject(self, username, sub_name) -> list:
-        """Возвращает все оценки пользователя по определенному предмету"""
-        values = self.session.query(
-            Users.username, Subjects.subject_name, Grades.grade_value, Grades.grade_date, Enrollments.enrollment_date
-        ).join(
-            Users, Users.user_id == Enrollments.user_id,
-        ).join(
-            Subjects, Subjects.subject_id == Enrollments.subject_id
-        ).join(
-            Grades, Grades.enrollment_id == Enrollments.enrollment_id
-        ).where(
-            Users.username == username
-        ).where(
-            Subjects.subject_name == sub_name
-        ).all()
-        if not values:
-            raise UserDontHaveGrade
-        for value in values:
-            yield value
 
     def get_student_grades(self, username=None, user_id=None) -> list:
         """
@@ -591,27 +519,6 @@ class StudentDatabase(BaseDataBase):
         return values
         # for value in values:
         #     yield value
-
-    def get_student_task_grades_with_subject_name(self, user_id, subject_name) -> list[TaskGrades]:
-        """Возвращает оценки студента по конкретному заданию."""
-
-        # Запрос оценок для заданного пользователя и задания
-        grades = (
-            self.session.query(TaskGrades)
-            .join(Enrollments)
-            .join(Subjects)
-            .join(SubjectTasks)
-            .filter(
-                Enrollments.user_id == user_id,
-                Subjects.subject_name == subject_name
-            )
-            # .options(joinedload(TaskGrades.enrollment_grades))
-            .all()
-        )
-        if len(grades) <= 0:
-            raise UserDontHaveGrade
-
-        return grades
 
     def get_student_tasks_grades_v2(self, user_id) -> list[Type[TaskGrades]] | list:
         try:
@@ -756,22 +663,6 @@ class StudentDatabase(BaseDataBase):
         return res
 
     # region: subject_task_file
-    def get_status_of_task_by_user_id(self, user_id, subject_task_id, enrollment_id):
-        """Gets status of the subject_task"""
-        if not self.check_task_file_exist(user_id, subject_task_id):
-            self.add_subject_task_file(user_id, subject_task_id, enrollment_id)
-
-        status = self.session.query(
-            UserTasksFiles.completed
-        ).join(
-            SubjectTasks
-        ).filter(
-            UserTasksFiles.user_id == user_id,
-            SubjectTasks.subject_task_id == subject_task_id
-        ).first()
-
-        return status[0] if status is not None else None
-
     def get_completed_task_status(self, user_id, subject_task_id) -> Type[UserTasksFiles]:
         return self.session.query(UserTasksFiles).filter(
             UserTasksFiles.user_id == user_id,
@@ -788,18 +679,6 @@ class StudentDatabase(BaseDataBase):
             print(ex)
             self.session.rollback()
             return False
-
-    def check_task_file_exist(self, user_id, subject_task_id) -> bool:
-        """Проверяет есть ли такая запись в таблице"""
-        # Используем метод query.exists() для проверки существования записи в запросе
-        exists = self.session.query(
-            self.session.query(UserTasksFiles)
-            .join(SubjectTasks)
-            .filter(UserTasksFiles.user_id == user_id, SubjectTasks.subject_task_id == subject_task_id)
-            .exists()
-        ).scalar()
-
-        return exists
 
     def add_subject_task_file(self, user_id, subject_task_id, enrollment_id, file_name) -> bool:
         try:
@@ -819,19 +698,6 @@ class StudentDatabase(BaseDataBase):
             theory = self.session.query(SubjectTheory).filter(SubjectTheory.theory_id == subject_id).first()
             self.session.delete(theory)
             self.session.commit()
-            return True
-        except Exception as ex:
-            print(ex)
-            self.session.rollback()
-            return False
-
-    def change_task_file(self, user_id, subject_task_id, file_name: bool) -> bool:
-        try:
-            completed_task_status = self.get_completed_task_status(user_id, subject_task_id)
-            completed_task_status.task_file = file_name
-            self.session.add(completed_task_status)
-            self.session.commit()
-
             return True
         except Exception as ex:
             print(ex)
