@@ -110,6 +110,7 @@ async def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     # list for tabs [default contains 'Все' 'Итоговые оценки']
     tabs = [ft.Tab('Все'), ft.Tab('Итоговые оценки')]
+
     # get all subjects and add to tabs
     try:
         subjects = sub_db.database.get_student_subjects(user_id=USER_ID)
@@ -130,8 +131,8 @@ async def GradesView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     )
 
     # adding user grades to the page
-    add_tasks_grades()
     add_final_grades()
+    add_tasks_grades()
 
     return ft.View(
         bgcolor=ft.colors.SURFACE_VARIANT,
